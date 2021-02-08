@@ -23,7 +23,6 @@ Returns:
     :class:`qulacs.GeneralQuantumOperator`
 """
 function parse_of_general_operators(num_qubits, openfermion_operators)
-    qulacs = pyimport("qulacs")
     ret = qulacs.GeneralQuantumOperator(num_qubits)
     for (pauli_product, coef) in openfermion_operators.terms
         pauli_string = ""
@@ -59,8 +58,6 @@ Return:
     qulacs.GeneralQuantumOperator
 """
 function qulacs_jordan_wigner(fermion_operator, n_qubits=nothing)
-    pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) # Add cwd to path
-    ofermion = pyimport("openfermion")
     qubit_operator = ofermion.transforms.jordan_wigner(fermion_operator)
     _n_qubits = n_qubits === nothing ? count_qubit_in_qubit_operator(qubit_operator) : n_qubits
     qulacs_operator = parse_of_general_operators(_n_qubits, qubit_operator)
@@ -78,7 +75,6 @@ Returns:
     :class:`qulacs.Observable`
 """
 function convert_openfermion_op(n_qubit, openfermion_op)
-    qulacs = pyimport("qulacs")
     ret = qulacs.Observable(n_qubit)
     for (pauli_product, coef) in openfermion_op.terms
         pauli_string = ""

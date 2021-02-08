@@ -1,12 +1,9 @@
 export uccsd1, convert_openfermion_op, add_parametric_circuit_using_generator!, add_parametric_multi_Pauli_rotation_gate!
 
-import PyCall: pyimport
-
 """
 Generate single excitations
 """
 function gen_t1(a, i)
-    ofermion = pyimport("openfermion")
     #a^\dagger_a a_i (excitation)
     generator = ofermion.ops.FermionOperator((
                     (a, 1),
@@ -25,7 +22,6 @@ end
 Generate pair dobule excitations
 """
 function gen_p_t2(aa, ia, ab, ib)
-    ofermion = pyimport("openfermion")
     generator = ofermion.ops.FermionOperator((
         (aa, 1),
         (ab, 1),
@@ -46,9 +42,6 @@ end
 Returns UCCSD1 circuit.
 """
 function uccsd1(n_qubit, nocc, nvirt)
-    qulacs = pyimport("qulacs")
-    pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) # Add cwd to path
-
     theta_offsets = []
     circuit = qulacs.ParametricQuantumCircuit(n_qubit)
     ioff = 0
