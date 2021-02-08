@@ -1,19 +1,12 @@
-export uccsd1, convert_openfermion_op, convert_openfermion_op_debug
+export uccsd1, convert_openfermion_op, add_parametric_circuit_using_generator!, add_parametric_multi_Pauli_rotation_gate!
 
-import PyCall: pyimport, PyVector
-
-#pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) # Add cwd to path
-
-up_index(i) = 2*(i-1)
-down_index(i) = 2*(i-1)+1
+import PyCall: pyimport
 
 """
 Generate single excitations
 """
 function gen_t1(a, i)
     ofermion = pyimport("openfermion")
-    pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) # Add cwd to path
-    util = pyimport("util")
     #a^\dagger_a a_i (excitation)
     generator = ofermion.ops.FermionOperator((
                     (a, 1),
@@ -25,7 +18,7 @@ function gen_t1(a, i)
                     (a, 0)),
                     -1.0)
     #JW-transformation of a^\dagger_a a_i - -a^\dagger_i a_a
-    util.qulacs_jordan_wigner(generator)
+    qulacs_jordan_wigner(generator)
 end
 
 """
@@ -33,8 +26,6 @@ Generate pair dobule excitations
 """
 function gen_p_t2(aa, ia, ab, ib)
     ofermion = pyimport("openfermion")
-    pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) # Add cwd to path
-    util = pyimport("util")
     generator = ofermion.ops.FermionOperator((
         (aa, 1),
         (ab, 1),
@@ -47,19 +38,7 @@ function gen_p_t2(aa, ia, ab, ib)
         (ab, 0),
         (aa, 0)),
         -1.0)
-    util.qulacs_jordan_wigner(generator)
-end
-
-
-function add_theta_value_offset!(theta_offsets, generator, ioff)
-    pauli_coef_lists = Float64[]
-    for i in 0:generator.get_term_count()-1
-        pauli = generator.get_term(i)
-        push!(pauli_coef_lists, imag(pauli.get_coef())) #coef should be pure imaginary
-    end
-    push!(theta_offsets, [generator.get_term_count(), ioff, pauli_coef_lists])
-    ioff = ioff + generator.get_term_count()
-    return theta_offsets, ioff
+    qulacs_jordan_wigner(generator)
 end
 
 
@@ -69,7 +48,6 @@ Returns UCCSD1 circuit.
 function uccsd1(n_qubit, nocc, nvirt)
     qulacs = pyimport("qulacs")
     pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) # Add cwd to path
-    util = pyimport("util")
 
     theta_offsets = []
     circuit = qulacs.ParametricQuantumCircuit(n_qubit)
@@ -92,9 +70,9 @@ function uccsd1(n_qubit, nocc, nvirt)
             theta_offsets, ioff = add_theta_value_offset!(theta_offsets,
                                                       qulacs_generator,
                                                       ioff)
-            circuit = util.add_parametric_circuit_using_generator(circuit,
+            add_parametric_circuit_using_generator!(circuit,
                                                    qulacs_generator,
-                                                   theta,i_t1,1.0)
+                                                   theta)
         end
     end
 
@@ -118,30 +96,9 @@ function uccsd1(n_qubit, nocc, nvirt)
             theta_offsets, ioff = add_theta_value_offset!(theta_offsets,
                                                    qulacs_generator,
                                                    ioff)
-            circuit = util.add_parametric_circuit_using_generator(circuit,
+            add_parametric_circuit_using_generator!(circuit,
                                                    qulacs_generator,
-                                                   theta,i_t2,1.0)
+                                                   theta)
     end
     circuit, theta_offsets
-end
-
-"""convert_openfermion_op
-
-Args:
-    n_qubit (:class:`int`)
-    openfermion_op (:class:`openfermion.ops.QubitOperator`)
-Returns:
-    :class:`qulacs.Observable`
-"""
-function convert_openfermion_op(n_qubit, openfermion_op)
-    qulacs = pyimport("qulacs")
-    ret = qulacs.Observable(n_qubit)
-    for (pauli_product, coef) in openfermion_op.terms
-        pauli_string = ""
-        for pauli_operator in pauli_product
-            pauli_string *= pauli_operator[2] * " $(pauli_operator[1]) "
-        end
-        ret.add_operator(real(coef), pauli_string[1:end-1])
-    end
-    ret
 end
