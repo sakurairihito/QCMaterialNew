@@ -1,14 +1,5 @@
-export topylist
+export topylist, doublefunc
 import PyCall: PyVector
-
-function topylist(array::Array{T}) where T
-    pylist = PyVector(Vector{Any}())
-    for x in array
-        println("debug", x)
-        push!(pylist, x)
-    end
-    pylist
-end
 
 up_index(i) = 2*(i-1)
 down_index(i) = 2*(i-1)+1
@@ -110,4 +101,17 @@ function add_theta_value_offset!(theta_offsets, generator, ioff)
     push!(theta_offsets, [generator.get_term_count(), ioff, pauli_coef_lists])
     ioff = ioff + generator.get_term_count()
     return theta_offsets, ioff
+end
+
+
+function doublefunc(x)
+    return pyutil.doublefunc(x)
+end
+
+function topylist(array::Array{T}) where T
+    pylist = PyVector(Vector{Any}())
+    for x in array
+        push!(pylist, x)
+    end
+    pylist
 end
