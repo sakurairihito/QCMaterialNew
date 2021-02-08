@@ -1,24 +1,19 @@
 # Qulacs
-import qulacs
+#import qulacs
 from qulacs import Observable, GeneralQuantumOperator
-from qulacs.observable import create_observable_from_openfermion_text
-from qulacs import QuantumState, ParametricQuantumCircuit
+#from qulacs.observable import create_observable_from_openfermion_text
+#from qulacs import QuantumState, ParametricQuantumCircuit
 # Openfermion
-from openfermion.transforms import get_fermion_operator, jordan_wigner
-from openfermion.linalg import get_sparse_operator
-from openfermion.chem import MolecularData
-from openfermion.ops import FermionOperator
-from openfermion.utils import up_index, down_index
+from openfermion.transforms import jordan_wigner
+#from openfermion.linalg import get_sparse_operator
+#from openfermion.chem import MolecularData
+#from openfermion.ops import FermionOperator
+#from openfermion.utils import up_index, down_index
 # Openfermion-PySCF
-from openfermionpyscf import run_pyscf
-# miscs.
-from scipy.optimize import minimize
+#from openfermionpyscf import run_pyscf
 import numpy as np
-import matplotlib.pyplot as plt
-import os
-import itertools
 #
-from pyscf import fci
+#from pyscf import fci
 
 def parse_of_general_operators(num_qubits, openfermion_operators):
     """convert openfermion operator for generic cases (non-Hermitian operators)
@@ -66,41 +61,6 @@ def qulacs_jordan_wigner(fermion_operator, n_qubits=None):
     return qulacs_operator
 
 
-def gen_t1(a, i):      
-    # Generate single excitations
-                #a^\dagger_a a_i (excitation)
-                generator = FermionOperator((
-                    (a, 1),
-                    (i, 0)),
-                    1.0)
-                #-a^\dagger_i a_a (de-exciation)
-                generator += FermionOperator((
-                    (i, 1),
-                    (a, 0)),
-                    -1.0)
-                #JW-transformation of a^\dagger_a a_i - -a^\dagger_i a_a
-                qulacs_generator = qulacs_jordan_wigner(generator)
-                return qulacs_generator
-            
-            
-def gen_p_t2(aa, ia, ab, ib):      
-    # Generate pair dobule excitations
-                generator = FermionOperator((
-                    (aa, 1),
-                    (ab, 1),
-                    (ib, 0),
-                    (ia, 0)),
-                    1.0)
-                generator += FermionOperator((
-                    (ia, 1),
-                    (ib, 1),
-                    (ab, 0),
-                    (aa, 0)),
-                    -1.0)
-                qulacs_generator = qulacs_jordan_wigner(generator)
-                return qulacs_generator
-
-
 def add_parametric_multi_Pauli_rotation_gate(circuit, indices, 
                                              pauli_ids, theta, 
                                              parameter_ref_index=None, 
@@ -123,113 +83,3 @@ def add_parametric_circuit_using_generator(circuit,
                         theta, parameter_ref_index=param_index,
                         parameter_coef=coef*pauli_coef)
     return circuit
-
-
-def add_theta_value_offset(theta_offsets, generator, ioff):
-    pauli_coef_lists = []
-    for i in range(generator.get_term_count()):
-        pauli = generator.get_term(i)
-        pauli_coef_lists.append(pauli.get_coef().imag) #coef should be pure imaginary
-    if isinstance(theta_offsets, np.ndarray):
-        np.append(theta_offsets, [generator.get_term_count(), ioff, 
-                          pauli_coef_lists])
-    else:
-        theta_offsets.append([generator.get_term_count(), ioff, 
-                          pauli_coef_lists])
-    ioff = ioff + generator.get_term_count()
-    return theta_offsets, ioff
-
-
-"""
-def update_circuit_param(circuit, theta_list, theta_offsets):
-    for idx, theta in enumerate(theta_list):
-        for ioff in range(theta_offsets[idx][0]):
-            pauli_coef = theta_offsets[idx][2][ioff]
-            circuit.set_parameter(theta_offsets[idx][1]+ioff, 
-                                  theta*pauli_coef) #量子回路にパラメータをセット
-            #print (theta_offsets[idx][1]+ioff)
-    return circuit
-"""
-
-def UCCSD1(n_qubit, nocc, nvirt):
-    """UCCSD1
-    Returns UCCSD1 circuit.
-
-    """
-    theta_offsets = []
-    circuit = ParametricQuantumCircuit(n_qubit)
-    ioff = 0
-
-    # Singles
-    spin_index_functions = [up_index, down_index]
-    for i_t1, (a, i) in enumerate(
-        itertools.product(range(nvirt), range(nocc))):
-        a_spatial = a + nocc
-        i_spatial = i
-        for ispin in range(2):
-            #Spatial Orbital Indices
-            so_index = spin_index_functions[ispin]
-            a_spin_orbital = so_index(a_spatial)
-            i_spin_orbital = so_index(i_spatial)
-            #t1 operator
-            qulacs_generator = gen_t1(a_spin_orbital,
-                                      i_spin_orbital)
-            #Add t1 into the circuit
-            theta = 0.0
-            theta_offsets, ioff = add_theta_value_offset(theta_offsets,
-                                                      qulacs_generator,
-                                                      ioff)
-            circuit = add_parametric_circuit_using_generator(circuit,
-                                                   qulacs_generator,
-                                                   theta,i_t1,1.0)
-
-
-
-    # Dobules
-    for i_t2, (a, i, b, j) in enumerate(
-            itertools.product(range(nvirt), range(nocc), range(nvirt), range(nocc))):
-
-            a_spatial = a + nocc
-            i_spatial = i
-            b_spatial = b + nocc
-            j_spatial = j
-
-            #Spatial Orbital Indices
-            aa = up_index(a_spatial)
-            ia = up_index(i_spatial)
-            bb = down_index(b_spatial)
-            jb = down_index(j_spatial)
-            #t1 operator
-            qulacs_generator = gen_p_t2(aa, ia,
-                                      bb, jb)
-            #Add p-t2 into the circuit
-            theta = 0.0
-            theta_offsets, ioff = add_theta_value_offset(theta_offsets,
-                                                      qulacs_generator,
-                                                      ioff)
-            circuit = add_parametric_circuit_using_generator(circuit,
-                                                   qulacs_generator,
-                                                   theta,i_t2,1.0)
-
-    return circuit, theta_offsets
-
-def convert_openfermion_op(n_qubit, openfermion_op):
-    """convert_openfermion_op
-
-    Args:
-        n_qubit (:class:`int`)
-        openfermion_op (:class:`openfermion.ops.QubitOperator`)
-    Returns:
-        :class:`qulacs.Observable`
-    """
-    ret = Observable(n_qubit)
-
-    for pauli_product in openfermion_op.terms:
-        coef = float(np.real(openfermion_op.terms[pauli_product]))
-        pauli_string = ''
-        for pauli_operator in pauli_product:
-            pauli_string += pauli_operator[1] + ' ' + str(pauli_operator[0])
-            pauli_string += ' '
-        ret.add_operator(coef, pauli_string[:-1])
-
-    return ret

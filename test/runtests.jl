@@ -1,6 +1,6 @@
 using QCMaterial
 using Test
 
-@testset "QCMaterial.jl" begin
-    # Write your tests here.
+@testset "uccsd" begin
+    @test 
 end
