@@ -41,17 +41,21 @@ end
 """
 Returns UCCSD1 circuit.
 """
-function uccsd1(n_qubit, nocc, nvirt)
+function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
     theta_offsets = []
     circuit = qulacs.ParametricQuantumCircuit(n_qubit)
     ioff = 0
 
+    norb = nvirt + nocc
+    norb_cr = if orbital_rot ? norb : nvirt
+    norb_anh = if orbital_rot ? norb: nocc
+
     # Singles
     spin_index_functions = [up_index, down_index]
-    for (i_t1, (a, i)) in enumerate(Iterators.product(1:nvirt, 1:nocc))
+    for (i_t1, (a, i)) in enumerate(Iterators.product(1:norb_cr, 1:norb_anh))
         a_spatial = a + nocc
         i_spatial = i
-	for ispin in 1:2
+	    for ispin in 1:2
             #Spatial Orbital Indices
             so_index = spin_index_functions[ispin]
             a_spin_orbital = so_index(a_spatial)

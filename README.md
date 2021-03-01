@@ -8,11 +8,11 @@
 
 ## Launch a notebook server
 This project is activated automatically when
-you launch a server in the project dictory.
+you launch a server in the project directory.
 
 ```bash
 $ cd $(PROJECTDIR)
-$ julia lab
+$ jupyter lab
 ```
 
 ## Run tests
