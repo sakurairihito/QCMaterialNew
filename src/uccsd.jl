@@ -47,14 +47,12 @@ function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
     ioff = 0
 
     norb = nvirt + nocc
-    norb_cr = if orbital_rot ? norb : nvirt
-    norb_anh = if orbital_rot ? norb: nocc
-
+    cr_range = orbital_rot ? (1:norb) : (1+nocc:norb)
+    anh_range = orbital_rot ? (1:norb) : (1:nocc)
+    
     # Singles
     spin_index_functions = [up_index, down_index]
-    for (i_t1, (a, i)) in enumerate(Iterators.product(1:norb_cr, 1:norb_anh))
-        a_spatial = a + nocc
-        i_spatial = i
+    for (i_t1, (a_spatial, i_spatial)) in enumerate(Iterators.product(cr_range, anh_range))
 	    for ispin in 1:2
             #Spatial Orbital Indices
             so_index = spin_index_functions[ispin]

@@ -13,6 +13,7 @@ Args:
 Returns:
     :class:`qulacs.GeneralQuantumOperator`
 """
+
 function parse_of_general_operators(num_qubits, openfermion_operators)
     ret = qulacs.GeneralQuantumOperator(num_qubits)
     for (pauli_product, coef) in openfermion_operators.terms
@@ -24,6 +25,7 @@ function parse_of_general_operators(num_qubits, openfermion_operators)
     end
     ret
 end
+
 
 function count_qubit_in_qubit_operator(op)
     n_qubits = 0
@@ -37,6 +39,8 @@ function count_qubit_in_qubit_operator(op)
     n_qubits+1
 end
 
+
+
 """
 wrapper for openfermion.jordan_wigner which directly converts 
 openfermion.FermionOperator to qulacs.GeneralQuantumOperator
@@ -48,12 +52,16 @@ Args:
 Return:
     qulacs.GeneralQuantumOperator
 """
+
 function qulacs_jordan_wigner(fermion_operator, n_qubits=nothing)
     qubit_operator = ofermion.transforms.jordan_wigner(fermion_operator)
     _n_qubits = n_qubits === nothing ? count_qubit_in_qubit_operator(qubit_operator) : n_qubits
     qulacs_operator = parse_of_general_operators(_n_qubits, qubit_operator)
     return qulacs_operator
 end
+
+
+
 
 
 """
