@@ -12,15 +12,19 @@ jobs:
         version:
           - '1.0'
           - '1.4'
-          - 'nightly'
+          #- 'nightly'
         os:
           - ubuntu-latest
-          - macOS-latest
-          - windows-latest
+          #- macOS-latest
+          #- windows-latest
         arch:
           - x64
     steps:
       - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
@@ -36,12 +40,18 @@ jobs:
             ${{ runner.os }}-test-
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@v1
+        env:
+          PYTHON : "${{ env.pythonLocation }}/bin/python"
       - uses: julia-actions/julia-runtest@v1
   docs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'

@@ -59,7 +59,7 @@ function compute_rhoij!(rhoij, evecs, nelec)
     N = size(rhoij)[1]
     for e in 1:nelec
         for i in 1:N, j in 1:N
-           rhoij[i, j] += evecs[i,e] * evecs[j,e]
+           rhoij[i, j] += conj(evecs[i,e]) * evecs[j,e]
         end
     end
 end
