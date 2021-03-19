@@ -73,16 +73,40 @@ function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
 
 
     # Dobules (different spins)
+#    for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
+#            a_spatial = a + nocc
+#            i_spatial = i
+#            b_spatial = b + nocc
+#            j_spatial = j
+#
+#            #Spatial Orbital Indices
+#            aa = up_index(a_spatial)
+#            ia = up_index(i_spatial)
+#            bb = down_index(b_spatial)
+#            jb = down_index(j_spatial)
+##            #t1 operator
+#            qulacs_generator = gen_p_t2(aa, ia, bb, jb)
+#            #Add p-t2 into the circuit
+#            theta = 0.0
+#            theta_offsets, ioff = add_theta_value_offset!(theta_offsets,
+#                                                   qulacs_generator,
+#                                                   ioff)
+#            add_parametric_circuit_using_generator!(circuit,
+#                                                   qulacs_generator,
+#                                                   theta)
+#    end
+    
+        # Dobules (different spins)
     for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
-            a_spatial = a + nocc
+            a_spatial = a 
             i_spatial = i
             b_spatial = b + nocc
-            j_spatial = j
+            j_spatial = j + nocc
 
             #Spatial Orbital Indices
-            aa = up_index(a_spatial)
+            aa = down_index(a_spatial)
             ia = up_index(i_spatial)
-            bb = down_index(b_spatial)
+            bb = up_index(b_spatial)
             jb = down_index(j_spatial)
             #t1 operator
             qulacs_generator = gen_p_t2(aa, ia, bb, jb)
