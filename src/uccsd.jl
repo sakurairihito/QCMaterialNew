@@ -39,9 +39,9 @@ end
 
 
 """
-Returns UCCSD1 circuit.
+Returns UCCGSD circuit.
 """
-function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
+function uccgsd(n_qubit, nocc, nvirt, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true)
     theta_offsets = []
     circuit = qulacs.ParametricQuantumCircuit(n_qubit)
     ioff = 0
@@ -49,15 +49,20 @@ function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
     norb = nvirt + nocc
     cr_range = orbital_rot ? (1:norb) : (1+nocc:norb)
     anh_range = orbital_rot ? (1:norb) : (1:nocc)
+
+    so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
+    sz = [1, -1]
     
     # Singles
     spin_index_functions = [up_index, down_index]
     for (i_t1, (a_spatial, i_spatial)) in enumerate(Iterators.product(cr_range, anh_range))
-	    for ispin in 1:2
+	    for ispin1 in 1:2, ispin2 in 1:2
+            if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
+                continue
+            end
             #Spatial Orbital Indices
-            so_index = spin_index_functions[ispin]
-            a_spin_orbital = so_index(a_spatial)
-            i_spin_orbital = so_index(i_spatial)
+            a_spin_orbital = so_idx(a_spatial, ispin1)
+            i_spin_orbital = so_idx(i_spatial, ispin2)
             #t1 operator
             qulacs_generator = gen_t1(a_spin_orbital, i_spin_orbital)
             #Add t1 into the circuit
@@ -72,19 +77,18 @@ function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
     end
 
 
-    # Dobules (different spins)
-    for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
-            a_spatial = a + nocc
-            i_spatial = i
-            b_spatial = b + nocc
-            j_spatial = j
-
+    for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
+        for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
+            if conserv_Sz_doubles && sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
+                continue
+            end
             #Spatial Orbital Indices
-            aa = up_index(a_spatial)
-            ia = up_index(i_spatial)
-            bb = down_index(b_spatial)
-            jb = down_index(j_spatial)
-            #t1 operator
+            aa = so_idx(a, spin_a)
+            ia = so_idx(i, spin_i)
+            bb = so_idx(b, spin_b)
+            jb = so_idx(j, spin_j)
+
+            #t2 operator
             qulacs_generator = gen_p_t2(aa, ia, bb, jb)
             #Add p-t2 into the circuit
             theta = 0.0
@@ -94,59 +98,9 @@ function uccsd1(n_qubit, nocc, nvirt, orbital_rot=false)
             add_parametric_circuit_using_generator!(circuit,
                                                    qulacs_generator,
                                                    theta)
+        end
     end
-    
-    # Dobules (alpha spins)
-    for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
-            a_spatial = a + nocc
-            i_spatial = i
-            b_spatial = b + nocc
-            j_spatial = j
-            
-            if i !=j && a != b
-                #Spatial Orbital Indices
-                aa = up_index(a_spatial)
-                ia = up_index(i_spatial)
-                ba = up_index(b_spatial)
-                ja = up_index(j_spatial)
-                #t2 operator
-                qulacs_generator = gen_p_t2(aa, ia, ba, ja)
-                #Add p-t2 into the circuit
-                theta = 0.0
-                theta_offsets, ioff = add_theta_value_offset!(theta_offsets,
-                                                       qulacs_generator,
-                                                       ioff)
-                add_parametric_circuit_using_generator!(circuit,
-                                                       qulacs_generator,
-                                                       theta)
-            end
-    end
-    
-    # Dobules (beta spins)
-    for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
-            a_spatial = a + nocc
-            i_spatial = i
-            b_spatial = b + nocc
-            j_spatial = j
-            
-            if i !=j && a != b
-                #Spatial Orbital Indices
-                ab = down_index(a_spatial)
-                ib = down_index(i_spatial)
-                bb = down_index(b_spatial)
-                jb = down_index(j_spatial)
-                #t2 operator
-                qulacs_generator = gen_p_t2(ab, ib, bb, jb)
-                #Add p-t2 into the circuit
-                theta = 0.0
-                theta_offsets, ioff = add_theta_value_offset!(theta_offsets,
-                                                       qulacs_generator,
-                                                       ioff)
-                add_parametric_circuit_using_generator!(circuit,
-                                                       qulacs_generator,
-                                                       theta)
-            end
-    end
+
     
     circuit, theta_offsets
 end
