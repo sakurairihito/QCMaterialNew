@@ -77,6 +77,7 @@ function uccgsd(n_qubit, nocc, nvirt, orbital_rot=false, conserv_Sz_doubles=true
     end
 
 
+<<<<<<< HEAD
     for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
         for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
             if conserv_Sz_doubles && sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
@@ -89,6 +90,45 @@ function uccgsd(n_qubit, nocc, nvirt, orbital_rot=false, conserv_Sz_doubles=true
             jb = so_idx(j, spin_j)
 
             #t2 operator
+=======
+    # Dobules (different spins)
+#    for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
+#            a_spatial = a + nocc
+#            i_spatial = i
+#            b_spatial = b + nocc
+#            j_spatial = j
+#
+#            #Spatial Orbital Indices
+#            aa = up_index(a_spatial)
+#            ia = up_index(i_spatial)
+#            bb = down_index(b_spatial)
+#            jb = down_index(j_spatial)
+##            #t1 operator
+#            qulacs_generator = gen_p_t2(aa, ia, bb, jb)
+#            #Add p-t2 into the circuit
+#            theta = 0.0
+#            theta_offsets, ioff = add_theta_value_offset!(theta_offsets,
+#                                                   qulacs_generator,
+#                                                   ioff)
+#            add_parametric_circuit_using_generator!(circuit,
+#                                                   qulacs_generator,
+#                                                   theta)
+#    end
+    
+        # Dobules (different spins)
+    for (i_t2, (a, i, b, j)) in enumerate(Iterators.product(1:nvirt, 1:nocc, 1:nvirt, 1:nocc))
+            a_spatial = a 
+            i_spatial = i
+            b_spatial = b + nocc
+            j_spatial = j + nocc
+
+            #Spatial Orbital Indices
+            aa = down_index(a_spatial)
+            ia = up_index(i_spatial)
+            bb = up_index(b_spatial)
+            jb = down_index(j_spatial)
+            #t1 operator
+>>>>>>> ba3651bbebd402248339b84f6113c1c769f64db2
             qulacs_generator = gen_p_t2(aa, ia, bb, jb)
             #Add p-t2 into the circuit
             theta = 0.0
