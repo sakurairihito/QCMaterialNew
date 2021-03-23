@@ -20,7 +20,6 @@ end
 
 @testset "uccsd.uccgsd" begin
     # construct hamiltonian
-    plt = pyimport("matplotlib.pyplot")
     of = pyimport("openfermion")
     ofpyscf = pyimport("openfermionpyscf")
     qulacs = pyimport("qulacs")
