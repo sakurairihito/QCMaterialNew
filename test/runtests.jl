@@ -100,8 +100,8 @@ end
     opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback)
 
     EigVal_min = minimum(enes_ed)
-    println("EigVal_min=",EigVal_min)
-    println("cost_history_end=",cost_history[end])
+    #println("EigVal_min=",EigVal_min)
+    #println("cost_history_end=",cost_history[end])
     @test abs(EigVal_min-cost_history[end]) < 1e-6 
 end
 
