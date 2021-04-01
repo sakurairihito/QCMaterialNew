@@ -17,5 +17,6 @@ end
 include("util.jl")
 include("uccsd.jl")
 include("hartree_fock.jl")
+include("mpi.jl")
 
 end

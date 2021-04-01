@@ -5,6 +5,7 @@ using PyCall
 import PyCall: pyimport
 import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index
 
+include("mpi.jl")
 
 @testset "util.topylist" begin
     org_array = [1, 2, 3.0]

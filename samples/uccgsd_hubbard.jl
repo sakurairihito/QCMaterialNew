@@ -1,6 +1,8 @@
-import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index
+import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index, numerical_grad
+import QCMaterial.mpi
 using PyCall
 using LinearAlgebra
+using MPI
 
 plt = pyimport("matplotlib.pyplot")
 of = pyimport("openfermion")
@@ -85,30 +87,6 @@ function eval_energy(circuit, qulacs_hamiltonian, theta_list, theta_offsets, n_q
     qulacs_hamiltonian.get_expectation_value(state) #ハミルトニアンの期待値
 end
 
-"""
-Compute partial derivative of a given function at a point x
-"""
-function numerical_grad(f, x::Vector{Float64}, dx=1e-8)
-    deriv = similar(x)
-    x_new1 = copy(x)
-    x_new2 = copy(x)
-    f_current = f(x)
-    for i in eachindex(x)
-        x_new1[i] += dx
-        x_new2[i] -= dx
-        deriv[i] = (f(x_new1) - f(x_new2))/(2*dx)
-        x_new1[i] = x_new2[i] = x[i]
-    end
-    deriv
-end
-
-# Some test for numerical_grad
-"""
-f(x) = x[1] + 2*x[2]
-deriv = numerical_grad(f, zeros(2))
-println(deriv)
-@assert deriv ≈ [1.0, 2.0]
-"""
 
 function update_circuit_param!(circuit::PyObject, theta_list, theta_offsets)
     for (idx, theta) in enumerate(theta_list)
@@ -138,7 +116,13 @@ function construct_circuit(hamiltonian)
     circuit, theta_offsets, qulacs_hamiltonian
 end
 
-function solve(hamiltonian, n_electron, theta_init=nothing)
+function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
+    if comm === nothing
+        rank = 0
+    else
+        rank = MPI.Comm_rank(comm)
+    end
+
     ham = hamiltonian.ham
     n_qubit = 2*hamiltonian.n_sites
 
@@ -150,21 +134,41 @@ function solve(hamiltonian, n_electron, theta_init=nothing)
     sparse_mat = get_number_preserving_sparse_operator(ham, n_qubit, n_electron)　#行列の取得
     enes_ed = eigvals(sparse_mat.toarray())　#対角化を行う
     EigVal_min = minimum(enes_ed)
-    println("Exact ground-state energy = $(EigVal_min)")
+    if rank == 0
+        println("Exact ground-state energy = $(EigVal_min)")
+    end
 
     # Construct circuit
     circuit, theta_offsets, qulacs_hamiltonian = construct_circuit(hamiltonian)
-    println("Number of Qubits:", n_qubit)
-    println("Number of Electrons:", n_electron)
+    if rank == 0
+        println("Number of Qubits:", n_qubit)
+        println("Number of Electrons:", n_electron)
+    end
 
     # Define a cost function
     cost(theta_list) = eval_energy(circuit, qulacs_hamiltonian, theta_list, theta_offsets, n_qubit)
 
     # Define the gradient of the cost function
-    grad_cost(theta_list) = numerical_grad(cost, theta_list)
+    function grad_cost(theta_list)
+        if comm === nothing
+            first_idx, size = 1, length(theta_list)
+        else
+            first_idx, size = mpi.distribute(length(theta_list), MPI.Comm_size(comm), MPI.Comm_rank(comm))
+        end
+        last_idx = first_idx + size - 1
+        res = numerical_grad(cost, theta_list, first_idx=first_idx, last_idx=last_idx)
+        if comm !== nothing
+            res = MPI.Allreduce(res, MPI.SUM, comm)
+        end
+        res
+    end
 
     if theta_init === nothing
         theta_init = rand(size(theta_offsets)[1])
+        if comm !== nothing
+            # Make sure all processes use the same initial values
+            MPI.Bcast!(theta_init, 0, comm)
+        end
     end
     cost_history = Float64[] #コスト関数の箱
     init_theta_list = theta_init
@@ -177,22 +181,3 @@ function solve(hamiltonian, n_electron, theta_init=nothing)
 
     return cost_history, circuit, EigVal_min, opt
 end
-
-"""
-nsite = 2
-ham = generate_ham(nsite)
-n_electron = 2
-cost_history, circuit, exact_gs_ene, opt = solve(ham, n_electron)
-println("cost_history", cost_history)
-println(opt["x"])
-
-# TODO: save optimized parameters, i.e., theta_list
-import PyPlot
-PyPlot.plot(cost_history, color="red", label="VQE")
-PyPlot.plot(1:length(cost_history), fill(exact_gs_ene, length(cost_history)),
-    linestyle="dashed", color="black", label="Exact Solution")
-PyPlot.xlabel("Iteration")
-PyPlot.ylabel("Energy expectation value")
-PyPlot.legend()
-PyPlot.savefig("cost_history.pdf")
-"""
