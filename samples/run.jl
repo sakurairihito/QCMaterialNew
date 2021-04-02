@@ -8,9 +8,9 @@ MPI.Init()
 comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
 
-nsite = 2
+nsite = 4
 ham = generate_ham(nsite)
-n_electron = 2
+n_electron = 4
 cost_history, circuit, exact_gs_ene, opt = solve(ham, n_electron, comm=comm)
 
 if rank == 0

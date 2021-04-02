@@ -20,3 +20,8 @@ $ jupyter lab
 $ cd $(PROJECTDIR)
 $ julia --project=@. test/runtests.jl
 ```
+
+## Run a script file depending on QCMaterial
+``bash
+mpirun -np 2 julia --project=~/.julia/dev/QCMaterial ~/.julia/dev/QCMaterial/samples/run.jl
+`` 

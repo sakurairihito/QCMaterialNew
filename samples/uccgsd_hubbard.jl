@@ -146,10 +146,13 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     end
 
     # Define a cost function
-    cost(theta_list) = eval_energy(circuit, qulacs_hamiltonian, theta_list, theta_offsets, n_qubit)
+    function cost(theta_list)
+        eval_energy(circuit, qulacs_hamiltonian, theta_list, theta_offsets, n_qubit)
+    end
 
     # Define the gradient of the cost function
     function grad_cost(theta_list)
+        t1 = time_ns()
         if comm === nothing
             first_idx, size = 1, length(theta_list)
         else
@@ -159,6 +162,10 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
         res = numerical_grad(cost, theta_list, first_idx=first_idx, last_idx=last_idx)
         if comm !== nothing
             res = MPI.Allreduce(res, MPI.SUM, comm)
+        end
+        t2 = time_ns()
+        if rank == 0
+            println("g: ", (t2-t1)*1e-9)
         end
         res
     end
@@ -175,9 +182,15 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     push!(cost_history, cost(init_theta_list))
     
     method = "BFGS"
-    options = Dict("disp" => true, "maxiter" => 100, "gtol" => 1e-5)
-    callback(x) = push!(cost_history, cost(x))
-    opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback, jac=grad_cost)
+    options = Dict("disp" => true, "maxiter" => 200, "gtol" => 1e-5)
+    function callback(x)
+        push!(cost_history, cost(x))
+        if rank == 0
+            println("length ", length(cost_history))
+        end
+    end
+    opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback, jac=grad_cost,
+        options=options)
 
     return cost_history, circuit, EigVal_min, opt
 end
