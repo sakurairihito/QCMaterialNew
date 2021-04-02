@@ -1,4 +1,4 @@
-export topylist, doublefunc
+export topylist, doublefunc, numerical_grad
 import PyCall: PyVector
 
 up_index(i) = 2*(i-1)
@@ -122,4 +122,20 @@ function topylist(array::Array{T}) where T
         push!(pylist, x)
     end
     pylist
+end
+
+"""
+Compute partial derivative of a given function at a point x
+"""
+function numerical_grad(f, x::Vector{Float64}; dx=1e-8, first_idx=1, last_idx=length(x))
+    deriv = zero(x)
+    x_new1 = copy(x)
+    x_new2 = copy(x)
+    for i in first_idx:last_idx
+        x_new1[i] += dx
+        x_new2[i] -= dx
+        deriv[i] = (f(x_new1) - f(x_new2))/(2*dx)
+        x_new1[i] = x_new2[i] = x[i]
+    end
+    deriv
 end
