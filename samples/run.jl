@@ -1,12 +1,13 @@
-include("uccgsd_hubbard.jl")
-
 using HDF5
+
 import MPI
 
-# Initialize MPI environment
+# Initialize MPI environment before loading QCMaterial
 MPI.Init()
 comm = MPI.COMM_WORLD
 rank = MPI.Comm_rank(comm)
+
+include("uccgsd_hubbard.jl")
 
 nsite = 4
 ham = generate_ham(nsite)

@@ -1,4 +1,4 @@
-export uccsd1, convert_openfermion_op, add_parametric_circuit_using_generator!, add_parametric_multi_Pauli_rotation_gate!
+export uccgsd, convert_openfermion_op, add_parametric_circuit_using_generator!, add_parametric_multi_Pauli_rotation_gate!
 
 """
 Generate single excitations

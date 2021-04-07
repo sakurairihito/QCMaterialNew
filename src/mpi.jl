@@ -1,8 +1,7 @@
-module mpi
+import MPI
 
-export distribute
-
-using MPI
+MPI_rank = MPI.Comm_rank(MPI.COMM_WORLD)
+MPI_size = MPI.Comm_size(MPI.COMM_WORLD)
 
 function distribute(size, comm_size, rank)
     """
@@ -38,6 +37,4 @@ function distribute(size, comm_size, rank)
         start = (base+1) * leftover + (rank-leftover) * base + 1
     end
     return start, size
-end
-
 end

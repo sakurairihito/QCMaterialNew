@@ -1,9 +1,10 @@
 export topylist, doublefunc, numerical_grad
 import PyCall: PyVector
 
+export up_index, down_index, update_circuit_param!
+
 up_index(i) = 2*(i-1)
 down_index(i) = 2*(i-1)+1
-
 
 """
 Convert openfermion operator for generic cases (non-Hermitian operators)
@@ -122,6 +123,17 @@ function topylist(array::Array{T}) where T
         push!(pylist, x)
     end
     pylist
+end
+
+
+function update_circuit_param!(circuit, theta_list::Vector{Float64}, theta_offsets)
+    for (idx, theta) in enumerate(theta_list)
+    for ioff in 1:theta_offsets[idx][1]
+            pauli_coef = theta_offsets[idx][3][ioff]
+            circuit.set_parameter(theta_offsets[idx][2]+ioff-1, 
+                              theta*pauli_coef) 
+        end
+    end
 end
 
 """

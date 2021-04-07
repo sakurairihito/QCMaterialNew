@@ -1,8 +1,6 @@
-import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index, numerical_grad
-import QCMaterial.mpi
+import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index, numerical_grad, distribute
 using PyCall
 using LinearAlgebra
-using MPI
 
 plt = pyimport("matplotlib.pyplot")
 of = pyimport("openfermion")
@@ -156,7 +154,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
         if comm === nothing
             first_idx, size = 1, length(theta_list)
         else
-            first_idx, size = mpi.distribute(length(theta_list), MPI.Comm_size(comm), MPI.Comm_rank(comm))
+            first_idx, size = distribute(length(theta_list), MPI.Comm_size(comm), MPI.Comm_rank(comm))
         end
         last_idx = first_idx + size - 1
         res = numerical_grad(cost, theta_list, first_idx=first_idx, last_idx=last_idx)
@@ -186,7 +184,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     function callback(x)
         push!(cost_history, cost(x))
         if rank == 0
-            println("length ", length(cost_history))
+            println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
     opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback, jac=grad_cost,

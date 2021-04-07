@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p defq
-#SBATCH -n 20
+#SBATCH -n 10
 #SBATCH -J uccgsd_hubbard
 #SBATCH -o stdout.%J
 #SBATCH -e stderr.%J

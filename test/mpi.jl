@@ -1,5 +1,10 @@
-using MPI
 using Test
+
+using MPI
+
+# Call MPI.Init() before loading QCMaterial.mpi
+MPI.Init()
+
 using QCMaterial.mpi
 
 @testset "mpi.distribute" begin
