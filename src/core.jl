@@ -1,39 +1,62 @@
-export Circuit, QulacsCircuit
+export QulacsParametricQuantumCircuit
 export num_theta, num_pauli, pauli_coeff, theta_offset
+
 export QuantumState, QulacsQuantumState
 export set_computational_basis!, create_hf_state
 export FermionOperator, jordan_wigner, get_number_preserving_sparse_operator
+
 export QubitOperator, OFQubitOperator
+export get_term_count, n_qubit, terms_dict
+
 export get_expectation_value, create_operator_from_openfermion
-export update_quantum_state!, update_circuit_param!
+export update_quantum_state!, update_circuit_param!, get_circuit_param
 export hermitian_conjugated
 export create_observable
 
 using PyCall
 
+
+up_index(i) = 2*(i-1)
+down_index(i) = 2*(i-1)+1
+
+@enum PauliID pauli_I=0 pauli_X=1 pauli_Y=2 pauli_Z=3
+pauli_id_lookup = Dict("I"=>pauli_I, "X"=>pauli_X, "Y"=>pauli_Y, "Z"=>pauli_Z)
+
 ################################################################################
-############################### CIRCUIT ########################################
+############################# QUANTUM  CIRCUIT #################################
 ################################################################################
-abstract type Circuit end
-struct QulacsCircuit <: Circuit
-    qulacs_circuit
-    theta_offsets
+abstract type ParametricQuantumCircuit end
+struct QulacsParametricQuantumCircuit <: ParametricQuantumCircuit
+    pyobj::PyObject
+    thetas::Vector{Float64}
+    # Vector of (num_term_count::Int64, ioff::Int64, pauli_coeffs::Float64)
+    theta_offsets::Vector{Tuple{Int64, Int64, Vector{Float64}}}
 end
 
-function num_theta(circuit::QulacsCircuit)
+function num_theta(circuit::QulacsParametricQuantumCircuit)
     size(circuit.theta_offsets)[1]
 end
 
-function num_pauli(circuit::QulacsCircuit, idx_theta::Int)
+function num_pauli(circuit::QulacsParametricQuantumCircuit, idx_theta::Int)
     circuit.theta_offsets[idx_theta][1]
 end
 
-function pauli_coeff(circuit::QulacsCircuit, idx_theta::Int, idx_pauli::Int)
+function pauli_coeff(circuit::QulacsParametricQuantumCircuit, idx_theta::Int, idx_pauli::Int)
     circuit.theta_offsets[idx_theta][3][idx_pauli]
 end
 
-function theta_offset(circuit::QulacsCircuit, idx_theta::Int)
+function theta_offset(circuit::QulacsParametricQuantumCircuit, idx_theta::Int)
     circuit.theta_offsets[idx_theta][2]
+end
+
+function add_parametric_multi_Pauli_rotation_gate!(circuit::QulacsParametricQuantumCircuit,
+    pauli_indices::Vector{Int}, pauli_ids::Vector{PauliID}, theta_init::Float64=0.0)
+    circuit.pyobj.add_parametric_multi_Pauli_rotation_gate(
+        pauli_indices, Int.(pauli_ids), theta_init)
+end
+
+function QulacsParametricQuantumCircuit(n_qubit::Int)
+    QulacsParametricQuantumCircuit(qulacs.ParametricQuantumCircuit(n_qubit), [], [])
 end
 
 
@@ -97,11 +120,6 @@ end
 
 function jordan_wigner(op::FermionOperator)
     OFQubitOperator(ofermion.transforms.jordan_wigner(op.pyobj))
-    #OFQubitOperator(
-        #qulacs.observable.create_observable_from_openfermion_text(
-            #ofermion.transforms.jordan_wigner(ham.pyobj).__str__()
-        #)
-    #)
 end
 
 ################################################################################
@@ -112,6 +130,10 @@ abstract type QubitOperator end
 # Wrap openfermion.ops.operators.qubit_operator.QubitOperator
 struct OFQubitOperator <: QubitOperator
     pyobj
+end
+
+function OFQubitOperator(str::String, coeff::Number=1.0)
+    return OFQubitOperator(ofermion.ops.operators.qubit_operator.QubitOperator(str, coeff))
 end
 
 function Base.:+(op1::OFQubitOperator, op2::OFQubitOperator)
@@ -126,6 +148,23 @@ function Base.:/(op::OFQubitOperator, x::Number)
     OFQubitOperator(op.pyobj/x)
 end
 
+function hermitian_conjugated(op::OFQubitOperator)
+    OFQubitOperator(ofermion.utils.hermitian_conjugated(op.pyobj))
+end
+
+function n_qubit(op::OFQubitOperator)
+    count_qubit_in_qubit_operator(op.pyobj)
+end
+
+function get_term_count(op::OFQubitOperator)
+    length(op.pyobj.terms)
+end
+
+function terms_dict(op::OFQubitOperator)::Dict{Any,Any}
+    op.pyobj.terms
+end
+
+
 ################################################################################
 ############################# Observable #######################################
 ################################################################################
@@ -136,8 +175,9 @@ struct QulacsObservable <: Observable
     qulacsobj
 end
 
-function create_observable(op::OFQubitOperator, n_qubit::Int)
-    QulacsObservable(convert_openfermion_op(n_qubit, op.pyobj))
+function create_observable(op::OFQubitOperator, n_qubit::Int=nothing)
+    _n_qubit = n_qubit === nothing ? n_qubit(op) : n_qubit
+    QulacsObservable(convert_openfermion_op(_n_qubit, op.pyobj))
 end
 
 function get_expectation_value(obs::QulacsObservable, state::QulacsQuantumState)
@@ -151,41 +191,27 @@ end
 """
 Update a state using a circuit
 """
-function update_quantum_state!(circuit::QulacsCircuit, state::QulacsQuantumState)
-    circuit.qulacs_circuit.update_quantum_state(state.pyobj)
+function update_quantum_state!(circuit::QulacsParametricQuantumCircuit, state::QulacsQuantumState)
+    circuit.pyobj.update_quantum_state(state.pyobj)
 end
 
 
 """
 Update circuit parameters
 """
-function update_circuit_param!(circuit::Circuit, thetas::Vector{Float64})
+function update_circuit_param!(circuit::QulacsParametricQuantumCircuit, thetas::Vector{Float64})
     if num_theta(circuit) != length(thetas)
         error("Invalid length of thetas!")
     end
     for (idx, theta) in enumerate(thetas)
         for ioff in 1:num_pauli(circuit, idx)
             pauli_coef = pauli_coeff(circuit, idx, ioff)
-            circuit.qulacs_circuit.set_parameter(
+            circuit.pyobj.set_parameter(
                 theta_offset(circuit, idx)+ioff-1, theta*pauli_coef) 
         end
     end
+    circuit.thetas .= thetas
 end
-
-
-"""
-Get circuit parameters
-"""
-#function get_circuit_param(circuit::Circuit)
-    #thetas = get_num_theta(circuit)
-    #for (idx, theta) in enumerate(theta_list)
-        #for ioff in 1:circuit.theta_offsets[idx][1]
-            #pauli_coef = circuit.theta_offsets[idx][3][ioff]
-            #circuit.qulacs_circuit.set_parameter(circuit.theta_offsets[idx][2]+ioff-1, 
-                              #theta*pauli_coef) 
-        #end
-    #end
-#end
 
 
 """
@@ -209,11 +235,34 @@ thetas:
 init_state:
     Initial state for which the circuit is applied to, |init_state>
 """
-#function apply_operator_and_fit(operator::QubitOperator, state::QuantumState, circuit::Circuit,
+#function fit_operator_and_state(operator::QubitOperator, state::QuantumState, circuit::ParametricQuantumCircuit,
     #thetas::Vector{Float64} init_state::QuantumState)
-#
 #end
 
-function hermitian_conjugated(op::OFQubitOperator)
-    OFQubitOperator(ofermion.utils.hermitian_conjugated(op.pyobj))
+"""
+Parse a tuple representing a Pauli string
+  When x is ((0, "X"), (5, "Y")), returns [0, 5], [PauliID.X, PauliID.Y]
+"""
+function parse_pauli_str(x)::Tuple{Vector{Int64}, Vector{PauliID}}
+    collect(e[1] for e in x), collect(pauli_id_lookup[e[2]] for e in x)
+end
+
+
+function add_parametric_circuit_using_generator!(circuit::ParametricQuantumCircuit, generator::QubitOperator,
+    theta::Float64) 
+    pauli_coeffs = Float64[]
+    for (pauli_str, pauli_coef) in terms_dict(generator)
+        pauli_index_list, pauli_id_list = parse_pauli_str(pauli_str)
+        if length(pauli_index_list) == 0
+            continue
+        end
+        pauli_coef = imag(pauli_coef) #coef should be pure imaginary
+        push!(pauli_coeffs, pauli_coef)
+        add_parametric_multi_Pauli_rotation_gate!(
+            circuit, pauli_index_list, pauli_id_list, pauli_coef*theta)
+    end
+    ioff = length(circuit.theta_offsets) == 0 ? 0 :
+        circuit.theta_offsets[end][2] + length(circuit.theta_offsets[end][3])
+    push!(circuit.thetas, theta)
+    push!(circuit.theta_offsets, (get_term_count(generator), ioff, pauli_coeffs))
 end
