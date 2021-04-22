@@ -1,5 +1,7 @@
 import MPI
 
+export distribute, MPI_rank, MPI_size
+
 if !MPI.Initialized()
     MPI.Init()
 end

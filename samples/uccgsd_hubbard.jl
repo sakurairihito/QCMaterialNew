@@ -1,20 +1,8 @@
-import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index,
-    numerical_grad, distribute, update_circuit_param!, update_quantum_state!, Circuit
+using QCMaterial
 using PyCall
 using LinearAlgebra
 
-plt = pyimport("matplotlib.pyplot")
-of = pyimport("openfermion")
-ofpyscf = pyimport("openfermionpyscf")
-qulacs = pyimport("qulacs")
-
 scipy_opt = pyimport("scipy.optimize")
-get_fermion_operator = of.transforms.get_fermion_operator
-jordan_wigner = of.transforms.jordan_wigner
-jw_get_ground_state_at_particle_number = of.linalg.sparse_tools.jw_get_ground_state_at_particle_number
-get_number_preserving_sparse_operator = of.linalg.get_number_preserving_sparse_operator
-FermionOperator = of.ops.operators.FermionOperator
-
 struct Hamiltonian
     ham
     n_sites
@@ -77,13 +65,11 @@ end
 """
 Evaluate energy
 """
-function eval_energy(circuit, qulacs_hamiltonian, theta_list, n_qubit)
-    # FIXME: n_qubit can be obtained from qulcas_hamiltonian?
-    state = qulacs.QuantumState(n_qubit) #|0000> を準備
-    state.set_computational_basis(hfstate(n_qubit, n_electron))# |0011>　
+function eval_energy(circuit, ham_obs, theta_list, n_qubit)
+    state = create_hf_state(n_qubit, n_electron) #|0000> を準備
     update_circuit_param!(circuit, theta_list) #量子回路にパラメータをセット
     update_quantum_state!(circuit, state) #量子回路を状態に作用
-    qulacs_hamiltonian.get_expectation_value(state) #ハミルトニアンの期待値
+    get_expectation_value(ham_obs, state) #ハミルトニアンの期待値
 end
 
 
@@ -95,14 +81,11 @@ function construct_circuit(hamiltonian)
     @assert n_electron <= hamiltonian.n_sites
 
     #JW変換
-    jw_hamiltonian = jordan_wigner(ham)
-    
-    #Qulacs用のハミルトニアンの作成
-    qulacs_hamiltonian = qulacs.observable.create_observable_from_openfermion_text(jw_hamiltonian.__str__())
+    ham_obs = create_observable(jordan_wigner(ham), n_qubit)
 
     # Prepare a circuit
     circuit = uccgsd(n_qubit, true)
-    circuit, qulacs_hamiltonian
+    circuit, ham_obs
 end
 
 function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
@@ -128,7 +111,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     end
 
     # Construct circuit
-    circuit, qulacs_hamiltonian = construct_circuit(hamiltonian)
+    circuit, ham_obs = construct_circuit(hamiltonian)
     if rank == 0
         println("Number of Qubits:", n_qubit)
         println("Number of Electrons:", n_electron)
@@ -136,7 +119,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
 
     # Define a cost function
     function cost(theta_list)
-        eval_energy(circuit, qulacs_hamiltonian, theta_list, n_qubit)
+        eval_energy(circuit, ham_obs, theta_list, n_qubit)
     end
 
     # Define the gradient of the cost function
