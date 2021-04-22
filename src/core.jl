@@ -261,8 +261,8 @@ function add_parametric_circuit_using_generator!(circuit::ParametricQuantumCircu
         add_parametric_multi_Pauli_rotation_gate!(
             circuit, pauli_index_list, pauli_id_list, pauli_coef*theta)
     end
-    ioff = length(circuit.theta_offsets) == 0 ? 0 :
-        circuit.theta_offsets[end][2] + length(circuit.theta_offsets[end][3])
+    num_thetas = num_theta(circuit)
+    ioff = num_thetas == 0 ? 0 : theta_offset(circuit, num_thetas) + num_pauli(circuit, num_thetas)
     push!(circuit.thetas, theta)
     push!(circuit.theta_offsets, (get_term_count(generator), ioff, pauli_coeffs))
 end
