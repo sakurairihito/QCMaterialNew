@@ -3,18 +3,11 @@ using LinearAlgebra
 using QCMaterial
 
 import PyCall: pyimport
+import Random
 
 @testset "ucc.uccgsd" begin
-    # construct hamiltonian
-    of = pyimport("openfermion")
-    ofpyscf = pyimport("openfermionpyscf")
-    qulacs = pyimport("qulacs")
+    Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
-    get_fermion_operator = of.transforms.get_fermion_operator
-    jordan_wigner = of.transforms.jordan_wigner
-    jw_get_ground_state_at_particle_number = of.linalg.sparse_tools.jw_get_ground_state_at_particle_number
-    get_number_preserving_sparse_operator = of.linalg.get_number_preserving_sparse_operator
-    FermionOperator = of.ops.operators.FermionOperator
 
     nsite = 2 
     n_qubit = 2*nsite 
@@ -36,7 +29,6 @@ import PyCall: pyimport
         ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t) 
     end
 
-
     for i in 1:nsite
         up = up_index(i)
         down = down_index(i)
@@ -50,20 +42,17 @@ import PyCall: pyimport
 
     enes_ed = eigvals(sparse_mat.toarray());　
 
-    jw_hamiltonian = jordan_wigner(ham);
-    qulacs_hamiltonian = qulacs.observable.create_observable_from_openfermion_text(jw_hamiltonian.__str__())
-    hfstate(n_qubit, n_electron) = parse(Int, repeat("0", n_qubit-n_electron) * repeat("1", n_electron), base=2)
+    ham_obs = create_observable(jordan_wigner(ham), n_qubit)
 
-    circuit, theta_offsets = uccgsd(n_qubit, n_electron÷2, (n_qubit-n_electron)÷2,true)
+    circuit = uccgsd(n_qubit, true)
     function cost(theta_list)
-        state = qulacs.QuantumState(n_qubit) 
-        state.set_computational_basis(hfstate(n_qubit, n_electron))
-        update_circuit_param!(circuit, theta_list, theta_offsets) 
-        circuit.update_quantum_state(state) 
-        qulacs_hamiltonian.get_expectation_value(state) 
+        state = create_hf_state(n_qubit, n_electron)
+        update_circuit_param!(circuit, theta_list) 
+        update_quantum_state!(circuit, state) 
+        get_expectation_value(ham_obs, state) 
     end
 
-    theta_init = rand(size(theta_offsets)[1])
+    theta_init = rand(num_theta(circuit))
     cost_history = Float64[] 
     init_theta_list = theta_init
     push!(cost_history, cost(init_theta_list))
@@ -74,7 +63,5 @@ import PyCall: pyimport
     opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback)
 
     EigVal_min = minimum(enes_ed)
-    #println("EigVal_min=",EigVal_min)
-    #println("cost_history_end=",cost_history[end])
     @test abs(EigVal_min-cost_history[end]) < 1e-6 
 end

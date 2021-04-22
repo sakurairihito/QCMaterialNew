@@ -12,5 +12,5 @@ function __init__()
 end
 
 include("hartree_fock.jl")
-include("hartree_fock.jl")
 include("util.jl")
+include("ucc.jl")

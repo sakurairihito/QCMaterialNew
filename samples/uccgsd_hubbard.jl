@@ -1,4 +1,5 @@
-import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index, numerical_grad, distribute
+import QCMaterial: uccgsd, convert_openfermion_op, up_index, down_index,
+    numerical_grad, distribute, update_circuit_param!, update_quantum_state!, Circuit
 using PyCall
 using LinearAlgebra
 
@@ -76,25 +77,15 @@ end
 """
 Evaluate energy
 """
-function eval_energy(circuit, qulacs_hamiltonian, theta_list, theta_offsets, n_qubit)
+function eval_energy(circuit, qulacs_hamiltonian, theta_list, n_qubit)
     # FIXME: n_qubit can be obtained from qulcas_hamiltonian?
     state = qulacs.QuantumState(n_qubit) #|0000> を準備
     state.set_computational_basis(hfstate(n_qubit, n_electron))# |0011>　
-    update_circuit_param!(circuit, theta_list, theta_offsets) #量子回路にパラメータをセット
-    circuit.update_quantum_state(state) #量子回路を状態に作用
+    update_circuit_param!(circuit, theta_list) #量子回路にパラメータをセット
+    update_quantum_state!(circuit, state) #量子回路を状態に作用
     qulacs_hamiltonian.get_expectation_value(state) #ハミルトニアンの期待値
 end
 
-
-function update_circuit_param!(circuit::PyObject, theta_list, theta_offsets)
-    for (idx, theta) in enumerate(theta_list)
-        for ioff in 1:theta_offsets[idx][1]
-            pauli_coef = theta_offsets[idx][3][ioff]
-            circuit.set_parameter(theta_offsets[idx][2]+ioff-1, 
-                                  theta*pauli_coef) #量子回路にパラメータをセット
-        end
-    end
-end
 
 function construct_circuit(hamiltonian)
     ham = hamiltonian.ham
@@ -110,8 +101,8 @@ function construct_circuit(hamiltonian)
     qulacs_hamiltonian = qulacs.observable.create_observable_from_openfermion_text(jw_hamiltonian.__str__())
 
     # Prepare a circuit
-    circuit, theta_offsets = uccgsd(n_qubit, n_electron÷2, (n_qubit-n_electron)÷2,true)
-    circuit, theta_offsets, qulacs_hamiltonian
+    circuit = uccgsd(n_qubit, true)
+    circuit, qulacs_hamiltonian
 end
 
 function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
@@ -137,7 +128,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     end
 
     # Construct circuit
-    circuit, theta_offsets, qulacs_hamiltonian = construct_circuit(hamiltonian)
+    circuit, qulacs_hamiltonian = construct_circuit(hamiltonian)
     if rank == 0
         println("Number of Qubits:", n_qubit)
         println("Number of Electrons:", n_electron)
@@ -145,7 +136,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
 
     # Define a cost function
     function cost(theta_list)
-        eval_energy(circuit, qulacs_hamiltonian, theta_list, theta_offsets, n_qubit)
+        eval_energy(circuit, qulacs_hamiltonian, theta_list, n_qubit)
     end
 
     # Define the gradient of the cost function
@@ -169,7 +160,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     end
 
     if theta_init === nothing
-        theta_init = rand(size(theta_offsets)[1])
+        theta_init = rand(size(circuit.theta_offsets)[1])
         if comm !== nothing
             # Make sure all processes use the same initial values
             MPI.Bcast!(theta_init, 0, comm)

@@ -1,7 +1,7 @@
 export topylist, doublefunc, numerical_grad
+export up_index, down_index, update_circuit_param!, update_quantum_state!
 import PyCall: PyVector
 
-export up_index, down_index, update_circuit_param!
 
 up_index(i) = 2*(i-1)
 down_index(i) = 2*(i-1)+1
@@ -60,9 +60,6 @@ function qulacs_jordan_wigner(fermion_operator, n_qubits=nothing)
     qulacs_operator = parse_of_general_operators(_n_qubits, qubit_operator)
     return qulacs_operator
 end
-
-
-
 
 
 """
@@ -126,15 +123,6 @@ function topylist(array::Array{T}) where T
 end
 
 
-function update_circuit_param!(circuit, theta_list::Vector{Float64}, theta_offsets)
-    for (idx, theta) in enumerate(theta_list)
-    for ioff in 1:theta_offsets[idx][1]
-            pauli_coef = theta_offsets[idx][3][ioff]
-            circuit.set_parameter(theta_offsets[idx][2]+ioff-1, 
-                              theta*pauli_coef) 
-        end
-    end
-end
 
 """
 Compute partial derivative of a given function at a point x
@@ -150,4 +138,15 @@ function numerical_grad(f, x::Vector{Float64}; dx=1e-8, first_idx=1, last_idx=le
         x_new1[i] = x_new2[i] = x[i]
     end
     deriv
+end
+
+
+"""
+Check if the Python type of a given PyObject matches the expected one
+"""
+function check_py_type(py_object::PyObject, py_class_name::String)
+    if py_object.__class__.__name__ != py_class_name
+        error("Expected PyObject type $(py_object.__class__.__name__), expected $(py_class_name)")
+    end
+    py_object
 end

@@ -41,14 +41,12 @@ end
 """
 Returns UCCGSD circuit.
 """
-
-
-function uccgsd(n_qubit, nocc, nvirt, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true)
+function uccgsd(n_qubit, nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true)
     theta_offsets = []
     circuit = qulacs.ParametricQuantumCircuit(n_qubit)
     ioff = 0
 
-    norb = nvirt + nocc
+    norb = n_qubit ÷2
     cr_range = orbital_rot ? (1:norb) : (1+nocc:norb)
     anh_range = orbital_rot ? (1:norb) : (1:nocc)
 
@@ -104,5 +102,5 @@ function uccgsd(n_qubit, nocc, nvirt, orbital_rot=false, conserv_Sz_doubles=true
          end
       end
 
-    circuit, theta_offsets
+    QulacsCircuit(circuit, theta_offsets)
 end
