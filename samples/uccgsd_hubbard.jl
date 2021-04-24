@@ -65,11 +65,11 @@ end
 """
 Evaluate energy
 """
-function eval_energy(circuit, ham_obs, theta_list, n_qubit)
+function eval_energy(circuit, ham_jw, theta_list, n_qubit)
     state = create_hf_state(n_qubit, n_electron) #|0000> を準備
     update_circuit_param!(circuit, theta_list) #量子回路にパラメータをセット
     update_quantum_state!(circuit, state) #量子回路を状態に作用
-    get_expectation_value(ham_obs, state) #ハミルトニアンの期待値
+    get_expectation_value(ham_jw, state) #ハミルトニアンの期待値
 end
 
 
@@ -81,11 +81,11 @@ function construct_circuit(hamiltonian)
     @assert n_electron <= hamiltonian.n_sites
 
     #JW変換
-    ham_obs = create_observable(jordan_wigner(ham), n_qubit)
+    ham_jw = jordan_wigner(ham)
 
     # Prepare a circuit
-    circuit = uccgsd(n_qubit, true)
-    circuit, ham_obs
+    circuit = uccgsd(n_qubit, orbital_rot=true)
+    circuit, ham_jw
 end
 
 function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
@@ -111,7 +111,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
     end
 
     # Construct circuit
-    circuit, ham_obs = construct_circuit(hamiltonian)
+    circuit, ham_jw = construct_circuit(hamiltonian)
     if rank == 0
         println("Number of Qubits:", n_qubit)
         println("Number of Electrons:", n_electron)
@@ -119,7 +119,7 @@ function solve(hamiltonian, n_electron;theta_init=nothing, comm=nothing)
 
     # Define a cost function
     function cost(theta_list)
-        eval_energy(circuit, ham_obs, theta_list, n_qubit)
+        eval_energy(circuit, ham_jw, theta_list, n_qubit)
     end
 
     # Define the gradient of the cost function

@@ -1,6 +1,6 @@
 export topylist, doublefunc, numerical_grad
 export up_index, down_index, update_circuit_param!, update_quantum_state!
-import PyCall: PyVector
+using PyCall
 
 function count_qubit_in_qubit_operator(op)
     n_qubits = 0
@@ -76,4 +76,16 @@ function check_py_type(py_object::PyObject, py_class_name::String)
         error("Expected PyObject type $(py_object.__class__.__name__), expected $(py_class_name)")
     end
     py_object
+end
+
+"""
+Make a wrapped scipy minimizer
+"""
+function mk_scipy_minimize(method::String="BFGS", callback=nothing, options=nothing)
+    scipy_opt = pyimport("scipy.optimize")
+    function minimize(cost, x0)
+        res = scipy_opt.minimize(cost, x0, method=method, callback=callback, options=options)
+        res["x"]
+    end
+    return minimize
 end

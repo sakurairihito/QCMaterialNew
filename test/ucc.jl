@@ -42,14 +42,15 @@ import Random
 
     enes_ed = eigvals(sparse_mat.toarray());　
 
-    ham_obs = create_observable(jordan_wigner(ham), n_qubit)
+    ham_jw = jordan_wigner(ham)
 
-    circuit = uccgsd(n_qubit, true)
+    circuit = uccgsd(n_qubit, orbital_rot=true)
+
     function cost(theta_list)
         state = create_hf_state(n_qubit, n_electron)
         update_circuit_param!(circuit, theta_list) 
         update_quantum_state!(circuit, state) 
-        get_expectation_value(ham_obs, state) 
+        get_expectation_value(ham_jw, state) 
     end
 
     theta_init = rand(num_theta(circuit))
