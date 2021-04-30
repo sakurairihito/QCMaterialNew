@@ -117,7 +117,7 @@ function Base.:-(op1::FermionOperator, op2::FermionOperator)
     FermionOperator(op1.pyobj - op2.pyobj)
 end
 
-function Base.:/(op1::FermionOperator, x::Number)
+function Base.:/(op::FermionOperator, x::Number)
     FermionOperator(op.pyobj/x)
 end
 
