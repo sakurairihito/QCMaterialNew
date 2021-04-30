@@ -20,8 +20,9 @@ end
 
 include("util.jl")
 include("core.jl")
-include("computation.jl")
+include("hamiltonian.jl")
 include("uccsd.jl")
+include("computation.jl")
 include("hartree_fock.jl")
 include("no_mpi.jl")
 
