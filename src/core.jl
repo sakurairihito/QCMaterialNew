@@ -1,5 +1,7 @@
-export QulacsParametricQuantumCircuit
+export QuantumCircuit, QulacsQuantumCircuit
+export ParametricQuantumCircuit, QulacsParametricQuantumCircuit
 export add_parametric_multi_Pauli_rotation_gate!, set_parameter!
+export add_CNOT_gate!, add_H_gate!, add_X_gate!
 
 export QuantumState, QulacsQuantumState
 export set_computational_basis!, create_hf_state
@@ -27,7 +29,31 @@ pauli_id_str = ["I", "X", "Y", "Z"]
 ################################################################################
 ############################# QUANTUM  CIRCUIT #################################
 ################################################################################
-abstract type ParametricQuantumCircuit end
+abstract type QuantumCircuit end
+abstract type ParametricQuantumCircuit <: QuantumCircuit end
+
+#  QuantumCircuit
+struct QulacsQuantumCircuit <: QuantumCircuit
+    pyobj::PyObject
+end
+
+function QulacsQuantumCircuit(n_qubit::Int)
+    QulacsQuantumCircuit(qulacs.QuantumCircuit(n_qubit))
+end
+
+function add_X_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_X_gate(idx_qubit)
+end
+
+function add_H_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_H_gate(idx_qubit)
+end
+
+function add_CNOT_gate!(circuit::QulacsQuantumCircuit, control::Int, target::Int)
+    circuit.pyobj.add_CNOT_gate(control, target)
+end
+
+#  ParametricQuantumCircuit
 struct QulacsParametricQuantumCircuit <: ParametricQuantumCircuit
     pyobj::PyObject
 end
@@ -41,7 +67,6 @@ function add_parametric_multi_Pauli_rotation_gate!(circuit::QulacsParametricQuan
     circuit.pyobj.add_parametric_multi_Pauli_rotation_gate(
         pauli_indices, Int.(pauli_ids), theta_init)
 end
-
 
 function set_parameter!(circuit::QulacsParametricQuantumCircuit, index, theta)
     circuit.pyobj.set_parameter(index, theta)
@@ -57,16 +82,10 @@ struct QulacsQuantumState <: QuantumState
     pyobj
 end
 
-function QulacsQuantumState(n_qubit::Int)
-    QulacsQuantumState(qulacs.QuantumState(n_qubit))
-end
-
-function Base.:+(state1::QulacsQuantumState, state2::QulacsQuantumState)
-    FermionOperator(state1.pyobj + state2.pyobj)
-end
-
-function Base.:-(state1::QulacsQuantumState, state2::QulacsQuantumState)
-    FermionOperator(state1.pyobj - state2.pyobj)
+function QulacsQuantumState(n_qubit::Int, int_state=0b0)
+    state = QulacsQuantumState(qulacs.QuantumState(n_qubit))
+    set_computational_basis!(state, int_state)
+    state
 end
 
 function Base.:copy(state::QulacsQuantumState)
@@ -210,3 +229,8 @@ Update a state using a circuit
 function update_quantum_state!(circuit::QulacsParametricQuantumCircuit, state::QulacsQuantumState)
     circuit.pyobj.update_quantum_state(state.pyobj)
 end
+
+function update_quantum_state!(circuit::QulacsQuantumCircuit, state::QulacsQuantumState)
+    circuit.pyobj.update_quantum_state(state.pyobj)
+end
+
