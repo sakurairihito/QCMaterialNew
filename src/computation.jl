@@ -15,7 +15,7 @@ The squared norm of op * |state_ket> will be returned.
 function apply_qubit_op(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::ParametricQuantumCircuit, state0_bra::QuantumState,
+    circuit::UCCQuantumCircuit, state0_bra::QuantumState,
     minimizer=mk_scipy_minimize()
     )
     n_qubit = get_n_qubit(state0_bra)
@@ -36,7 +36,7 @@ end
 Compute <state_bra| circuit^+ obs |state_ket>, where obs is a hermite observable.
 """
 function get_transition_amplitude_with_obs(
-    circuit::ParametricQuantumCircuit, state0_bra::QuantumState,
+    circuit::UCCQuantumCircuit, state0_bra::QuantumState,
     op::QubitOperator,
     state_ket::QuantumState)
     state_bra = copy(state0_bra)

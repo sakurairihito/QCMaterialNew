@@ -6,7 +6,6 @@ using QCMaterial
     # Prepare |Psi> = |00>
     state = QulacsQuantumState(n_qubit)
     set_computational_basis!(state, 0b00)
-    println("state", get_vector(state))
 
     # Apply c^dagger_1 to |Psi>, which will yield |10>.
     op = jordan_wigner(FermionOperator("1^"))

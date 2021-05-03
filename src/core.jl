@@ -109,6 +109,10 @@ function FermionOperator(op_str::String="", coeff::Number=1.0)
     FermionOperator(ofermion.ops.operators.FermionOperator(op_str, coeff))
 end
 
+function Base.:(==)(op1::FermionOperator, op2::FermionOperator)
+    op1.pyobj == op2.pyobj
+end
+
 function Base.:+(op1::FermionOperator, op2::FermionOperator)
     FermionOperator(op1.pyobj + op2.pyobj)
 end
