@@ -115,7 +115,7 @@ function Base.:-(op1::SecondQuantOperator, op2::SecondQuantOperator)
 end
 
 function Base.:/(op::SecondQuantOperator, x::Number)
-    typeof(op1)(op.pyobj/x)
+    typeof(op)(op.pyobj/x)
 end
 
 ################################################################################
