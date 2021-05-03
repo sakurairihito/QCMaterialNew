@@ -111,11 +111,37 @@ function get_vector(state::QuantumState)
     state.pyobj.get_vector()
 end
 
+
+################################################################################
+################################# OPERATOR #####################################
+################################################################################
+abstract type SecondQuantOperator end
+
+function Base.:(==)(op1::SecondQuantOperator, op2::SecondQuantOperator)
+    op1.pyobj == op2.pyobj
+end
+
+function Base.:*(op1::SecondQuantOperator, op2::SecondQuantOperator)
+    typeof(op1)(op1.pyobj * op2.pyobj)
+end
+
+function Base.:+(op1::SecondQuantOperator, op2::SecondQuantOperator)
+    typeof(op1)(op1.pyobj + op2.pyobj)
+end
+
+function Base.:-(op1::SecondQuantOperator, op2::SecondQuantOperator)
+    typeof(op1)(op1.pyobj - op2.pyobj)
+end
+
+function Base.:/(op::SecondQuantOperator, x::Number)
+    typeof(op)(op.pyobj/x)
+end
+
 ################################################################################
 ############################# FERMION OPERATOR #################################
 ################################################################################
 # Wrap openfermion.ops.operators.FermionOperator
-struct FermionOperator
+struct FermionOperator <: SecondQuantOperator
     pyobj::PyObject
 end
 
@@ -126,22 +152,6 @@ end
 
 function FermionOperator(op_str::String="", coeff::Number=1.0)
     FermionOperator(ofermion.ops.operators.FermionOperator(op_str, coeff))
-end
-
-function Base.:(==)(op1::FermionOperator, op2::FermionOperator)
-    op1.pyobj == op2.pyobj
-end
-
-function Base.:+(op1::FermionOperator, op2::FermionOperator)
-    FermionOperator(op1.pyobj + op2.pyobj)
-end
-
-function Base.:-(op1::FermionOperator, op2::FermionOperator)
-    FermionOperator(op1.pyobj - op2.pyobj)
-end
-
-function Base.:/(op1::FermionOperator, x::Number)
-    FermionOperator(op.pyobj/x)
 end
 
 function get_number_preserving_sparse_operator(ham::FermionOperator, n_qubit::Int, n_electron::Int)::PyObject
@@ -155,7 +165,7 @@ end
 ################################################################################
 ############################# QUBIT OPERATOR ###################################
 ################################################################################
-abstract type QubitOperator end
+abstract type QubitOperator <: SecondQuantOperator end
 
 # Wrap openfermion.ops.operators.qubit_operator.QubitOperator
 struct OFQubitOperator <: QubitOperator
@@ -164,18 +174,6 @@ end
 
 function OFQubitOperator(str::String, coeff::Number=1.0)
     return OFQubitOperator(ofermion.ops.operators.qubit_operator.QubitOperator(str, coeff))
-end
-
-function Base.:+(op1::OFQubitOperator, op2::OFQubitOperator)
-    OFQubitOperator(op1.pyobj + op2.pyobj)
-end
-
-function Base.:-(op1::OFQubitOperator, op2::OFQubitOperator)
-    OFQubitOperator(op1.pyobj - op2.pyobj)
-end
-
-function Base.:/(op::OFQubitOperator, x::Number)
-    OFQubitOperator(op.pyobj/x)
 end
 
 function hermitian_conjugated(op::OFQubitOperator)

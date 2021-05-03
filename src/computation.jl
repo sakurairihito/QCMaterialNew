@@ -1,4 +1,4 @@
-export apply_qubit_op
+export apply_qubit_op, get_transition_amplitude_with_obs
 
 """
 Divide a qubit operator into the hermite and antihermite parts.

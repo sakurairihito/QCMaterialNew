@@ -7,6 +7,7 @@ using QCMaterial
 
     @test op1 == op1
     @test op1 != op2
+    @test op1 * op2 == FermionOperator("1^ 1")
 end
 
 @testset "core.of_qubit_operator" begin
@@ -79,4 +80,7 @@ end
     @test !is_hermitian(op2)
     @test get_expectation_value(op1, state1) == -1.0
     @test get_transition_amplitude(op3, state1, state0) == 1.0
+
+    @test OFQubitOperator("X0") * OFQubitOperator("Y0") == OFQubitOperator("Z0", 1.0im)
+    @test OFQubitOperator("X0 Y1") * OFQubitOperator("Y0 Z1") == OFQubitOperator("Z0 X1", -1.0)
 end
