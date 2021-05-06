@@ -20,3 +20,16 @@ using QCMaterial
     # Verify the result
     @test squared_norm ≈ 1.
 end
+
+@testset "computation.apply_qubit_op2" begin
+    n_qubit = 2
+    # Prepare |Psi> = (|01> + |10>)/sqrt(2)
+    state = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state, 0b01)
+
+    state2 = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state, 0b10)
+
+    #state + state2
+
+end

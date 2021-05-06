@@ -50,6 +50,10 @@ end
     set_computational_basis!(state, 0b01)
     state2 = QulacsQuantumState(n_qubit, 0b01)
     @test get_vector(state) == get_vector(state2)
+
+    # Test inner_product
+    state = QulacsQuantumState(n_qubit, 0b01)
+    @test inner_product(state, state) ≈ 1.0
 end
 
 @testset "core.add_parametric_circuit_using_generator" begin

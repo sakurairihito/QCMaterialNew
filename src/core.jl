@@ -11,6 +11,7 @@ export get_vector, get_n_qubit
 export QubitOperator, OFQubitOperator
 export get_term_count, get_n_qubit, terms_dict, is_hermitian
 export get_expectation_value, get_transition_amplitude
+export inner_product
 
 export get_expectation_value, create_operator_from_openfermion
 export hermitian_conjugated
@@ -209,6 +210,10 @@ end
 
 function get_transition_amplitude(op::OFQubitOperator, state_bra::QulacsQuantumState, state_ket::QulacsQuantumState)
     convert_to_qulacs_op(op, get_n_qubit(state_bra)).get_transition_amplitude(state_bra.pyobj, state_ket.pyobj)
+end
+
+function inner_product(state_bra::QulacsQuantumState, state_ket::QulacsQuantumState)
+    qulacs.state.inner_product(state_bra.pyobj, state_ket.pyobj)
 end
 
 

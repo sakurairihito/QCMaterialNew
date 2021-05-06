@@ -25,5 +25,6 @@ include("uccsd.jl")
 include("computation.jl")
 include("hartree_fock.jl")
 include("no_mpi.jl")
+include("vqs.jl")
 
 end
