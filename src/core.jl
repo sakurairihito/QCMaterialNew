@@ -42,6 +42,10 @@ function QulacsQuantumCircuit(n_qubit::Int)
     QulacsQuantumCircuit(qulacs.QuantumCircuit(n_qubit))
 end
 
+function Base.copy(circuit::QulacsQuantumCircuit)
+    QulacsQuantumCircuit(circuit.pyobj.copy())
+end
+
 function add_X_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_X_gate(idx_qubit)
 end
@@ -61,6 +65,10 @@ end
 
 function QulacsParametricQuantumCircuit(n_qubit::Int)
     QulacsParametricQuantumCircuit(qulacs.ParametricQuantumCircuit(n_qubit))
+end
+
+function Base.copy(circuit::QulacsParametricQuantumCircuit)
+    QulacsParametricQuantumCircuit(circuit.pyobj.copy())
 end
 
 function add_parametric_multi_Pauli_rotation_gate!(circuit::QulacsParametricQuantumCircuit,
@@ -89,7 +97,7 @@ function QulacsQuantumState(n_qubit::Int, int_state=0b0)
     state
 end
 
-function Base.:copy(state::QulacsQuantumState)
+function Base.copy(state::QulacsQuantumState)
     QulacsQuantumState(state.pyobj.copy())
 end
 

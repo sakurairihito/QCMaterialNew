@@ -66,3 +66,12 @@ import Random
     EigVal_min = minimum(enes_ed)
     @test abs(EigVal_min-cost_history[end]) < 1e-6 
 end
+
+
+@testset "ucc.UCCQuantumCircuit" begin
+    n_qubit = 4
+    c = uccgsd(n_qubit, orbital_rot=true)
+    c.thetas .= 1.0
+    c_copy = copy(c)
+    @test all(c_copy.thetas == c.thetas)
+end

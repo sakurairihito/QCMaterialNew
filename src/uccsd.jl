@@ -32,6 +32,10 @@ function UCCQuantumCircuit(n_qubit::Int)
     UCCQuantumCircuit(QulacsParametricQuantumCircuit(n_qubit), [], [])
 end
 
+function Base.copy(uc::UCCQuantumCircuit)
+    UCCQuantumCircuit(copy(uc.circuit), copy(uc.thetas), copy(uc.theta_offsets))
+end
+
 function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit, generator::QubitOperator,
     theta::Float64) 
     pauli_coeffs = Float64[]
