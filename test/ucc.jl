@@ -75,3 +75,18 @@ end
     c_copy = copy(c)
     @test all(c_copy.thetas == c.thetas)
 end
+
+@testset "ucc.one_rotation_gate" begin
+    using LinearAlgebra
+    n_qubit = 1
+    theta = 1e-5
+
+    c = UCCQuantumCircuit(n_qubit)
+    add_parametric_multi_Pauli_rotation_gate!(
+            c.circuit, [0], [pauli_Y], theta)
+
+    state = QulacsQuantumState(n_qubit, 0b1)
+    update_quantum_state!(c, state)
+    vec = get_vector(state)
+    vec ≈ [0.5*theta, 1.0]
+end

@@ -1,7 +1,9 @@
+export PauliID, pauli_I, pauli_X, pauli_Y, pauli_Z
 export QuantumCircuit, QulacsQuantumCircuit
 export ParametricQuantumCircuit, QulacsParametricQuantumCircuit
 export add_parametric_multi_Pauli_rotation_gate!, set_parameter!
 export add_CNOT_gate!, add_H_gate!, add_X_gate!
+export get_parameter_count, get_parameter
 
 export QuantumState, QulacsQuantumState
 export set_computational_basis!, create_hf_state
@@ -79,6 +81,14 @@ end
 
 function set_parameter!(circuit::QulacsParametricQuantumCircuit, index, theta)
     circuit.pyobj.set_parameter(index, theta)
+end
+
+function get_parameter_count(circuit::QulacsParametricQuantumCircuit)::Int64
+    circuit.pyobj.get_parameter_count()
+end
+
+function get_parameter(circuit::QulacsParametricQuantumCircuit, idx::Int)
+    circuit.pyobj.get_parameter(idx)
 end
 
 ################################################################################
