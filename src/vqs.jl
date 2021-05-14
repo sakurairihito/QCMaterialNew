@@ -1,5 +1,6 @@
 export compute_A
 export compute_C
+export compute_thetadot
 
 #Aの計算
 """
@@ -85,4 +86,24 @@ function compute_C(op::OFQubitOperator, ucccirc::UCCQuantumCircuit,state0::Qulac
         )/delta_theta
     end
     C
+end
+
+
+
+#theta(tau)の微分の計算
+"""
+Compute thetadot = A^(-1) C
+"""
+
+function compute_thetadot(op::OFQubitOperator, ucccirc::UCCQuantumCircuit,state0::QulacsQuantumState,delta_theta=1e-8)
+    #compute A
+    A = compute_A(ucccirc, state0, delta_theta)
+    #compute inverse of A
+    InvA = inv(A)
+    #compute C
+    C = compute_C(op, ucccirc, state0, delta_theta)
+    #compute AC
+    thetadot = InvA * C
+    #return thetadot
+    thetadot
 end
