@@ -7,8 +7,8 @@ using QCMaterial
     n_electron = 1
 
     c = UCCQuantumCircuit(n_qubit)
-    # a_0^dagger a_1 - a^1 a_0 -> 0.5i (X0 Y1 - X1 Y0)
-    generator = gen_t1(0, 1)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
     add_parametric_circuit_using_generator!(c, generator, 0.0)
 
     state0 = QulacsQuantumState(n_qubit, 0b01)
@@ -26,11 +26,11 @@ end
     n_qubit = 2
     n_electron = 1
 
-    ham = OFQubitOperator("X0 X1", 1.0)
+    ham = OFQubitOperator("X1 X2", 1.0)
 
     c = UCCQuantumCircuit(n_qubit)
-    # a_0^dagger a_1 - a^1 a_0 -> 0.5i (X0 Y1 - X1 Y0)
-    generator = gen_t1(0, 1)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
     add_parametric_circuit_using_generator!(c, generator, 0.0)
 
     state0 = QulacsQuantumState(n_qubit, 0b01)

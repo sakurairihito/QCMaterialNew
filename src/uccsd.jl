@@ -12,6 +12,10 @@ struct UCCQuantumCircuit
     theta_offsets::Vector{Tuple{Int64, Int64, Vector{Float64}}}
 end
 
+#function get_n_qubit(circuit::UCCQuantumCircuit)
+    #get_n_qubit(circuit.circuit)
+#end
+
 function num_theta(circuit::UCCQuantumCircuit)
     size(circuit.theta_offsets)[1]
 end
@@ -36,11 +40,14 @@ function Base.copy(uc::UCCQuantumCircuit)
     UCCQuantumCircuit(copy(uc.circuit), copy(uc.thetas), copy(uc.theta_offsets))
 end
 
-function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit, generator::QubitOperator,
-    theta::Float64) 
+function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit,
+    generator::QubitOperator, theta::Float64) 
     pauli_coeffs = Float64[]
     for (pauli_str, pauli_coef) in terms_dict(generator)
         pauli_index_list, pauli_id_list = parse_pauli_str(pauli_str)
+        if !all(1 .<= pauli_index_list)
+            error("Pauli indies are out of range!")
+        end
         if length(pauli_index_list) == 0
             continue
         end
@@ -122,20 +129,18 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
-    theta_offsets = []
     circuit = UCCQuantumCircuit(n_qubit)
-    ioff = 0
 
     norb = n_qubit ÷ 2
     cr_range = orbital_rot ? (1:norb) : (1+nocc:norb)
     anh_range = orbital_rot ? (1:norb) : (1:nocc)
 
+    spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     sz = [1, -1]
     
     # Singles
-    spin_index_functions = [up_index, down_index]
-    for (i_t1, (a_spatial, i_spatial)) in enumerate(Iterators.product(cr_range, anh_range))
+    for (a_spatial, i_spatial) in (Iterators.product(cr_range, anh_range))
         for ispin1 in 1:2, ispin2 in 1:2
             if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
                 continue

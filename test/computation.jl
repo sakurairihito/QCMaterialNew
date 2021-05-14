@@ -8,7 +8,7 @@ using QCMaterial
     set_computational_basis!(state, 0b00)
 
     # Apply c^dagger_1 to |Psi>, which will yield |10>.
-    op = jordan_wigner(FermionOperator("1^"))
+    op = jordan_wigner(FermionOperator("2^"))
 
     # Prepare |phi> = |10>
     state0_bra = QulacsQuantumState(n_qubit)
@@ -21,15 +21,15 @@ using QCMaterial
     @test squared_norm ≈ 1.
 end
 
-@testset "computation.apply_qubit_op2" begin
-    n_qubit = 2
-    # Prepare |Psi> = (|01> + |10>)/sqrt(2)
-    state = QulacsQuantumState(n_qubit)
-    set_computational_basis!(state, 0b01)
-
-    state2 = QulacsQuantumState(n_qubit)
-    set_computational_basis!(state, 0b10)
-
-    #state + state2
-
-end
+#@testset "computation.apply_qubit_op2" begin
+    #n_qubit = 2
+    ## Prepare |Psi> = (|01> + |10>)/sqrt(2)
+    #state = QulacsQuantumState(n_qubit)
+    #set_computational_basis!(state, 0b01)
+#
+    #state2 = QulacsQuantumState(n_qubit)
+    #set_computational_basis!(state, 0b10)
+#
+    ##state + state2
+#
+#end

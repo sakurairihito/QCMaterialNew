@@ -83,7 +83,7 @@ end
 
     c = UCCQuantumCircuit(n_qubit)
     add_parametric_multi_Pauli_rotation_gate!(
-            c.circuit, [0], [pauli_Y], theta)
+            c.circuit, [1], [pauli_Y], theta)
 
     state = QulacsQuantumState(n_qubit, 0b1)
     update_quantum_state!(c, state)

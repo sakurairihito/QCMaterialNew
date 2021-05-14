@@ -21,7 +21,6 @@ function overlap(ucccirc::UCCQuantumCircuit, state0::QulacsQuantumState,
     update_quantum_state!(circ_tmp, state_right)
 
     res = inner_product(state_left, state_right)
-    println("debug", thetas_left, thetas_right, res)
     res
 end
 
