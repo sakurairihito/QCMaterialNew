@@ -107,3 +107,33 @@ function compute_thetadot(op::OFQubitOperator, ucccirc::UCCQuantumCircuit,state0
     #return thetadot
     thetadot
 end
+
+
+"""
+Perform imaginary-time evolution.
+
+taus:
+    list of imaginary times in ascending order
+    The first element must be 0.0. 
+return:
+    list of variational parameters at the given imaginary times.
+"""
+function imag_time_evolve(ham_op::OFQubitOperator, ucccirc::UCCQuantumCircuit, state0::QulacsQuantumState,
+    taus::Vector{Float64}, delta_theta=1e-8)::Vector{Vector{Float64}}
+    # Implement!
+    #for i in 1:taus[end]
+    #for i in 1:length(taus)
+    #for i in eachindex(taus)
+    for (i, tau) in enumerate(taus)
+        theta[i] = compute_thetadot(ham_op,ucccirc,state0,delta_theta)
+        taus += 1.0
+    end
+end
+
+
+  
+    #tauの範囲[0,beta]
+    #次にメッシュを区切る.メッシュ点の番号[1,N].区間の数=N-1. delta tau = beta/(N-1).
+    #各メッシュ点での初期パラメータを与える。
+    #パラメータのtau微分を計算する。
+    #パラメータのt
