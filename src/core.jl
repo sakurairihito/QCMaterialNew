@@ -1,24 +1,3 @@
-export PauliID, pauli_I, pauli_X, pauli_Y, pauli_Z
-export QuantumCircuit, QulacsQuantumCircuit
-export ParametricQuantumCircuit, QulacsParametricQuantumCircuit
-export add_parametric_multi_Pauli_rotation_gate!, set_parameter!
-export add_CNOT_gate!, add_H_gate!, add_X_gate!
-export get_parameter_count, get_parameter
-
-export QuantumState, QulacsQuantumState
-export set_computational_basis!, create_hf_state
-export FermionOperator, jordan_wigner, get_number_preserving_sparse_operator
-export get_vector, get_n_qubit
-
-export QubitOperator, OFQubitOperator
-export get_term_count, get_n_qubit, terms_dict, is_hermitian
-export get_expectation_value, get_transition_amplitude
-export inner_product
-
-export get_expectation_value, create_operator_from_openfermion
-export hermitian_conjugated
-export create_observable
-
 using PyCall
 
 
@@ -33,107 +12,17 @@ pauli_id_str = ["I", "X", "Y", "Z"]
 ################################################################################
 ############################# QUANTUM  CIRCUIT #################################
 ################################################################################
-abstract type QuantumCircuit end
-abstract type ParametricQuantumCircuit <: QuantumCircuit end
-
-#  QuantumCircuit
-struct QulacsQuantumCircuit <: QuantumCircuit
-    pyobj::PyObject
-end
-
-function QulacsQuantumCircuit(n_qubit::Int)
-    QulacsQuantumCircuit(qulacs.QuantumCircuit(n_qubit))
-end
-
-function Base.copy(circuit::QulacsQuantumCircuit)
-    QulacsQuantumCircuit(circuit.pyobj.copy())
-end
-
-function add_X_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_X_gate(idx_qubit-1)
-end
-
-function add_H_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_H_gate(idx_qubit-1)
-end
-
-function add_CNOT_gate!(circuit::QulacsQuantumCircuit, control::Int, target::Int)
-    circuit.pyobj.add_CNOT_gate(control-1, target-1)
-end
-
-#  ParametricQuantumCircuit
-struct QulacsParametricQuantumCircuit <: ParametricQuantumCircuit
-    pyobj::PyObject
-end
-
-function QulacsParametricQuantumCircuit(n_qubit::Int)
-    QulacsParametricQuantumCircuit(qulacs.ParametricQuantumCircuit(n_qubit))
-end
-
-function Base.copy(circuit::QulacsParametricQuantumCircuit)
-    QulacsParametricQuantumCircuit(circuit.pyobj.copy())
-end
-
-function add_parametric_multi_Pauli_rotation_gate!(circuit::QulacsParametricQuantumCircuit,
-    pauli_indices::Vector{Int}, pauli_ids::Vector{PauliID}, theta_init::Float64=0.0)
-    if !all(pauli_indices .>= 1)
-        error("pauli indices are out of range!")
-    end
-    circuit.pyobj.add_parametric_multi_Pauli_rotation_gate(
-        pauli_indices .- 1, Int.(pauli_ids), theta_init)
-end
-
-function set_parameter!(circuit::QulacsParametricQuantumCircuit, index, theta)
-    circuit.pyobj.set_parameter(index, theta)
-end
-
-function get_parameter_count(circuit::QulacsParametricQuantumCircuit)::Int64
-    circuit.pyobj.get_parameter_count()
-end
-
-function get_parameter(circuit::QulacsParametricQuantumCircuit, idx::Int)
-    @assert idx >= 1
-    circuit.pyobj.get_parameter(idx-1)
-end
+include("gate.jl")
 
 ################################################################################
 ############################# QUANTUM STATE  ###################################
 ################################################################################
-abstract type QuantumState end
+include("quantum_state.jl")
 
-# Wrap qulacs.QuantumState
-struct QulacsQuantumState <: QuantumState
-    pyobj
-end
-
-function QulacsQuantumState(n_qubit::Int, int_state=0b0)
-    state = QulacsQuantumState(qulacs.QuantumState(n_qubit))
-    set_computational_basis!(state, int_state)
-    state
-end
-
-function Base.copy(state::QulacsQuantumState)
-    QulacsQuantumState(state.pyobj.copy())
-end
-
-function set_computational_basis!(state::QulacsQuantumState, int_state)
-    state.pyobj.set_computational_basis(int_state)
-end
-
-function create_hf_state(n_qubit, n_electron)
-    int_state = parse(Int, repeat("0", n_qubit-n_electron) * repeat("1", n_electron), base=2)
-    state = QulacsQuantumState(n_qubit) 
-    set_computational_basis!(state, int_state)
-    state
-end
-
-function get_n_qubit(state::QulacsQuantumState)
-    state.pyobj.get_qubit_count()
-end
-
-function get_vector(state::QuantumState)
-    state.pyobj.get_vector()
-end
+################################################################################
+############################# QUANTUM  CIRCUIT #################################
+################################################################################
+include("circuit.jl")
 
 
 ################################################################################

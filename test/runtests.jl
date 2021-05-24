@@ -12,6 +12,7 @@ function __init__()
 end
 
 include("util.jl")
+include("gate.jl")
 include("core.jl")
 include("hamiltonian.jl")
 include("hartree_fock.jl")

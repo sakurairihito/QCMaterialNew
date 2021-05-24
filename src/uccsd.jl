@@ -5,7 +5,7 @@ export uccgsd
 ################################################################################
 ############################# QUANTUM  CIRCUIT #################################
 ################################################################################
-struct UCCQuantumCircuit
+struct UCCQuantumCircuit <: VariationalQuantumCircuit
     circuit::ParametricQuantumCircuit
     thetas::Vector{Float64}
     # Vector of (num_term_count::Int64, ioff::Int64, pauli_coeffs::Float64)
@@ -18,6 +18,10 @@ end
 
 function num_theta(circuit::UCCQuantumCircuit)
     size(circuit.theta_offsets)[1]
+end
+
+function get_thetas(circuit::UCCQuantumCircuit)
+    copy(circuit.thetas)
 end
 
 function num_pauli(circuit::UCCQuantumCircuit, idx_theta::Int)
@@ -66,6 +70,8 @@ end
 
 """
 Update circuit parameters
+
+thetas wil be copied.
 """
 function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float64})
     if num_theta(circuit) != length(thetas)
@@ -75,7 +81,7 @@ function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float6
         for ioff in 1:num_pauli(circuit, idx)
             pauli_coef = pauli_coeff(circuit, idx, ioff)
             set_parameter!(circuit.circuit,
-                theta_offset(circuit, idx)+ioff-1, theta*pauli_coef) 
+                theta_offset(circuit, idx)+ioff, theta*pauli_coef) 
         end
     end
     circuit.thetas .= thetas
