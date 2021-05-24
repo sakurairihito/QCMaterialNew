@@ -54,14 +54,14 @@ end
     @test thetadot ≈ [2] atol=1e-5
 end
 
-@testset "vqs.imag_time_evolve" begin
+@testset "vqs.imag_time_evolve_single_qubit" begin
     """
-    Hamiltonian = Z1
+    Hamiltonian H = Z1
     No time evolution occurs.
+    exp(- tau * H) |1> = A |1>,
+    where A is a normalization constant.
     """
     n_qubit = 1
-    tau_max = 1.0
-    ntau = 2
     d_theta = 0.01
 
     ham = OFQubitOperator("Z1", 1.0)
@@ -69,13 +69,41 @@ end
 
     c = QulacsParametricQuantumCircuit(n_qubit)
     add_parametric_RY_gate!(c, 1, 0.0)
-
-    taus = collect(range(0.0, tau_max, length=ntau))
-
     vc = QulacsVariationalQuantumCircuit(c)
+
+    taus = [0.0, 1.0]
     thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)
 
-    for i in 1:ntau
+    for i in eachindex(taus)
         @test all(thetas_tau[i] .≈ [0.0])
     end
+end
+
+@testset "vqs.imag_time_evolve_single_qubit2" begin
+    """
+    Hamiltonian H = Z1
+    No time evolution occurs.
+    exp(- tau * H) (|0> + |1>)/sqrt(2) = R_Y(theta(tau)) |0>,
+    where A is a normalization constant and
+    theta(tau) = acos(exp(-tau)/sqrt(exp(-2tau) + exp(2*tau))).
+    theta = pi/2 (tau=0) => pi (tau=+infty)
+    """
+    n_qubit = 1
+    d_theta = 0.01
+
+    ham = OFQubitOperator("Z1", 1.0)
+    state0 = QulacsQuantumState(n_qubit, 0b0)
+
+    c = QulacsParametricQuantumCircuit(n_qubit)
+    add_parametric_RY_gate!(c, 1, 0.5*pi)
+    vc = QulacsVariationalQuantumCircuit(c)
+
+    taus = collect(range(0.0, 1, length=100))
+    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)
+
+    theta_extact(τ) = 2*acos(exp(-τ)/sqrt(exp(-2*τ) + exp(2*τ)))
+
+    thetas_ref = theta_extact.(taus)
+    thetas_res = [thetas_tau[i][1] for i in eachindex(taus)]
+    @test isapprox(thetas_ref, thetas_res, rtol=0.01)
 end
