@@ -149,3 +149,105 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
     end
     thetas_tau
 end
+
+
+function _create_quantum_state(c, state0)
+    state0_ = copy(state0)
+    update_quantum_state!(c, state0_)
+    state0_
+end
+
+"""
+Calculate green function based on imaginary-time evolution.
+
+ham_op:
+    Hamiltonian
+vc:
+    Variational circuit. The current value of variational parameters are
+    used as the initial value of the imaginary-time evolution.
+state0:
+    The initial state to which the Variational circuit is applied to
+taus:
+    list of imaginary times in ascending order
+    The first element must be 0.0. 
+return:
+    G[i,j]
+"""
+
+function imag_time_evo_green_func(
+    ham_op::OFQubitOperator, op::Vector{OFQubitOperator},
+    vc::VariationalQuantumCircuit,
+    state0_gs::QulacsQuantumState,
+    state0_ex::QulacsQuantumState,
+    taus::Vector{Float64}, beta::Float64, delta_theta=1e-8)
+
+    n_qubit = get_n_qubit(state0)
+    thetas = get_thetas(vc)
+    beta_taus = copy(taus)
+
+    #確認
+    beta_taus = beta_taus. - beta
+
+    d_theta = 0.01
+    
+    state_right = copy(state0_gs)
+    state_left = copy(state0_gs)
+    #prepare the ground state|g.s>
+    update_quantum_state!(vc, state_right)   
+    update_quantum_state!(vc, state_left) 
+
+    #state_right_ex = copy(state0_ex)
+    #state_left_ex = copy(state0_ex)   
+    #state_right_ex2 = copy(state0_ex)
+    #state_left_ex2 = copy(state0_ex)
+    
+    #opt_thetasでcircuitが変わるので、新しくcircuit_exを定義する
+    circuit_left_ex = copy(vc)
+    
+    #function apply_qubit_opに!を付けて書き換える。
+    # state_right_ex: A c^{dag}_j|g.s> (A is a normalization factor)
+    state_right_ex = copy(state0_ex)
+    circuit_right_ex = copy(vc)
+     _ = apply_qubit_op(op[j], state_right, circuit_right_ex, state0_ex)
+    update_quantum_state!(circuit_right_ex, state_right_ex)
+
+
+    #③exp(-tau H)c^{dag}_j|g.s>
+    thetas_tau = imag_time_evolve(ham_op, vc, state_right_ex, taus, d_theta)
+    state_right_fin = []
+    for t in eachindex(taus)
+        c_ = copy(vc)
+        update_circuit_param!(c_, thetas_tau[t])
+        push!(state_right_fin, _create_quantum_state(c_, state0_ex))
+    end
+
+    #left side
+    #exp(-(beta-tau) H)|g.s>
+    thetas_tau = imag_time_evolve(ham_op, vc, state_left, beta_taus, d_theta)
+    #各虚時間tauで定義されたパラメータを状態ベクトルに代入したものを計算している。
+    for t in eachindex(taus)
+        c = UCCQuantumCircuit(n_qubit)
+        update_circuit_param!(c, thetas_tau[t])
+        state2 = copy(state0)
+        update_quantum_state!(c, state2)
+        #exp(eta(tau) exp(-(beta-tau) H)|g.s>
+
+        #c^{dag}_i exp(eta(tau) exp(-(beta-tau) H)|g.s>
+        # exp(eta(tau) exp(-(beta-tau) H)|g.s>の各虚時間tauごとのリストに対して、c^{dag}_iをかける。
+        sqrt_norm_left_ex = apply_qubit_op(op[i], state2, circuit_left_ex, state_left_ex)
+        #update_circuit_param!(vc, opt_thetas)
+        update_quantum_state!(circuit_left_ex, state_left_ex2) 
+    end
+
+
+    #Compute G[i, j](taus)
+    #inner_product(state_bra, state_ket)    
+    #各虚時間tauで定義されているパラメータを含んだ状態<state(tau)| state(tau)>の内積のリストを作る？
+    #state_left_ex2[t]としていい？ 
+    #G[i, j]のi,jはそれぞれ、op[i],op[j]の添字
+    for t in eachindex(taus)
+        G[i, j] = inner_product(state_left_ex2[t],state_right_fin[t] )
+    end
+
+
+end

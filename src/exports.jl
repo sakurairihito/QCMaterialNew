@@ -3,7 +3,7 @@ export PauliID, pauli_I, pauli_X, pauli_Y, pauli_Z
 export QuantumCircuit, QulacsQuantumCircuit
 export ParametricQuantumCircuit, QulacsParametricQuantumCircuit
 export add_parametric_multi_Pauli_rotation_gate!, set_parameter!
-export add_CNOT_gate!, add_H_gate!, add_X_gate!
+export add_CNOT_gate!, add_H_gate!, add_X_gate!, add_S_gate!
 export get_parameter_count, get_parameter
 export add_parametric_RX_gate!
 export add_parametric_RY_gate!

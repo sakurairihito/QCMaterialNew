@@ -120,10 +120,12 @@ end
 
     we check the coefficients of |1up> and |1up> instead of theta.
     """
+
     n_qubit = 2
     d_theta = 0.01
-    U = 1
-    h = 1
+    
+    U = 1.0
+    h = 1.0
 
     ham = FermionOperator()
     up = up_index(1)
@@ -133,43 +135,29 @@ end
     ham += FermionOperator("$(down)^ $(down)", h)
     ham = jordan_wigner(ham)
 
-    # Prepare |Psi> = |01>  (# Apply c^dagger_1up to |00>, which will yield |01>.)
-    state = QulacsQuantumState(n_qubit)
-    set_computational_basis!(state, 0b01)
+    state0 = QulacsQuantumState(n_qubit, 0b01)
 
-    state_1up = QulacsQuantumState(n_qubit)
-    set_computational_basis!(state_1up, 0b01)
+    c = QulacsParametricQuantumCircuit(n_qubit)
+    # add_parametric_RYY_gate! -> add_parametric_multi_Pauli_rotation_gate!
+    target = [1,2] 
+    #X->pauli_X, Y->pauli_Y, Z->pauli_Z
+    pauli_ids = [pauli_Y, pauli_Y] 
+    add_parametric_multi_Pauli_rotation_gate!(c, target, pauli_ids, 0.5*pi)
+    #QulacsVariationalQuantumCircuitに対してadd_S_gate!を定義する。
+    #QulacsVariationalQuantumCircuitとQulacsQuantumCircuitは両方ともQuantumCircuitを親に持つが、兄弟間同士で継承(多重継承)できないことに注意する。
+    add_S_gate!(c, 2)
+    vc = QulacsVariationalQuantumCircuit(c)
 
-    state_1dn = QulacsQuantumState(n_qubit)
-    set_computational_basis!(state_1dn, 0b10)
+    taus = collect(range(0.0, 1, length=100))
+    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)
 
-    c = UCCQuantumCircuit(n_qubit)
-    # a_1^dagger a_2 - a^2^dagger a_1 -> 0.5i (X1 Y2 - X2 Y1)
-    generator = gen_t1(1, 2)
-    add_parametric_circuit_using_generator!(c, generator, 0.5*pi)
+    theta_extact(τ) = 2*acos(exp(h*τ)/sqrt(exp(2*h*τ) + exp(-2*h*τ)))
 
-    #update_quantum_state!(c, state)??
-
-    taus = collect(range(0.0, 1, length=1000))
-    println("taus", taus)
-    thetas_tau = imag_time_evolve(ham, c, state, taus, d_theta)
-
-    coeff_1up(τ) = exp(h*τ)/sqrt(exp(2*h*τ) + exp(-2*h*τ))
-    coeff_1up(τ) = exp(-h*τ)/sqrt(exp(2*h*τ) + exp(-2*h*τ))
-
-    coeff_1up_res = Complex{Float64}[]
-    for t in eachindex(taus)
-    #for t in [1, 2, 3]
-        update_circuit_param!(c, thetas_tau[t])
-        state = QulacsQuantumState(n_qubit)
-        set_computational_basis!(state, 0b01)
-        update_quantum_state!(c, state)
-        println("debug", thetas_tau[t])
-        push!(coeff_1up_res, inner_product(state_1up, state))
-    end
-    @test isapprox(coeff_1up.(taus), coeff_1up_res, rtol=0.01)
-
-
+    #generate vector whose elements are theta_exact(τ) 
+    thetas_ref = theta_extact.(taus)
+    #i is tau and num of parameter is 1
+    thetas_res = [thetas_tau[i][1] for i in eachindex(taus)]
+    @test isapprox(thetas_ref, thetas_res, rtol=0.01)
 
 end
 

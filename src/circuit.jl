@@ -25,9 +25,16 @@ function add_H_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_H_gate(idx_qubit-1)
 end
 
+function add_S_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_S_gate(idx_qubit-1)
+end
+
+
 function add_CNOT_gate!(circuit::QulacsQuantumCircuit, control::Int, target::Int)
     circuit.pyobj.add_CNOT_gate(control-1, target-1)
 end
+
+
 
 ################################################################################
 ############################# Quantum Parametric CIRCUIT #######################
@@ -79,6 +86,10 @@ end
 
 function add_parametric_RZ_gate!(circuit::QulacsParametricQuantumCircuit, i::Int, angle::Float64)
     circuit.pyobj.add_parametric_RZ_gate(i-1, angle)
+end
+
+function add_S_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_S_gate(idx_qubit-1)
 end
 
 ################################################################################
