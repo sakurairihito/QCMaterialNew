@@ -11,6 +11,7 @@ Apply a qubit operator op to |state_ket> and fit the result with
 circuit * |state_bra>.
 The circuit object will be updated on exit.
 The squared norm of op * |state_ket> will be returned.
+state0_bra will not be modified.
 """
 function apply_qubit_op(
     op::QubitOperator,
@@ -36,7 +37,7 @@ end
 Compute <state_bra| circuit^+ obs |state_ket>, where obs is a hermite observable.
 """
 function get_transition_amplitude_with_obs(
-    circuit::UCCQuantumCircuit, state0_bra::QuantumState,
+    circuit::VariationalQuantumCircuit, state0_bra::QuantumState,
     op::QubitOperator,
     state_ket::QuantumState)
     state_bra = copy(state0_bra)
