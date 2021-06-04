@@ -115,10 +115,7 @@ end
     Hamiltonian H = Un_(1up)n_(2dn) - hn_(1up) + hn_(2dn) 
     No time evolution occurs.
     exp(- tau * H) (|1up> + |1dn>)/sqrt(2) = exp(theta/2*(c_1up^(dag)c_1dn-c_1dn^(dag)c_1up)) |1up>,
-    Coefficient of |1up> is exp(h*tau)/sqrt(exp(2*h*tau) + exp(-2*h*tau))).
-    Coefficient of |1dn> is exp(-h*tau)/sqrt(exp(2*h*tau) + exp(-2*h*tau))).
 
-    we check the coefficients of |1up> and |1up> instead of theta.
     """
 
     n_qubit = 2
@@ -162,3 +159,53 @@ end
 end
 
 
+@testset "vqs.compute_gtau" begin
+    """
+    """
+    n_qubit　= 2
+    nsite = 1
+    t = 1.0
+    U = 1.0
+    µ = 1.0
+    up = up_index(1)
+    down = down_index(1)
+    d_theta = 0.01
+
+    ham_op = generate_ham_1d_hubbard(t, U, nsite, μ)
+    ham_op = jordan_wigner(ham_op)
+    
+    c_op = FermionOperator("$(up) ", 1.0)
+    c_op = jordan_wigner(c_op)
+    cdagg_op = FermionOperator("$(up)^ ", 1.0)
+    cdagg_op = jordan_wigner(cdagg_op)
+
+    c_ = QulacsParametricQuantumCircuit(n_qubit)
+    target = [1,2] 
+    pauli_ids = [pauli_Y, pauli_Y] 
+    add_parametric_multi_Pauli_rotation_gate!(c_, target, pauli_ids, 0.5*pi)
+    add_S_gate!(c_, 2)
+    vc = QulacsVariationalQuantumCircuit(c_)
+
+
+
+    #c = UCCQuantumCircuit(n_qubit)
+    #a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    #generator = gen_t1(1, 2)
+    #add_parametric_circuit_using_generator!(c, generator, 0.0)
+
+    #c = UCCQuantumCircuit(c_)
+
+    state0_gs = QulacsQuantumState(n_qubit)
+    #Perform VQE to compute ground state
+    
+    #function cost(thetas)
+    #    update_circuit_param!(vc, thetas)
+    #    get_expectation_value(ham_op, state0_gs) 
+    #end
+    state0_ex = QulacsQuantumState(n_qubit)
+    
+    taus = collect(range(0.0, 1.0, length=10))
+    #println(taus)
+    Gfunc_ij_list = compute_gtau(ham_op, c_op, cdagg_op, vc,  state0_gs, state0_ex, taus, d_theta)
+
+end

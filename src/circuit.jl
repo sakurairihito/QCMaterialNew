@@ -108,7 +108,7 @@ end
 Return a copy of variational parameters
 """
 function get_thetas(circuit::VariationalQuantumCircuit)::Vector{Float64}
-    []
+    Float64[]
 end
 
 """
@@ -125,10 +125,17 @@ function update_quantum_state!(ucccirc::VariationalQuantumCircuit, state::Quantu
     # do something
 end
 
+"""
+Wrap a QulacsParametricQuantumCircuit object, which will not be copied.
+"""
 struct QulacsVariationalQuantumCircuit <: VariationalQuantumCircuit
     qcircuit::QulacsParametricQuantumCircuit
 end
 
+"""
+Copy a QulacsVariationalQuantumCircuit object.
+This makes a copy of the underlying QulacsParametricQuantumCircuit object. 
+"""
 function Base.copy(circuit::QulacsVariationalQuantumCircuit)
     QulacsVariationalQuantumCircuit(copy(circuit.qcircuit))
 end

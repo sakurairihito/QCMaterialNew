@@ -16,10 +16,9 @@ state0_bra will not be modified.
 function apply_qubit_op(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::UCCQuantumCircuit, state0_bra::QuantumState,
+    circuit::VariationalQuantumCircuit, state0_bra::QuantumState,
     minimizer=mk_scipy_minimize()
     )
-    n_qubit = get_n_qubit(state0_bra)
     her, antiher = divide_real_imag(op)
 
     function cost(thetas::Vector{Float64})
@@ -29,7 +28,7 @@ function apply_qubit_op(
         -abs2(re_ + im_ * im)
     end
 
-    opt_thetas = minimizer(cost, copy(circuit.thetas))
+    opt_thetas = minimizer(cost, get_thetas(circuit))
     -cost(opt_thetas)
 end
 

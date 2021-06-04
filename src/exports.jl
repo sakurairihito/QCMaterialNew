@@ -31,3 +31,8 @@ export hermitian_conjugated
 export create_observable
 
 export imag_time_evolve
+export compute_gtau
+export compute_A
+export compute_C
+export compute_thetadot
+

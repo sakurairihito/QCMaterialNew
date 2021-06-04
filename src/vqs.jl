@@ -1,7 +1,3 @@
-export compute_A
-export compute_C
-export compute_thetadot
-
 #Aの計算
 """
 Compute <phi (theta_bra) | phi(theta_ket)>
@@ -169,16 +165,22 @@ Calculate green function based on imaginary-time evolution.
 
 ham_op:
     Hamiltonian
+c_op:
+    annihilation operator 
+cdagg_op:
+    creation operator 
 vc:
     Variational circuit. The current value of variational parameters are
     used as the initial value of the imaginary-time evolution.
-state0:
-    The initial state to which the Variational circuit is applied to
+state0_gs:
+    The initial state is the ground state of the hamiltonian
+state0_ex:
+    The excited state to which the creation operator  is applied to
 taus:
     list of imaginary times in ascending order
     The first element must be 0.0. The last element must be beta.
 return:
-    G[i,j]
+    The list of Green function at each tau 
 """
 function compute_gtau(
     ham_op::OFQubitOperator,
@@ -188,6 +190,10 @@ function compute_gtau(
     state0_gs::QulacsQuantumState,
     state0_ex::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8)
+
+    if taus[1] != 0.0
+        error("The first element of taus must be 0!")
+    end
 
     if !all(taus[2:end] .> taus[1:end-1])
        error("taus must in strictly asecnding order!")
@@ -200,26 +206,28 @@ function compute_gtau(
     # TODO: function apply_qubit_opに!を付けて書き換える。
     state_right = _create_quantum_state(vc, state0_gs)
     circuit_right_ex = copy(vc) #opt_thetasでcircuitが変わるので、新しくcircuit_exを定義する
-    right_sqrt_norm = apply_qubit_op(cdagg_op, state_right, circuit_right_ex, state0_ex)
+    right_squared_norm = apply_qubit_op(cdagg_op, state_right, circuit_right_ex, state0_ex)
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
 
     # exp(-tau H)c^{dag}_j|g.s>
+    #imag_time_evolveとapply_qubit_opのvcはかえる
     thetas_tau_right = imag_time_evolve(ham_op, vc, state_right_ex, taus, delta_theta)
     #state_right_list = [
         #_create_quantum_state(c_, thetas, state0_ex) for thetas in thetas_tau_right
     #]
 
     # Compute exp(-(beta-tau) H)|g.s> on the tau mesh from the left
-    beta_taus = beta .- taus
+    beta_taus = reverse(beta .- taus)
+    
     state_left = _create_quantum_state(vc, state0_gs)
-    thetas_tau_left = imag_time_evolve(ham_op, vc, state_left, beta_taus, d_theta)
+    thetas_tau_left = imag_time_evolve(ham_op, vc, state_left, beta_taus, delta_theta)
 
     Gfunc_ij_list = Complex{Float64}[]
     ntaus = length(taus)
     for t in eachindex(taus)
         # exp(-tau H)c^{dag}_j|g.s>
-        state_right = _create_quantum_state(c_, thetas_tau_right[t], state0_ex)
+        state_right = _create_quantum_state(vc, thetas_tau_right[t], state0_ex)
 
         # circicut for exp(-(beta-tau) H) |g.s>
         vc_left = copy(vc)
@@ -229,7 +237,7 @@ function compute_gtau(
         op_re, op_im = divide_real_imag(c_op)
         g_re = get_transition_amplitude_with_obs(vc_left, state0_gs, op_re, state_right)
         g_im = get_transition_amplitude_with_obs(vc_left, state0_gs, op_im, state_right)
-        push!(Gfunc_ij_list, (g_re + im * g_im) * right_sqrt_norm)
+        push!(Gfunc_ij_list, (g_re + im * g_im) * sqrt(right_squared_norm))
     end
     Gfunc_ij_list
 end
