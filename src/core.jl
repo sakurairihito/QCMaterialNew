@@ -81,7 +81,11 @@ function FermionOperator(ops::Vector{Tuple{Int,Int}}, coeff::Number=1.0)
     FermionOperator(ofermion.ops.operators.FermionOperator(Tuple(ops_py), coeff))
 end
 
-function FermionOperator(op_str::String="", coeff::Number=1.0)
+function FermionOperator()
+    FermionOperator("", 0.0)
+end
+
+function FermionOperator(op_str::String, coeff::Number=1.0)
     FermionOperator(_parse_fermion_operator_str(op_str), coeff)
 end
 

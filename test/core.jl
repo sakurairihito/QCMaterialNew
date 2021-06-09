@@ -8,6 +8,8 @@ using QCMaterial
     @test op1 == op1
     @test op1 != op2
     @test op1 * op2 == FermionOperator("1^ 1")
+
+    @test FermionOperator("", 0.0) == FermionOperator()
 end
 
 @testset "core.of_qubit_operator" begin
