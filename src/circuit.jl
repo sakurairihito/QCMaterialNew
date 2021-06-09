@@ -92,6 +92,10 @@ function add_S_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_S_gate(idx_qubit-1)
 end
 
+function add_Z_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_S_gate(idx_qubit-1)
+end
+
 ################################################################################
 ##################  Variational QUANTUM  CIRCUIT ###############################
 ################################################################################

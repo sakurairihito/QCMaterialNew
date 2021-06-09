@@ -72,8 +72,8 @@ end
     vc = QulacsVariationalQuantumCircuit(c)
 
     taus = [0.0, 1.0]
-    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)
-
+    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)[1]
+    
     for i in eachindex(taus)
         @test all(thetas_tau[i] .≈ [0.0])
     end
@@ -99,7 +99,7 @@ end
     vc = QulacsVariationalQuantumCircuit(c)
 
     taus = collect(range(0.0, 1, length=100))
-    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)
+    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)[1]
 
     theta_extact(τ) = 2*acos(exp(-τ)/sqrt(exp(-2*τ) + exp(2*τ)))
 
@@ -117,7 +117,6 @@ end
     exp(- tau * H) (|1up> + |1dn>)/sqrt(2) = exp(theta/2*(c_1up^(dag)c_1dn-c_1dn^(dag)c_1up)) |1up>,
 
     """
-
     n_qubit = 2
     d_theta = 0.01
     
@@ -146,7 +145,7 @@ end
     vc = QulacsVariationalQuantumCircuit(c)
 
     taus = collect(range(0.0, 1, length=100))
-    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)
+    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)[1]
 
     theta_extact(τ) = 2*acos(exp(h*τ)/sqrt(exp(2*h*τ) + exp(-2*h*τ)))
 
@@ -159,6 +158,8 @@ end
 end
 
 
+
+##compute_gtaが動くかどうかのテスト
 @testset "vqs.compute_gtau" begin
     """
     """
@@ -185,27 +186,133 @@ end
     add_parametric_multi_Pauli_rotation_gate!(c_, target, pauli_ids, 0.5*pi)
     add_S_gate!(c_, 2)
     vc = QulacsVariationalQuantumCircuit(c_)
-
-
-
-    #c = UCCQuantumCircuit(n_qubit)
-    #a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
-    #generator = gen_t1(1, 2)
-    #add_parametric_circuit_using_generator!(c, generator, 0.0)
-
-    #c = UCCQuantumCircuit(c_)
-
     state0_gs = QulacsQuantumState(n_qubit)
-    #Perform VQE to compute ground state
-    
-    #function cost(thetas)
-    #    update_circuit_param!(vc, thetas)
-    #    get_expectation_value(ham_op, state0_gs) 
-    #end
     state0_ex = QulacsQuantumState(n_qubit)
     
     taus = collect(range(0.0, 1.0, length=10))
-    #println(taus)
     Gfunc_ij_list = compute_gtau(ham_op, c_op, cdagg_op, vc,  state0_gs, state0_ex, taus, d_theta)
 
 end
+
+##compute_gta_normが動くかどうかのテスト
+@testset "vqs.compute_gtau_norm" begin
+    """
+    """
+    n_qubit　= 2
+    nsite = 1
+    t = 1.0
+    U = 1.0
+    µ = 1.0
+    up = up_index(1)
+    down = down_index(1)
+    d_theta = 0.01
+
+    ham_op = generate_ham_1d_hubbard(t, U, nsite, μ)
+    ham_op = jordan_wigner(ham_op)
+    
+    c_op = FermionOperator("$(up) ", 1.0)
+    c_op = jordan_wigner(c_op)
+    cdagg_op = FermionOperator("$(up)^ ", 1.0)
+    cdagg_op = jordan_wigner(cdagg_op)
+
+    c_ = QulacsParametricQuantumCircuit(n_qubit)
+    target = [1,2] 
+    pauli_ids = [pauli_Y, pauli_Y] 
+    add_parametric_multi_Pauli_rotation_gate!(c_, target, pauli_ids, 0.5*pi)
+    add_S_gate!(c_, 2)
+    vc = QulacsVariationalQuantumCircuit(c_)
+
+    state0_gs = QulacsQuantumState(n_qubit)
+    state0_ex = QulacsQuantumState(n_qubit)
+    
+    taus = collect(range(0.0, 1.0, length=10))
+    Gfunc_ij_list = compute_gtau_norm(ham_op, c_op, cdagg_op, vc,  state0_gs, state0_ex, taus, d_theta)
+
+end
+
+#compute_gtaを使った１サイトハバードのグリーン関数の一部の計算（一つの基底状態のみの計算）
+##ノルムを考慮しないver
+@testset "vqs.compute_gtau_1site_hubbard" begin
+    """
+    """
+    n_qubit　= 2
+    nsite = 1
+    t = 0.0
+    U = 2.0
+    µ = 1.0
+    up = up_index(1)
+    down = down_index(1)
+    d_theta = 0.01
+    
+    ham_op = generate_ham_1d_hubbard(t, U, nsite, μ)
+    ham_op = jordan_wigner(ham_op)
+    
+    c_op = FermionOperator("$(down) ", 1.0)
+    c_op = jordan_wigner(c_op)
+    cdagg_op = FermionOperator("$(down)^ ", 1.0)
+    cdagg_op = jordan_wigner(cdagg_op)
+
+    c_ = QulacsParametricQuantumCircuit(n_qubit)
+    target = [1,2] 
+    pauli_ids = [pauli_Y, pauli_Y] 
+    add_parametric_multi_Pauli_rotation_gate!(c_, target, pauli_ids, 0.01*pi)
+    vc = QulacsVariationalQuantumCircuit(c_)
+
+    state_gs = QulacsQuantumState(n_qubit,0b01)
+    state0_ex = QulacsQuantumState(n_qubit,0b11)
+    
+    taus = collect(range(0.0, 1, length=10))
+    beta = taus[end]
+
+    Gfunc_ij_list = compute_gtau(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list_ref = -ones(10) ./ exp(beta * µ) #Equals = Gfunc_ij_list_ref = -ones(10) ./ exp(beta * E_gs)
+    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
+
+    #for i in eachindex(taus)
+    #    @test all(Gfunc_ij_list[i] .≈ [1.0])
+    #end
+end
+
+
+
+#compute_gtaを使った１サイトハバードのグリーン関数の一部の計算（一つの基底状態のみの計算）
+##ノルムを考慮したver
+@testset "vqs.compute_gtau_norm_1site_hubbard" begin
+    """
+    """
+    n_qubit　= 2
+    nsite = 1
+    t = 0.0
+    U = 2.0
+    µ = 1.0
+    up = up_index(1)
+    down = down_index(1)
+    d_theta = 0.01
+    
+    ham_op = generate_ham_1d_hubbard(t, U, nsite, μ)
+    ham_op = jordan_wigner(ham_op)
+    
+    c_op = FermionOperator("$(down) ", 1.0)
+    c_op = jordan_wigner(c_op)
+    cdagg_op = FermionOperator("$(down)^ ", 1.0)
+    cdagg_op = jordan_wigner(cdagg_op)
+
+    c_ = QulacsParametricQuantumCircuit(n_qubit)
+    target = [1,2] 
+    pauli_ids = [pauli_Y, pauli_Y] 
+    add_parametric_multi_Pauli_rotation_gate!(c_, target, pauli_ids, 0.01*pi)
+    vc = QulacsVariationalQuantumCircuit(c_)
+
+    state_gs = QulacsQuantumState(n_qubit,0b01)
+    state0_ex = QulacsQuantumState(n_qubit,0b11)
+    
+    taus = collect(range(0.0, 1, length=5))
+    beta = taus[end]
+
+    Gfunc_ij_list = compute_gtau_norm(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list_exact(τ) = -exp(-U * τ + µ * τ)
+    Gfunc_ij_list_ref = Gfunc_ij_list_exact.(taus) 
+    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
+
+end
+

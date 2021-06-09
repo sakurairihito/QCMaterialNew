@@ -2,6 +2,7 @@ export generate_ham_1d_hubbard
 
 function generate_ham_1d_hubbard(t::Float64, U::Float64, nsite::Integer, μ::Float64)
     ham = FermionOperator()
+    
     #斥力項
     for i in 1:nsite
         #up_index,down_indexの定義は、QC_materialを参照。

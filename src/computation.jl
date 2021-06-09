@@ -10,7 +10,7 @@ divide_real_imag(op::QubitOperator) =
 Apply a qubit operator op to |state_ket> and fit the result with
 circuit * |state_bra>.
 The circuit object will be updated on exit.
-The squared norm of op * |state_ket> will be returned.
+The squared norm of op * |state_ket>  will be returned.
 state0_bra will not be modified.
 """
 function apply_qubit_op(
@@ -27,9 +27,13 @@ function apply_qubit_op(
         im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
         -abs2(re_ + im_ * im)
     end
-
+    
     opt_thetas = minimizer(cost, get_thetas(circuit))
-    -cost(opt_thetas)
+    update_circuit_param!(circuit, opt_thetas)
+    re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
+    im__ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
+    re__ + im__ * im
+    #-cost(opt_thetas)
 end
 
 """

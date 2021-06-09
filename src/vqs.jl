@@ -128,22 +128,33 @@ return:
     list of variational parameters at the given imaginary times.
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
-    taus::Vector{Float64}, delta_theta=1e-8)::Vector{Vector{Float64}}
+    taus::Vector{Float64}, delta_theta=1e-8)::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     if taus[1] != 0.0
         error("The first element of taus must be 0!")
     end
     thetas_tau = [copy(get_thetas(vc))]
+    log_norm_tau = zeros(Float64, length(taus))  #エルミートの期待値だから必ず実数
+
     for i in 1:length(taus)-1
         vc_ = copy(vc)
         update_circuit_param!(vc_, thetas_tau[i])
+        #compute expectation value
+        state0_ = copy(state0)
+        update_quantum_state!(vc_, state0_)
+
+        # Compute theta 
         thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta)
         if taus[i+1] <= taus[i]
             error("taus must be in strictly asecnding order!")
         end
         thetas_next_ = thetas_tau[i] + (taus[i+1] - taus[i]) * thetas_dot_
         push!(thetas_tau, thetas_next_)
+
+        # Compute norm
+        log_norm_tau[i+1] = log_norm_tau[i] - get_expectation_value(ham_op, state0_) * (taus[i+1] - taus[i])
+
     end
-    thetas_tau
+    thetas_tau, log_norm_tau
 end
 
 
@@ -186,8 +197,66 @@ function compute_gtau(
     ham_op::OFQubitOperator,
     c_op::OFQubitOperator,
     cdagg_op::OFQubitOperator,
-    vc::VariationalQuantumCircuit,
-    state0_gs::QulacsQuantumState,
+    vc::VariationalQuantumCircuit, #VQEを実行した後の基底状態
+    state_gs::QulacsQuantumState,
+    state0_ex::QulacsQuantumState,
+    taus::Vector{Float64}, delta_theta=1e-8)
+
+    if taus[1] != 0.0
+        error("The first element of taus must be 0!")
+    end
+
+    if !all(taus[2:end] .> taus[1:end-1])
+       error("taus must in strictly asecnding order!")
+    end
+
+    # Inverse temperature
+    beta = taus[end]
+    # state_right_ex: A c^{dag}_j|g.s> (A is a normalization factor)
+    # TODO: function apply_qubit_opに!を付けて書き換える。
+    state_right = _create_quantum_state(vc, state_gs)
+    circuit_right_ex = copy(vc) #opt_thetasでcircuitが変わるので、新しくcircuit_exを定義する.
+    right_squared_norm = apply_qubit_op(cdagg_op, state_right, circuit_right_ex, state0_ex)
+    
+    state_right_ex = copy(state0_ex)
+    update_quantum_state!(circuit_right_ex, state_right_ex)
+
+    # exp(-tau H)c^{dag}_j|g.s>
+    thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[1]
+    # Compute exp(-(beta-tau) H)|g.s> on the tau mesh from the left
+    beta_taus = reverse(beta .- taus)
+    
+    state_left = _create_quantum_state(vc, state_gs)
+    thetas_tau_left = imag_time_evolve(ham_op, vc, state_left, beta_taus, delta_theta)[1]
+
+    Gfunc_ij_list = Complex{Float64}[]
+    ntaus = length(taus)
+    E_gs = get_expectation_value(ham_op, state_gs)
+    for t in eachindex(taus)
+        # exp(-tau H)c^{dag}_j|g.s>
+        state_right = _create_quantum_state(vc, thetas_tau_right[t], state0_ex)
+        # circicut for exp(-(beta-tau) H) |g.s>
+        vc_left = copy(vc)
+        update_circuit_param!(vc_left, thetas_tau_left[ntaus-t+1])
+        state_gs_debug = copy(state_gs)
+        update_quantum_state!(vc_left, state_gs_debug)
+        # Divide the qubit operator of c_i into its real and imaginary parts.
+        op_re, op_im = divide_real_imag(c_op)
+        g_re = get_transition_amplitude_with_obs(vc_left, state_gs, op_re, state_right)
+        g_im = get_transition_amplitude_with_obs(vc_left, state_gs, op_im, state_right)
+        push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(beta * E_gs))
+    end
+    Gfunc_ij_list
+end
+
+
+#ノルムを考慮した場合
+function compute_gtau_norm(
+    ham_op::OFQubitOperator,
+    c_op::OFQubitOperator,
+    cdagg_op::OFQubitOperator,
+    vc::VariationalQuantumCircuit, #VQEを実行した後の基底状態
+    state_gs::QulacsQuantumState,
     state0_ex::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8)
 
@@ -204,40 +273,51 @@ function compute_gtau(
 
     # state_right_ex: A c^{dag}_j|g.s> (A is a normalization factor)
     # TODO: function apply_qubit_opに!を付けて書き換える。
-    state_right = _create_quantum_state(vc, state0_gs)
-    circuit_right_ex = copy(vc) #opt_thetasでcircuitが変わるので、新しくcircuit_exを定義する
+    state_right = _create_quantum_state(vc, state_gs)
+    circuit_right_ex = copy(vc) #opt_thetasでcircuitが変わるので、新しくcircuit_exを定義する.
+
+    #!名前変える。
     right_squared_norm = apply_qubit_op(cdagg_op, state_right, circuit_right_ex, state0_ex)
+    
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
 
+
     # exp(-tau H)c^{dag}_j|g.s>
-    #imag_time_evolveとapply_qubit_opのvcはかえる
-    thetas_tau_right = imag_time_evolve(ham_op, vc, state_right_ex, taus, delta_theta)
-    #state_right_list = [
-        #_create_quantum_state(c_, thetas, state0_ex) for thetas in thetas_tau_right
-    #]
+    thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[1]
+    log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[2]
+
 
     # Compute exp(-(beta-tau) H)|g.s> on the tau mesh from the left
     beta_taus = reverse(beta .- taus)
+
     
-    state_left = _create_quantum_state(vc, state0_gs)
-    thetas_tau_left = imag_time_evolve(ham_op, vc, state_left, beta_taus, delta_theta)
+    state_left = _create_quantum_state(vc, state_gs)
+    thetas_tau_left = imag_time_evolve(ham_op, vc, state_left, beta_taus, delta_theta)[1]
+    log_norm_tau_left = imag_time_evolve(ham_op, vc, state_left, beta_taus, delta_theta)[2]
+
 
     Gfunc_ij_list = Complex{Float64}[]
     ntaus = length(taus)
+    E_gs = get_expectation_value(ham_op, state_gs)
+
     for t in eachindex(taus)
         # exp(-tau H)c^{dag}_j|g.s>
         state_right = _create_quantum_state(vc, thetas_tau_right[t], state0_ex)
-
         # circicut for exp(-(beta-tau) H) |g.s>
         vc_left = copy(vc)
         update_circuit_param!(vc_left, thetas_tau_left[ntaus-t+1])
-
+        state_gs_debug = copy(state_gs)
+        update_quantum_state!(vc_left, state_gs_debug)
         # Divide the qubit operator of c_i into its real and imaginary parts.
         op_re, op_im = divide_real_imag(c_op)
-        g_re = get_transition_amplitude_with_obs(vc_left, state0_gs, op_re, state_right)
-        g_im = get_transition_amplitude_with_obs(vc_left, state0_gs, op_im, state_right)
-        push!(Gfunc_ij_list, (g_re + im * g_im) * sqrt(right_squared_norm))
+        g_re = get_transition_amplitude_with_obs(vc_left, state_gs, op_re, state_right)
+        g_im = get_transition_amplitude_with_obs(vc_left, state_gs, op_im, state_right)
+        push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] +　log_norm_tau_left[ntaus-t+1]　+ beta * E_gs))
     end
     Gfunc_ij_list
 end
+
+
+
+
