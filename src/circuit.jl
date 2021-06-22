@@ -34,6 +34,19 @@ function add_CNOT_gate!(circuit::QulacsQuantumCircuit, control::Int, target::Int
     circuit.pyobj.add_CNOT_gate(control-1, target-1)
 end
 
+function add_RY_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int, angle::Float64)
+    circuit.pyobj.add_RY_gate(idx_qubit-1, angle)
+end
+
+function add_RZ_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int, angle::Float64)
+    circuit.pyobj.add_RZ_gate(idx_qubit-1, angle)
+end
+
+
+
+function add_SWAP_gate!(circuit::QulacsQuantumCircuit, idx_qubit_1::Int, idx_qubit_2::Int)
+    circuit.pyobj.add_SWAP_gate(idx_qubit_1-1, idx_qubit_2-1)
+end
 
 
 ################################################################################
@@ -95,6 +108,28 @@ end
 function add_Z_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_S_gate(idx_qubit-1)
 end
+
+function add_X_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_X_gate(idx_qubit-1)
+end
+
+function add_CNOT_gate!(circuit::QulacsParametricQuantumCircuit, control::Int, target::Int)
+    circuit.pyobj.add_CNOT_gate(control-1, target-1)
+end
+
+function add_RY_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int, angle::Float64)
+    circuit.pyobj.add_RY_gate(idx_qubit-1, angle)
+end
+
+function add_RZ_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int, angle::Float64)
+    circuit.pyobj.add_RZ_gate(idx_qubit-1, angle)
+end
+
+#function add_SWAP_gate!(circuit::QulacsPatametricQuantumCircuit, idx_qubit_1::Int, idx_qubit_2::Int)
+#    circuit.pyobj.add_SWAP_gate(idx_qubit_1-1, idx_qubit_2-1)
+#end
+
+
 
 ################################################################################
 ##################  Variational QUANTUM  CIRCUIT ###############################

@@ -8,6 +8,9 @@ export get_parameter_count, get_parameter
 export add_parametric_RX_gate!
 export add_parametric_RY_gate!
 export add_parametric_RZ_gate!
+export add_RY_gate!
+export add_RZ_gate!
+export add_SWAP_gate!
 export add_gate!
 export get_thetas
 

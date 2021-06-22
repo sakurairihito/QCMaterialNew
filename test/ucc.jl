@@ -6,7 +6,7 @@ import PyCall: pyimport
 import Random
 
 @testset "ucc.uccgsd" begin
-    Random.seed!(1)
+    #Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
 
     nsite = 2 
