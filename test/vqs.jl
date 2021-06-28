@@ -200,11 +200,9 @@ end
     taus = collect(range(0.0, 1, length=5))
     beta = taus[end]
 
-    Gfunc_ij_list = compute_gtau_before(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list = compute_gtau(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
     Gfunc_ij_list_exact(τ) = -exp(-U * τ + µ * τ)
     Gfunc_ij_list_ref = Gfunc_ij_list_exact.(taus) 
-    println("Gfunc_ij_list_ref=",Gfunc_ij_list_ref)
-    println("Gfunc_ij_list=",Gfunc_ij_list)
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end
 
@@ -237,42 +235,7 @@ end
     @assert mod(n_electron, 2) == 0
     sparse_mat = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron);
     enes_ed = eigvals(sparse_mat.toarray());
-
     ham_op = jordan_wigner(ham_op)
-
-    #c = QulacsParametricQuantumCircuit(n_qubit)
-    #add_X_gate!(c, 1)
-    #add_X_gate!(c, 2)
-
-    #add_CNOT_gate!(c, 3, 2)
-    #add_RZ_gate!(c, 3, -pi*1)
-    #add_RY_gate!(c, 3, -pi*0.5)
-    #θ1 is used
-    #add_parametric_RY_gate!(c, 3, -pi*0.5)
-    #add_CNOT_gate!(c, 2, 3)
-    #add_RY_gate!(c, 3, pi*0.5)
-    #θ2 is used, but we want to set θ2=θ1
-    #add_parametric_RY_gate!(c, 3, pi*0.5)
-    #add_RZ_gate!(c, 3, pi*1)
-    #add_CNOT_gate!(c, 3, 2)
-
-    #add_CNOT_gate!(c, 4, 1)
-    #add_RZ_gate!(c, 4, -pi*1)
-    #add_RY_gate!(c, 4, -pi*0.5)
-    #θ3 is used
-    #add_parametric_RY_gate!(c, 4, -pi*0.5)
-    #add_CNOT_gate!(c, 1, 4)
-    #dd_RY_gate!(c, 4, pi*0.5)
-    #θ4 is used,  but we want to set θ3=θ4
-    #add_parametric_RY_gate!(c, 4, pi*0.5)
-    #add_RZ_gate!(c, 4, pi*1)
-    #add_CNOT_gate!(c, 4, 1)
-    
-    #ERROR!:no method matching add_SWAP_gate!(::QulacsParametricQuantumCircuit, ::Int64, ::Int64)
-    #add_SWAP_gate!(c, 1, 2) 
-    #add_CNOT_gate!(c, 2, 1)
-    #add_CNOT_gate!(c, 1, 2)
-    #add_CNOT_gate!(c, 2, 1)   
 
     #vc = QulacsVariationalQuantumCircuit(c)
     vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
@@ -299,12 +262,6 @@ end
     opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback)
     
     Eigval_min = minimum(enes_ed)
-    ε_2 = (-ε - (ε^2 + 4*t^2)^0.5) / 2
-    println("E_vqe =",cost_history[end])
-    println("Eigaval_min_ed=",Eigval_min)
-    println("Eigval_min_analytical=",2 * ε_2)
-    #@test abs(Eigval_min - 2 * ε_2) < 1e-6
-    #@test abs(Eigval_min - cost_history[end]) < 1e-6
 
     #c^{dag},c
     c_op = FermionOperator("$(up1) ", 1.0)
@@ -328,59 +285,26 @@ end
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
     update_quantum_state!(vc, state_gs)
-    println("state_gs=", get_vector(state_gs)) 
     E_gs_debug = get_expectation_value(ham_op, state_gs)
-    #println("E_gs_debug =", E_gs_debug )
     norm_gs = inner_product(state_gs, state_gs)
-    println("norm_gs=", norm_gs) #norm_gs=0.9999999999999997 + 0.0im
     state0_ex = QulacsQuantumState(n_qubit,0b0000)
     
     taus = collect(range(0.0, 1, length=10))
     beta = taus[end]
 
-    
-    A = [-ε -t
-    -t 0]
-    println(A)
-    println(typeof(A))
-    e,u = eigen(A) 
-    println(e)
-    println(u)
-    ε_minus = e[1]
-    println("2*ε_minus", ε_minus*2 )
-    ε_plus = e[2] 
-
-    U_11 = u[1,1]
-    U_21 = u[2,1]
-    U_12 = u[1,2]
-    U_22 = u[2,2]
-
-    
-
-    #exact G_func
     k = (2 * t)/(ε + (ε^2 + 4 * t^2)^0.5)  
     s = (2 * t)/(ε - (ε^2 + 4 * t^2)^0.5)
     D = (1 + k^2)^0.5
     E = (1 + s^2)^0.5
     ε_1 = (-ε - (ε^2 + 4*t^2)^0.5) / 2
-    println("ε_1=", ε_1)
     ε_2 = (-ε + (ε^2 + 4*t^2)^0.5) / 2
-    println("ε_2=", ε_2)
     coef_1 = (k - s) / (E^2 * D)
     coef_3 = (s - k) * (s*k + 1) / (E^3 * D^2)
     E_G = 2*ε_1
-    #println("E_G =", E_G )
-    E_12 = 2 * ε_1 + ε_2
-    E_34 = ε_1 + 2 * ε_2
     
-    #-exp(τ * E_G)*(E)^(-2)*(H+G)
-    #Gfunc_ij_exact(τ) = -exp(τ * E_G)/(E^2) * ((exp(-τ * E_12) * coef_1 * (k-s)/(E^2 * D) * (s^2 + 1)) + (exp(-τ * E_34) * coef_3 * (s-k)/(E * D^2) * (k*s + 1)))
     Gfunc_ij_exact(τ) = -exp(τ * (-ε_2)) * coef_1^2
     Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
 
-    println("Gfunc_ij_list_ref=",Gfunc_ij_list_ref)
-
-    Gfunc_ij_list = compute_gtau_norm(ham_op, c_op, cdagg_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
-    println("Gfunc_ij_list=",Gfunc_ij_list)
+    Gfunc_ij_list = compute_gtau(ham_op, c_op, cdagg_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end
