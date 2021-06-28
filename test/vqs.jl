@@ -2,6 +2,7 @@ using Test
 using LinearAlgebra
 using QCMaterial
 
+
 import Random
 import PyCall: pyimport
 
@@ -177,6 +178,7 @@ end
     
     ham_op = generate_ham_1d_hubbard(t, U, nsite, μ)
     ham_op = jordan_wigner(ham_op)
+     
     
     c_op = FermionOperator("$(down) ", 1.0)
     c_op = jordan_wigner(c_op)
@@ -184,6 +186,8 @@ end
     cdagg_op = jordan_wigner(cdagg_op)
 
     c_ = QulacsParametricQuantumCircuit(n_qubit)
+    #add_X_gate!(c_, 1)
+    #add_X_gate!(c_, 2)
     target = [1,2] 
     pauli_ids = [pauli_Y, pauli_Y] 
     add_parametric_multi_Pauli_rotation_gate!(c_, target, pauli_ids, 0.01*pi)
@@ -196,11 +200,12 @@ end
     taus = collect(range(0.0, 1, length=5))
     beta = taus[end]
 
-    Gfunc_ij_list = compute_gtau_norm(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list = compute_gtau_before(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
     Gfunc_ij_list_exact(τ) = -exp(-U * τ + µ * τ)
     Gfunc_ij_list_ref = Gfunc_ij_list_exact.(taus) 
+    println("Gfunc_ij_list_ref=",Gfunc_ij_list_ref)
+    println("Gfunc_ij_list=",Gfunc_ij_list)
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
-
 end
 
 
@@ -208,10 +213,9 @@ end
 @testset "vqs.compute_gtau_norm_2site_hubbard_U=0_debug" begin
     """
     """
-    
     nsite = 2
     n_qubit　= 2*nsite
-    t = 0.01
+    t = 1.0
     ε = 1.0
     up1 = up_index(1)
     dn1 = down_index(1)
@@ -236,42 +240,47 @@ end
 
     ham_op = jordan_wigner(ham_op)
 
-    #vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+    #c = QulacsParametricQuantumCircuit(n_qubit)
+    #add_X_gate!(c, 1)
+    #add_X_gate!(c, 2)
 
-    c = QulacsParametricQuantumCircuit(n_qubit)
-    add_X_gate!(c, 1)
-    add_X_gate!(c, 2)
+    #add_CNOT_gate!(c, 3, 2)
+    #add_RZ_gate!(c, 3, -pi*1)
+    #add_RY_gate!(c, 3, -pi*0.5)
+    #θ1 is used
+    #add_parametric_RY_gate!(c, 3, -pi*0.5)
+    #add_CNOT_gate!(c, 2, 3)
+    #add_RY_gate!(c, 3, pi*0.5)
+    #θ2 is used, but we want to set θ2=θ1
+    #add_parametric_RY_gate!(c, 3, pi*0.5)
+    #add_RZ_gate!(c, 3, pi*1)
+    #add_CNOT_gate!(c, 3, 2)
 
-    add_CNOT_gate!(c, 3, 2)
-    add_RZ_gate!(c, 3, -pi*1)
-    add_RY_gate!(c, 3, -pi*0.5)
-    add_parametric_RY_gate!(c, 3, -pi*0.5)
-    add_CNOT_gate!(c, 2, 3)
-    add_RY_gate!(c, 3, pi*0.5)
-    add_parametric_RY_gate!(c, 3, pi*0.5)
-    add_RZ_gate!(c, 3, pi*1)
-    add_CNOT_gate!(c, 3, 2)
-
-    add_CNOT_gate!(c, 4, 1)
-    add_RZ_gate!(c, 4, -pi*1)
-    add_RY_gate!(c, 4, -pi*0.5)
-    add_parametric_RY_gate!(c, 4, -pi*0.5)
-    add_CNOT_gate!(c, 1, 4)
-    add_RY_gate!(c, 4, pi*0.5)
-    add_parametric_RY_gate!(c, 4, pi*0.5)
-    add_RZ_gate!(c, 4, pi*1)
-    add_CNOT_gate!(c, 4, 1)
-
+    #add_CNOT_gate!(c, 4, 1)
+    #add_RZ_gate!(c, 4, -pi*1)
+    #add_RY_gate!(c, 4, -pi*0.5)
+    #θ3 is used
+    #add_parametric_RY_gate!(c, 4, -pi*0.5)
+    #add_CNOT_gate!(c, 1, 4)
+    #dd_RY_gate!(c, 4, pi*0.5)
+    #θ4 is used,  but we want to set θ3=θ4
+    #add_parametric_RY_gate!(c, 4, pi*0.5)
+    #add_RZ_gate!(c, 4, pi*1)
+    #add_CNOT_gate!(c, 4, 1)
+    
+    #ERROR!:no method matching add_SWAP_gate!(::QulacsParametricQuantumCircuit, ::Int64, ::Int64)
     #add_SWAP_gate!(c, 1, 2) 
-    add_CNOT_gate!(c, 2, 1)
-    add_CNOT_gate!(c, 1, 2)
-    add_CNOT_gate!(c, 2, 1)   
+    #add_CNOT_gate!(c, 2, 1)
+    #add_CNOT_gate!(c, 1, 2)
+    #add_CNOT_gate!(c, 2, 1)   
 
-    vc = QulacsVariationalQuantumCircuit(c)
-
+    #vc = QulacsVariationalQuantumCircuit(c)
+    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+    
     #Perform VQE
     function cost(theta_list)
         state0_gs = create_hf_state(n_qubit, n_electron)
+        #state0_gs = QulacsQuantumState(n_qubit,0b0000)
         update_circuit_param!(vc, theta_list)
         update_quantum_state!(vc, state0_gs)
         get_expectation_value(ham_op, state0_gs)
@@ -303,30 +312,75 @@ end
     cdagg_op = FermionOperator("$(up1)^ ", 1.0)
     cdagg_op = jordan_wigner(cdagg_op)
 
-    ##Ansatz -> UCCGSD　
+    ##Ansatz -> apply_qubit_op & imag_time_evolve
+    c_ex = QulacsParametricQuantumCircuit(n_qubit)
+    
+    add_X_gate!(c_ex, 1)
+    add_X_gate!(c_ex, 2)
+    add_X_gate!(c_ex, 3)
+    target = [2,4] 
+    pauli_ids = [pauli_Y, pauli_Y] 
+    add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.2*pi)
+    add_S_gate!(c_ex, 4)
+
+    vc_ex = QulacsVariationalQuantumCircuit(c_ex)
+
+    #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
     update_quantum_state!(vc, state_gs)
-    state0_gs = QulacsQuantumState(n_qubit,0b0011)　
-    state0_ex = QulacsQuantumState(n_qubit,0b0111)
+    println("state_gs=", get_vector(state_gs)) 
+    E_gs_debug = get_expectation_value(ham_op, state_gs)
+    #println("E_gs_debug =", E_gs_debug )
+    norm_gs = inner_product(state_gs, state_gs)
+    println("norm_gs=", norm_gs) #norm_gs=0.9999999999999997 + 0.0im
+    state0_ex = QulacsQuantumState(n_qubit,0b0000)
     
     taus = collect(range(0.0, 1, length=10))
     beta = taus[end]
 
+    
+    A = [-ε -t
+    -t 0]
+    println(A)
+    println(typeof(A))
+    e,u = eigen(A) 
+    println(e)
+    println(u)
+    ε_minus = e[1]
+    println("2*ε_minus", ε_minus*2 )
+    ε_plus = e[2] 
+
+    U_11 = u[1,1]
+    U_21 = u[2,1]
+    U_12 = u[1,2]
+    U_22 = u[2,2]
+
+    
+
     #exact G_func
-    #k = -ε/(2 * t) + (ε^2 + 4 * t^2) / (2 * t)
-    #s = -ε/(2 * t) - (ε^2 + 4 * t^2) / (2 * t)
-    ##D = 1/((1 + k^2)^(0.5))
-    #E = 1/((1 + s^2)^(0.5))
-    #ε_1 = (-ε + (ε^2 + 4*t^2)^0.5) / 2
-    #ε_2 = (-ε - (ε^2 + 4*t^2)^0.5) / 2
-    #coef_1 = (s - k) * k * (-1 + k^2) / (D^4 * E)
-    #coef_3 = (s - k) * k * (1 + s*k) / (D^3 * E^2)
-    #E_G = 2*ε_2
+    k = (2 * t)/(ε + (ε^2 + 4 * t^2)^0.5)  
+    s = (2 * t)/(ε - (ε^2 + 4 * t^2)^0.5)
+    D = (1 + k^2)^0.5
+    E = (1 + s^2)^0.5
+    ε_1 = (-ε - (ε^2 + 4*t^2)^0.5) / 2
+    println("ε_1=", ε_1)
+    ε_2 = (-ε + (ε^2 + 4*t^2)^0.5) / 2
+    println("ε_2=", ε_2)
+    coef_1 = (k - s) / (E^2 * D)
+    coef_3 = (s - k) * (s*k + 1) / (E^3 * D^2)
+    E_G = 2*ε_1
+    #println("E_G =", E_G )
+    E_12 = 2 * ε_1 + ε_2
+    E_34 = ε_1 + 2 * ε_2
+    
+    #-exp(τ * E_G)*(E)^(-2)*(H+G)
+    #Gfunc_ij_exact(τ) = -exp(τ * E_G)/(E^2) * ((exp(-τ * E_12) * coef_1 * (k-s)/(E^2 * D) * (s^2 + 1)) + (exp(-τ * E_34) * coef_3 * (s-k)/(E * D^2) * (k*s + 1)))
+    Gfunc_ij_exact(τ) = -exp(τ * (-ε_2)) * coef_1^2
+    Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
 
-    #Gfunc_ij_exact(τ) = -(1 / 2^0.5) * (1 / exp(-beta * E_G)) * (1/D^2) * exp(-(beta-τ)*2*ε_2) * (exp(-τ * (ε_1 +　2 * ε_2)) * coef_1 * (k - k^2) + exp(-τ * (2 * ε_1 + ε_2)) * coef_3 * (-k + k^2)) 
-    #Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
+    println("Gfunc_ij_list_ref=",Gfunc_ij_list_ref)
 
-    #Gfunc_ij_list = compute_gtau_norm(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
-    #@test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
-
+    Gfunc_ij_list = compute_gtau_norm(ham_op, c_op, cdagg_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+    println("Gfunc_ij_list=",Gfunc_ij_list)
+    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end

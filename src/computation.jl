@@ -13,7 +13,7 @@ The circuit object will be updated on exit.
 The squared norm of op * |state_ket>  will be returned.
 state0_bra will not be modified.
 """
-function apply_qubit_op(
+function apply_qubit_op!(
     op::QubitOperator,
     state_ket::QuantumState,
     circuit::VariationalQuantumCircuit, state0_bra::QuantumState,

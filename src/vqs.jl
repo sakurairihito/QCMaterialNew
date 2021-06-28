@@ -171,31 +171,13 @@ function _create_quantum_state(c, theta::Vector{Float64}, state0::QuantumState)
     _create_quantum_state(c_, state0_)
 end
 
-"""
-Calculate green function based on imaginary-time evolution.
 
-ham_op:
-    Hamiltonian
-c_op:
-    annihilation operator 
-cdagg_op:
-    creation operator 
-vc:
-    Variational circuit. The current value of variational parameters are
-    used as the initial value of the imaginary-time evolution.
-state0_gs:
-    The initial state is the ground state of the hamiltonian
-state0_ex:
-    The excited state to which the creation operator  is applied to
-taus:
-    list of imaginary times in ascending order
-    The first element must be 0.0. The last element must be beta.
-return:
-    The list of Green function at each tau 
-"""
+
+
+
 
 #ノルムを考慮した場合
-function compute_gtau_norm(
+function compute_gtau_before(
     ham_op::OFQubitOperator,
     c_op::OFQubitOperator,
     cdagg_op::OFQubitOperator,
@@ -223,7 +205,7 @@ function compute_gtau_norm(
     circuit_right_ex = copy(vc) #opt_thetasでcircuitが変わるので、新しくcircuit_exを定義する.
 
     #!TODO:名前変える。
-    right_squared_norm = apply_qubit_op(cdagg_op, state_right, circuit_right_ex, state0_ex)
+    right_squared_norm = apply_qubit_op!(cdagg_op, state_right, circuit_right_ex, state0_ex)
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
 
@@ -238,26 +220,119 @@ function compute_gtau_norm(
     #state_left = copy(state_gs)?
     #state_left = _create_quantum_state(vc, state_gs)
     # FIXME: THIS IS TRIVIAL
-    thetas_tau_left = imag_time_evolve(ham_op, vc, state_gs, beta_taus, delta_theta)[1]
+    #thetas_tau_left = imag_time_evolve(ham_op, vc, state_gs, beta_taus, delta_theta)[1]
     log_norm_tau_left = imag_time_evolve(ham_op, vc, state_gs, beta_taus, delta_theta)[2]
 
     Gfunc_ij_list = Complex{Float64}[]
     ntaus = length(taus)
     E_gs = get_expectation_value(ham_op, state_gs)
 
+
+
     for t in eachindex(taus)
         # exp(-tau H)c^{dag}_j|g.s>
         state_right = _create_quantum_state(vc, thetas_tau_right[t], state0_ex)
         # circicut for exp(-(beta-tau) H) |g.s>
-        vc_left = copy(vc)
-        update_circuit_param!(vc_left, thetas_tau_left[ntaus-t+1])
+        #vc_left = copy(vc)
+        #update_circuit_param!(vc_left, thetas_tau_left[ntaus-t+1])
         state_gs_debug = copy(state_gs)
-        update_quantum_state!(vc_left, state_gs_debug)
+        #update_quantum_state!(vc_left, state_gs_debug)
+        #println("compute_norm_left_ref=", - E_gs * (beta - t))
+        #println("compute_norm_left=", log_norm_tau_left[t])
         # Divide the qubit operator of c_i into its real and imaginary parts.
         op_re, op_im = divide_real_imag(c_op)
-        g_re = get_transition_amplitude_with_obs(vc_left, state_gs, op_re, state_right)
-        g_im = get_transition_amplitude_with_obs(vc_left, state_gs, op_im, state_right)
+        g_re = get_transition_amplitude(op_re, state_gs_debug, state_right)
+        g_im = get_transition_amplitude(op_im, state_gs_debug, state_right)
+        #g_re = get_transition_amplitude_with_obs(vc_left, state_gs, op_re, state_right)
+        #g_im = get_transition_amplitude_with_obs(vc_left, state_gs, op_im, state_right)
         push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] +　log_norm_tau_left[ntaus-t+1]　+ beta * E_gs))
+        #push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] - E_gs * (beta - t)　+ beta * E_gs))
+    end
+
+    Gfunc_ij_list
+end
+
+"""
+Calculate green function based on imaginary-time evolution.
+
+ham_op:
+    Hamiltonian
+c_op:
+    annihilation operator 
+cdagg_op:
+    creation operator 
+vc:
+    Variational circuit. The current value of variational parameters are
+    used as the initial value of the imaginary-time evolution.
+state0_gs:
+    The initial state is the ground state of the hamiltonian
+state0_ex:
+    The excited state to which the creation operator  is applied to
+taus:
+    list of imaginary times in ascending order
+    The first element must be 0.0. The last element must be beta.
+return:
+    The list of Green function at each tau 
+"""
+
+function compute_gtau_norm(
+    ham_op::OFQubitOperator,
+    c_op::OFQubitOperator,
+    cdagg_op::OFQubitOperator,
+    vc_ex::VariationalQuantumCircuit,
+    state_gs::QulacsQuantumState,　
+    state0_ex::QulacsQuantumState,
+    taus::Vector{Float64}, delta_theta=1e-8)
+
+    if taus[1] != 0.0
+        error("The first element of taus must be 0!")
+    end
+
+    if !all(taus[2:end] .> taus[1:end-1])
+       error("taus must in strictly asecnding order!")
+    end
+
+    # Inverse temperature
+    beta = taus[end]
+
+    circuit_right_ex = copy(vc_ex) 
+    right_squared_norm = apply_qubit_op!(cdagg_op, state_gs, circuit_right_ex, state0_ex)
+    state_right_ex = copy(state0_ex)
+    update_quantum_state!(circuit_right_ex, state_right_ex)
+
+    #debug
+    println("right_squared_norm=", right_squared_norm)
+    #debug
+    println("state_right_ex=", get_vector(state_right_ex))
+    
+    #debug2
+    norm_cdag_gs = inner_product(state_right_ex, state_right_ex)
+    println(" norm_c^dag_gs=",  norm_cdag_gs) 
+
+    # exp(-tau H)c^{dag}_j|g.s>
+    thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[1]
+    log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[2]
+    println("log_norm_tau_right=", log_norm_tau_right)
+    
+    Gfunc_ij_list = Complex{Float64}[]
+    ntaus = length(taus)
+    E_gs = get_expectation_value(ham_op, state_gs)
+
+    beta_taus = reverse(beta .- taus)
+    #log_norm_tau_left = imag_time_evolve(ham_op, vc_ex, state_gs, beta_taus, delta_theta)[2]
+    
+
+    for t in eachindex(taus)
+        state_right = _create_quantum_state(vc_ex, thetas_tau_right[t], state0_ex)
+        state_left = copy(state_gs)
+        # Divide the qubit operator of c_i into its real and imaginary parts.
+        op_re, op_im = divide_real_imag(c_op)
+        g_re = get_transition_amplitude(op_re, state_left, state_right)
+        g_im = get_transition_amplitude(op_im, state_left, state_right)
+        println("log_norm_tau_right[t] =", log_norm_tau_right[t] )
+        println("E_gs *  t =",E_gs *  taus[t] )
+        #push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] + log_norm_tau_left[ntaus-t+1] + beta * E_gs))
+        push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] + E_gs *  taus[t]))
     end
     Gfunc_ij_list
 end
