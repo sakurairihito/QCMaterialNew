@@ -220,6 +220,7 @@ function compute_gtau(
     right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex)
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
+    #println("state_right_ex=", get_vector(state_right_ex))
 
     # exp(-tau H)c^{dag}_j|g.s>
     thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[1]
@@ -239,7 +240,4 @@ function compute_gtau(
     end
     Gfunc_ij_list
 end
-
-
-
 

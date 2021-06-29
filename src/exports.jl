@@ -3,7 +3,7 @@ export PauliID, pauli_I, pauli_X, pauli_Y, pauli_Z
 export QuantumCircuit, QulacsQuantumCircuit
 export ParametricQuantumCircuit, QulacsParametricQuantumCircuit
 export add_parametric_multi_Pauli_rotation_gate!, set_parameter!
-export add_CNOT_gate!, add_H_gate!, add_X_gate!, add_S_gate!, add_Z_gate!
+export add_CNOT_gate!, add_H_gate!, add_X_gate!, add_S_gate!,add_Sdag_gate!, add_Z_gate!
 export get_parameter_count, get_parameter
 export add_parametric_RX_gate!
 export add_parametric_RY_gate!
@@ -34,7 +34,7 @@ export hermitian_conjugated
 export create_observable
 
 export imag_time_evolve
-export compute_gtau, compute_gtau_norm, compute_gtau_before
+export compute_gtau
 export compute_A
 export compute_C
 export compute_thetadot
