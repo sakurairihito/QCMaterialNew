@@ -15,7 +15,7 @@ using QCMaterial
     set_computational_basis!(state0_bra, 0b10)
     circuit_bra = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
 
-    squared_norm = apply_qubit_op(op, state, circuit_bra, state0_bra)
+    squared_norm = apply_qubit_op!(op, state, circuit_bra, state0_bra)
 
     # Verify the result
     @test squared_norm ≈ 1.
