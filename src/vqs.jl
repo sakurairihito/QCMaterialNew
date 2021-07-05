@@ -232,6 +232,8 @@ function compute_gtau(
     # Inverse temperature
     beta = taus[end]
 
+    println("state_gs=", get_vector(state_gs))
+
     circuit_right_ex = copy(vc_ex) 
     right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex)
     state_right_ex = copy(state0_ex)

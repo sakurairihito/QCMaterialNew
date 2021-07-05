@@ -87,17 +87,19 @@ import PyCall: pyimport
     #get_thetas(circuit)
     #set_initial_parameter -> circuit
 
-    theta_init_vcex = rand(num_theta(vc_ex))
-    init_theta_vcex_list = theta_init_vcex
-    update_circuit_param!(vc_ex, init_theta_vcex_list)
+    #theta_init_vcex = rand(num_theta(vc_ex))
+    #init_theta_vcex_list = theta_init_vcex
+    #update_circuit_param!(vc_ex, init_theta_vcex_list)
 
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
     update_quantum_state!(vc, state_gs)
+
+    #delete?
     E_gs_debug = get_expectation_value(ham_op, state_gs)
     norm_gs = inner_product(state_gs, state_gs)
-    state0_ex = QulacsQuantumState(n_qubit,0b0000)
-    
+
+    state0_ex = QulacsQuantumState(n_qubit,0b0010)
     taus = collect(range(0.0, 1, length=200))
     beta = taus[end]
 
@@ -115,7 +117,7 @@ import PyCall: pyimport
     Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
     #println("Gfunc_ij_list_ref=", Gfunc_ij_list_ref)
 
-    #Gfunc_ij_list = -compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list = -compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     #println("Gfunc_ij_list=", Gfunc_ij_list)
     #@test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end

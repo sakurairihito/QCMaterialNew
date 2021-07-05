@@ -38,3 +38,9 @@ end
 #end
 
 
+@testset "util.mk_scipy_minimize" begin
+    # Some test for numerical_grad
+    f(x) = x[1] + 2*x[2]
+    deriv = numerical_grad(f, zeros(2))
+    @assert deriv ≈ [1.0, 2.0]
+end
