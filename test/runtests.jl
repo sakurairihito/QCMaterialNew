@@ -1,3 +1,4 @@
+using Base: nonmissingtype_checked
 using QCMaterial
 using QCMaterial.HartreeFock
 using Test

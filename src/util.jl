@@ -1,4 +1,4 @@
-export topylist, doublefunc, numerical_grad
+export topylist, doublefunc, numerical_grad, count_qubit_in_qubit_operator
 export up_index, down_index, update_circuit_param!, update_quantum_state!
 using PyCall
 

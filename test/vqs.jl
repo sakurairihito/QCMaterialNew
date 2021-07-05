@@ -22,7 +22,7 @@ import PyCall: pyimport
     new_thetas .+= 1e-8
     c_new = copy(c)
     update_circuit_param!(c_new, new_thetas)
-    A = compute_A(c, state0, 1e-2)
+    A = compute_A(c, state0, 1e-5)
     @test A ≈ [0.25] atol=1e-5
 end
 
@@ -178,7 +178,6 @@ end
     
     ham_op = generate_ham_1d_hubbard(t, U, nsite, μ)
     ham_op = jordan_wigner(ham_op)
-     
     
     c_op = FermionOperator("$(down) ", 1.0)
     c_op = jordan_wigner(c_op)
@@ -270,17 +269,20 @@ end
     right_op = jordan_wigner(right_op)
 
     ##Ansatz -> apply_qubit_op & imag_time_evolve
-    c_ex = QulacsParametricQuantumCircuit(n_qubit)
+    #c_ex = QulacsParametricQuantumCircuit(n_qubit)
     
-    add_X_gate!(c_ex, 1)
-    add_X_gate!(c_ex, 2)
-    add_X_gate!(c_ex, 3)
-    target = [2,4] 
-    pauli_ids = [pauli_Y, pauli_Y] 
-    add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.2*pi)
-    add_S_gate!(c_ex, 4)
+    #add_X_gate!(c_ex, 1)
+    #add_X_gate!(c_ex, 2)
+    #add_X_gate!(c_ex, 3)
+    #target = [2,4] 
+    #pauli_ids = [pauli_Y, pauli_Y] 
+    #add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.2*pi)
+    #add_S_gate!(c_ex, 4)
 
-    vc_ex = QulacsVariationalQuantumCircuit(c_ex)
+    #vc_ex = QulacsVariationalQuantumCircuit(c_ex)
+
+    #debug
+    vc_ex = uccgsd(n_qubit, orbital_rot=false, conserv_Sz_singles=false) 
 
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
@@ -311,6 +313,8 @@ end
     Gfunc_ij_list = compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end
+
+
 
 @testset "vqs.compute_gtau_2site_hubbard_U=0_tau_minus" begin
     """
@@ -374,16 +378,27 @@ end
     left_op = jordan_wigner(left_op)
 
     ##Ansatz -> apply_qubit_op & imag_time_evolve
-    c_ex = QulacsParametricQuantumCircuit(n_qubit)
-    
-    add_X_gate!(c_ex, 2)
-    target = [2,4] 
-    pauli_ids = [pauli_Y, pauli_Y] 
-    add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.3*pi)
-    add_Sdag_gate!(c_ex, 4)
+    #c_ex = QulacsParametricQuantumCircuit(n_qubit)
+    #add_X_gate!(c_ex, 2)
+    #target = [2,4] 
+    #pauli_ids = [pauli_Y, pauli_Y] 
+    #add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.3*pi)
 
+    #debug
+    #target_debug = [1,3] 
+    #pauli_ids_debug = [pauli_Z, pauli_X] 
+    #add_parametric_multi_Pauli_rotation_gate!(c_ex, target_debug, pauli_ids_debug, 0.3*pi)
 
-    vc_ex = QulacsVariationalQuantumCircuit(c_ex)
+    #add_Sdag_gate!(c_ex, 4)
+    #vc_ex = QulacsVariationalQuantumCircuit(c_ex)
+
+    vc_ex = uccgsd(n_qubit, orbital_rot=false, conserv_Sz_singles=false) 
+    #get_thetas(circuit)
+    #set_initial_parameter -> circuit
+
+    theta_init_vcex = rand(num_theta(vc_ex))
+    init_theta_vcex_list = theta_init_vcex
+    update_circuit_param!(vc_ex, init_theta_vcex_list)
 
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
@@ -409,7 +424,7 @@ end
     Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
     #println("Gfunc_ij_list_ref=", Gfunc_ij_list_ref)
 
-    Gfunc_ij_list = -compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+    #Gfunc_ij_list = -compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     #println("Gfunc_ij_list=", Gfunc_ij_list)
-    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
+    #@test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end
