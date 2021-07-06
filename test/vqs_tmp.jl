@@ -83,7 +83,7 @@ import PyCall: pyimport
     #add_Sdag_gate!(c_ex, 4)
     #vc_ex = QulacsVariationalQuantumCircuit(c_ex)
 
-    vc_ex = uccgsd(n_qubit, orbital_rot=false, conserv_Sz_singles=false) 
+    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false) 
     #get_thetas(circuit)
     #set_initial_parameter -> circuit
 
@@ -104,7 +104,7 @@ import PyCall: pyimport
     norm_gs = inner_product(state_gs, state_gs)
 
     state0_ex = QulacsQuantumState(n_qubit,0b0010)
-    taus = collect(range(0.0, 1, length=200))
+    taus = collect(range(0.0, 0.02, length=4))
     beta = taus[end]
 
     k = (2 * t)/(ε + (ε^2 + 4 * t^2)^0.5)  

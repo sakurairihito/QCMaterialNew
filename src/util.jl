@@ -87,9 +87,7 @@ function mk_scipy_minimize(method::String="BFGS", callback=nothing,
     )
     scipy_opt = pyimport("scipy.optimize")
     function minimize(cost, x0)
-        println("method: ", method)
         res = scipy_opt.minimize(cost, x0, method=method, callback=callback, options=options)
-        println(res)
         res["x"]
     end
     return minimize

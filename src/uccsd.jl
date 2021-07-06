@@ -139,6 +139,9 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
+    if !orbital_rot && nocc < 0
+        error("nocc must be given when orbital_rot = false!")
+    end
     circuit = UCCQuantumCircuit(n_qubit)
 
     norb = n_qubit ÷ 2
@@ -148,7 +151,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     sz = [1, -1]
-    
+
     # Singles
     for (a_spatial, i_spatial) in (Iterators.product(cr_range, anh_range))
         for ispin1 in 1:2, ispin2 in 1:2
@@ -159,7 +162,6 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
             a_spin_orbital = so_idx(a_spatial, ispin1)
             i_spin_orbital = so_idx(i_spatial, ispin2)
             #t1 operator
-            #println("gen_t1", a_spin_orbital, " ", i_spin_orbital)
             generator = gen_t1(a_spin_orbital, i_spin_orbital)
             #Add t1 into the circuit
             add_parametric_circuit_using_generator!(circuit, generator, 0.0)
@@ -184,7 +186,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
             generator = gen_p_t2(aa, ia, bb, jb)
             #Add p-t2 into the circuit
             add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-         end
-      end
+        end
+    end
     circuit
 end

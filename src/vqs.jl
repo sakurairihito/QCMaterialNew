@@ -112,7 +112,7 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState,delta_theta=1e-3)
     #compute A
     A = compute_A(vc, state0, delta_theta)
-    #println("A=", A)
+    println("A=", A)
     #compute inverse of A
     InvA = inv(A)
     #println("InvA=", InvA)
@@ -234,8 +234,10 @@ function compute_gtau(
 
     println("state_gs=", get_vector(state_gs))
 
+    min = mk_scipy_minimize("BFGS", nothing, Dict("eps" => 1e-5))
     circuit_right_ex = copy(vc_ex) 
-    right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex)
+    right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex,
+      min)
     state_right_ex = copy(state0_ex)
 
     #debug 

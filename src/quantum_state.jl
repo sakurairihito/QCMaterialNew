@@ -36,3 +36,7 @@ end
 function get_vector(state::QulacsQuantumState)
     state.pyobj.get_vector()
 end
+
+function get_squared_norm(state::QulacsQuantumState)
+    state.pyobj.get_squared_norm()
+end

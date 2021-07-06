@@ -25,9 +25,13 @@ function apply_qubit_op!(
         update_circuit_param!(circuit, thetas)
         re_ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
         im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
-        println("abs2 ", thetas, " ", -abs2(re_ + im_ * im))
-        -abs2(re_ + im_ * im)
+        #println("abs2 ", thetas, " ", -abs2(re_ + im_ * im))
+        #println("abs2 ", -abs2(re_ + im_ * im))
+        #-abs2(re_ + im_ * im)
+        abs2(1.0 - (re_ + im_ * im))
     end
+
+    #println("circuit: ", circuit)
 
     #1 parameter random
     #theta_init_vcex = rand(num_theta(circuit))
@@ -43,10 +47,14 @@ function apply_qubit_op!(
     opt_thetas = minimizer(cost, get_thetas(circuit))
     println("cost_param_0_after_opt=", cost(opt_thetas))
 
+    norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
+
     update_circuit_param!(circuit, opt_thetas)
     re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
     im__ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
-    re__ + im__ * im
+    z = re__ + im__ * im
+    println("Match in apply_qubit_op!: ", z/norm_right)
+    return z
     #-cost(opt_thetas)
 end
 
@@ -58,17 +66,17 @@ function get_transition_amplitude_with_obs(
     op::QubitOperator,
     state_ket::QuantumState)
     #debug
-    println("")
-    println("state_ket(Not applied circuit)=", get_vector(state_ket)) 
+    #println("")
+    #println("state_ket(Not applied circuit)=", get_vector(state_ket)) 
     #end debug 
     state_bra = copy(state0_bra)
-    println("thetas ", get_thetas(circuit))
+    #println("thetas ", get_thetas(circuit))
     update_quantum_state!(circuit, state_bra)
     #debug
-    println("state_bra(applied circuit)=", get_vector(state_bra))
+    #println("state_bra(applied circuit)=", get_vector(state_bra))
     #end debug
-    println("trans_amp ", get_transition_amplitude(op, state_bra, state_ket))
-    println("")
+    #println("trans_amp ", get_transition_amplitude(op, state_bra, state_ket))
+    #println("")
     return get_transition_amplitude(op, state_bra, state_ket)
     #debug
     #println("get_transition_amplitude=",get_transition_amplitude(op, state_bra, state_ket))
