@@ -25,6 +25,7 @@ function apply_qubit_op!(
         update_circuit_param!(circuit, thetas)
         re_ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
         im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
+        println("abs2 ", thetas, " ", -abs2(re_ + im_ * im))
         -abs2(re_ + im_ * im)
     end
 
@@ -57,14 +58,18 @@ function get_transition_amplitude_with_obs(
     op::QubitOperator,
     state_ket::QuantumState)
     #debug
+    println("")
     println("state_ket(Not applied circuit)=", get_vector(state_ket)) 
     #end debug 
     state_bra = copy(state0_bra)
+    println("thetas ", get_thetas(circuit))
     update_quantum_state!(circuit, state_bra)
     #debug
     println("state_bra(applied circuit)=", get_vector(state_bra))
     #end debug
-    get_transition_amplitude(op, state_bra, state_ket)
+    println("trans_amp ", get_transition_amplitude(op, state_bra, state_ket))
+    println("")
+    return get_transition_amplitude(op, state_bra, state_ket)
     #debug
     #println("get_transition_amplitude=",get_transition_amplitude(op, state_bra, state_ket))
     #end debug

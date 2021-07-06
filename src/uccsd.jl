@@ -55,10 +55,14 @@ function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit,
         if length(pauli_index_list) == 0
             continue
         end
+        #println(pauli_str, pauli_coef)
         pauli_coef = imag(pauli_coef) #coef should be pure imaginary
         push!(pauli_coeffs, pauli_coef)
         add_parametric_multi_Pauli_rotation_gate!(
             circuit.circuit, pauli_index_list, pauli_id_list, pauli_coef*theta)
+    end
+    if length(pauli_coeffs) == 0
+        return
     end
     num_thetas = num_theta(circuit)
     ioff = num_thetas == 0 ? 0 : theta_offset(circuit, num_thetas) + num_pauli(circuit, num_thetas)
@@ -155,6 +159,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
             a_spin_orbital = so_idx(a_spatial, ispin1)
             i_spin_orbital = so_idx(i_spatial, ispin2)
             #t1 operator
+            #println("gen_t1", a_spin_orbital, " ", i_spin_orbital)
             generator = gen_t1(a_spin_orbital, i_spin_orbital)
             #Add t1 into the circuit
             add_parametric_circuit_using_generator!(circuit, generator, 0.0)
@@ -175,6 +180,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
             jb = so_idx(j, spin_j)
 
             #t2 operator
+            #println("gen_t2", aa, " ", ia, " ", bb, " ", jb)
             generator = gen_p_t2(aa, ia, bb, jb)
             #Add p-t2 into the circuit
             add_parametric_circuit_using_generator!(circuit, generator, 0.0)

@@ -81,10 +81,15 @@ end
 """
 Make a wrapped scipy minimizer
 """
-function mk_scipy_minimize(method::String="BFGS", callback=nothing, options=nothing)
+function mk_scipy_minimize(method::String="BFGS", callback=nothing,
+    #options=Dict("gtol" => 1e-15)
+    options=nothing
+    )
     scipy_opt = pyimport("scipy.optimize")
     function minimize(cost, x0)
+        println("method: ", method)
         res = scipy_opt.minimize(cost, x0, method=method, callback=callback, options=options)
+        println(res)
         res["x"]
     end
     return minimize

@@ -13,19 +13,23 @@ using QCMaterial
     # Prepare |phi> = |01>
     state0_bra = QulacsQuantumState(n_qubit)
     set_computational_basis!(state0_bra, 0b01)
+
+    # Fit <01|U(theta)^dagger c_2^dagger |00>
     
     #debug
     circuit_bra = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+    println("circuit", circuit_bra)
     #c = QulacsParametricQuantumCircuit(n_qubit)
     #add_parametric_RY_gate!(c, 1, 0.5*pi)
     #circuit_bra = QulacsVariationalQuantumCircuit(c)
 
+    update_circuit_param!(circuit_bra, [0.1, 0.2])
     squared_norm = apply_qubit_op!(op, state, circuit_bra, state0_bra)
     println("squared_norm=",squared_norm)
 
 
     # Verify the result
-    @test squared_norm ≈ 1.0
+    @test abs(squared_norm) ≈ 1.0
 end
 
 #@testset "computation.apply_qubit_op2" begin
