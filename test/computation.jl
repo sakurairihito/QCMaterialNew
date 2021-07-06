@@ -23,7 +23,9 @@ using QCMaterial
     #add_parametric_RY_gate!(c, 1, 0.5*pi)
     #circuit_bra = QulacsVariationalQuantumCircuit(c)
 
-    update_circuit_param!(circuit_bra, [0.1, 0.2])
+    #update_circuit_param!(circuit_bra, [0.1, 0.2])
+    update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
+    #update_circuit_param!(circuit_bra, rand(size(circuit_bra.theta_offset)[1])) 
     squared_norm = apply_qubit_op!(op, state, circuit_bra, state0_bra)
     println("squared_norm=",squared_norm)
 

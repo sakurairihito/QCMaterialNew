@@ -89,7 +89,11 @@ import PyCall: pyimport
 
     #theta_init_vcex = rand(num_theta(vc_ex))
     #init_theta_vcex_list = theta_init_vcex
-    #update_circuit_param!(vc_ex, init_theta_vcex_list)
+    #init_theta_random = rand(size(vc_ex.theta_offsets)[1])
+    #update_circuit_param!(vc_ex, init_theta_random)
+    update_circuit_param!(vc_ex, rand(num_theta(vc_ex)))
+    
+
 
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
@@ -119,5 +123,5 @@ import PyCall: pyimport
 
     Gfunc_ij_list = -compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     #println("Gfunc_ij_list=", Gfunc_ij_list)
-    #@test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
+    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end
