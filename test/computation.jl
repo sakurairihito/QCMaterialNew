@@ -31,7 +31,8 @@ using QCMaterial
 
 
     # Verify the result
-    @test abs(squared_norm) ≈ 1.0
+    #@test≈ 1.0
+    @test isapprox( abs(squared_norm), 1.0, rtol=1e-3)
 end
 
 #@testset "computation.apply_qubit_op2" begin
