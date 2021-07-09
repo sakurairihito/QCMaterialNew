@@ -57,13 +57,15 @@ import Random
     cost_history = Float64[] 
     init_theta_list = theta_init
     push!(cost_history, cost(init_theta_list))
+    
 
     method = "BFGS"
     options = Dict("disp" => true, "maxiter" => 200, "gtol" => 1e-5)
     callback(x) = push!(cost_history, cost(x))
     opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback)
-
+    println("Eigval_vqe=", cost_history[end])
     EigVal_min = minimum(enes_ed)
+    println("EigVal_min=", EigVal_min)
     @test abs(EigVal_min-cost_history[end]) < 1e-6 
 end
 

@@ -306,7 +306,7 @@ end
     
     Gfunc_ij_exact(τ) = -exp(τ * (-ε_2)) * coef_1^2
     Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
-    println("Gfunc_ij_list_ref=", Gfunc_ij_list_ref)
+    
 
     Gfunc_ij_list = compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
@@ -323,7 +323,7 @@ end
     dn1 = down_index(1)
     up2 = up_index(2)
     dn2 = down_index(2)
-    d_theta = 0.01
+    d_theta = 1e-5
     
     #Hamiltonian
     ham_op = FermionOperator()
@@ -335,18 +335,18 @@ end
     ham_op += FermionOperator("$(up1)^ $(up1)", -ε)
     ham_op += FermionOperator("$(dn1)^ $(dn1)", -ε)
     
-    n_electron = 2
-    @assert mod(n_electron, 2) == 0
-    sparse_mat = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron);
+    n_electron_gs = 2
+    @assert mod(n_electron_gs, 2) == 0
+    sparse_mat = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_gs);
     enes_ed = eigvals(sparse_mat.toarray());
     ham_op = jordan_wigner(ham_op)
 
     #vc = QulacsVariationalQuantumCircuit(c)
-    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false, Doubles=false)
     
     #Perform VQE
     function cost(theta_list)
-        state0_gs = create_hf_state(n_qubit, n_electron)
+        state0_gs = create_hf_state(n_qubit, n_electron_gs)
         #state0_gs = QulacsQuantumState(n_qubit,0b0000)
         update_circuit_param!(vc, theta_list)
         update_quantum_state!(vc, state0_gs)
@@ -373,42 +373,22 @@ end
     left_op = FermionOperator("$(up1)^ ", 1.0)
     left_op = jordan_wigner(left_op)
 
-    ##Ansatz -> apply_qubit_op & imag_time_evolve
-    #c_ex = QulacsParametricQuantumCircuit(n_qubit)
-    #add_X_gate!(c_ex, 2)
-    #target = [2,4] 
-    #pauli_ids = [pauli_Y, pauli_Y] 
-    #add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.3*pi)
 
-    #debug
-    #target_debug = [1,3] 
-    #pauli_ids_debug = [pauli_Z, pauli_X] 
-    #add_parametric_multi_Pauli_rotation_gate!(c_ex, target_debug, pauli_ids_debug, 0.3*pi)
-
-    #add_Sdag_gate!(c_ex, 4)
-    #vc_ex = QulacsVariationalQuantumCircuit(c_ex)
-
-    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false) 
-    #get_thetas(circuit)
-    #set_initial_parameter -> circuit
-
-    #theta_init_vcex = rand(num_theta(vc_ex))
-    #init_theta_vcex_list = theta_init_vcex
-    #init_theta_random = rand(size(vc_ex.theta_offsets)[1])
-    #update_circuit_param!(vc_ex, init_theta_random)
+    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false, Doubles=false) 
     update_circuit_param!(vc_ex, rand(num_theta(vc_ex)))
     
-
-
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
-    state_gs = create_hf_state(n_qubit, n_electron)
+    state_gs = create_hf_state(n_qubit, n_electron_gs)
     update_quantum_state!(vc, state_gs)
 
     #delete?
-    E_gs_debug = get_expectation_value(ham_op, state_gs)
-    norm_gs = inner_product(state_gs, state_gs)
+    E_gs_vqe = get_expectation_value(ham_op, state_gs)
+    #norm_gs = inner_product(state_gs, state_gs)
+    n_electron_ex = 1
+    state0_ex = create_hf_state(n_qubit,n_electron_ex)
 
-    state0_ex = QulacsQuantumState(n_qubit,0b0010)
+    
+    #@assert mod(n_electron_ex, 1) == 0
     taus = collect(range(0.0, 0.02, length=4))
     beta = taus[end]
 

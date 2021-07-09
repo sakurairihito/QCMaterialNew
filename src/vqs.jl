@@ -100,7 +100,6 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState,delta_theta=1e-8)
     #compute A
     A = compute_A(vc, state0, delta_theta)
-    print("A=", A)
     #compute inverse of A
     InvA = inv(A)
     #compute C
@@ -220,9 +219,7 @@ function compute_gtau(
     circuit_right_ex = copy(vc_ex) 
     right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex)
     state_right_ex = copy(state0_ex)
-    #println("state_0_ex=", get_vector(state_right_ex))
     update_quantum_state!(circuit_right_ex, state_right_ex)
-    #println("state_right_ex=", get_vector(state_right_ex))
 
     # exp(-tau H)c^{dag}_j|g.s>
     thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[1]

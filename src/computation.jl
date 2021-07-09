@@ -42,10 +42,10 @@ function apply_qubit_op!(
     #println("cost_param_rand_after_opt=", cost(opt_thetas))
 
     #2 parameter 0
-    println("cost_param_0_before_opt=",cost(get_thetas(circuit)))
-    println("init_parameter=", get_thetas(circuit))
+    #println("cost_param_0_before_opt=",cost(get_thetas(circuit)))
+    #println("init_parameter=", get_thetas(circuit))
     opt_thetas = minimizer(cost, get_thetas(circuit))
-    println("cost_param_0_after_opt=", cost(opt_thetas))
+    #println("cost_param_0_after_opt=", cost(opt_thetas))
 
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
 
@@ -53,7 +53,7 @@ function apply_qubit_op!(
     re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
     im__ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
     z = re__ + im__ * im
-    println("Match in apply_qubit_op!: ", z/norm_right)
+    #println("Match in apply_qubit_op!: ", z/norm_right)
     return z
     #-cost(opt_thetas)
 end
