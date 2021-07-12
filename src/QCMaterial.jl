@@ -18,6 +18,11 @@ function __init__()
     @require MPI="da04e1cc-30fd-572f-bb4f-1f8673147195" include("mpi.jl")
 end
 
+const is_mpi_on = haskey(ENV, "OMPI_COMM_WORLD_RANK") || haskey(ENV, "PMI_RANK")
+if is_mpi_on
+    import MPI
+end
+
 include("exports.jl")
 include("util.jl")
 include("core.jl")
@@ -26,6 +31,7 @@ include("uccsd.jl")
 include("computation.jl")
 include("hartree_fock.jl")
 include("no_mpi.jl")
+include("vqe.jl")
 include("vqs.jl")
 
 end
