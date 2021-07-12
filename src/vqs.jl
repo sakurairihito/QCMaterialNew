@@ -100,12 +100,14 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState,delta_theta=1e-8)
     #compute A
     A = compute_A(vc, state0, delta_theta)
+    println("A=", A)
     #compute inverse of A
-    InvA = inv(A)
+    #InvA = inv(A)
     #compute C
     C = compute_C(op, vc, state0, delta_theta)
     #compute AC
-    thetadot = InvA * C
+    thetadot = A \ C
+    #thetadot = InvA * C
     #return thetadot
     thetadot
 end
