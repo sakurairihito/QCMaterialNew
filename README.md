@@ -19,6 +19,7 @@ $ jupyter lab
 ```bash
 $ cd $(PROJECTDIR)
 $ julia --project=@. test/runtests.jl
+$ mpirun -np 2 julia --project=@. test/runtests.jl  # Only if MPI is installed on your system
 ```
 
 ## Run a script file depending on QCMaterial

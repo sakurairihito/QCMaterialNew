@@ -54,7 +54,7 @@ end
     add_parametric_circuit_using_generator!(c, generator, 0.0)
 
     state0 = QulacsQuantumState(n_qubit,0b01)
-    thetadot = compute_thetadot(ham, c, state0, 1e-2) 
+    thetadot = compute_thetadot(ham, c, state0, 1e-2)
     @test thetadot ≈ [2] atol=1e-5
 end
 
