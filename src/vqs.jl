@@ -22,12 +22,14 @@ function overlap(vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     res
 end
 
-function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8)
+function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
+    comm=nothing)
     num_thetas = num_theta(vc)
     thetas = get_thetas(vc)
 
     A = zeros(Complex{Float64}, num_thetas, num_thetas)
-    for j in 1:num_thetas
+    j_start, j_local_size = distribute(num_thetas, MPI_size, MPI_rank)
+    for j in j_start:j_start+j_local_size-1
         thetas_j = copy(thetas)
         thetas_j[j] += delta_theta
         for i in 1:num_thetas
@@ -41,7 +43,11 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
                 )/delta_theta^2
         end
     end
-    A
+    if comm === nothing
+        return A
+    else
+        return Allreduce(A, MPI.SUM, comm)
+    end
 end
 
 #Cの計算
@@ -98,20 +104,10 @@ Compute thetadot = A^(-1) C
 """
 
 function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
-    state0::QulacsQuantumState,delta_theta=1e-8)
-    #compute A
-    A = compute_A(vc, state0, delta_theta)
-    #println("A=", A)
-    #compute inverse of A
-    #InvA = inv(A)
-    #compute C
+    state0::QulacsQuantumState,delta_theta=1e-8; comm=nothing)
+    A = compute_A(vc, state0, delta_theta; comm=comm)
     C = compute_C(op, vc, state0, delta_theta)
-    #compute AC
-    #thetadot = A \ C
-    X, r = LinearAlgebra.LAPACK.gelsy!(A, C)
-    thetadot = X
-    #thetadot = InvA * C
-    #return thetadot
+    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C)
     thetadot
 end
 
@@ -133,7 +129,9 @@ return:
     list of variational parameters at the given imaginary times.
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
-    taus::Vector{Float64}, delta_theta=1e-8)::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
+    taus::Vector{Float64}, delta_theta=1e-8;
+    comm=nothing
+    )::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     if taus[1] != 0.0
         error("The first element of taus must be 0!")
     end
@@ -148,7 +146,7 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
         update_quantum_state!(vc_, state0_)
 
         # Compute theta 
-        thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta)
+        thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm)
         if taus[i+1] <= taus[i]
             error("taus must be in strictly asecnding order!")
         end
@@ -208,7 +206,9 @@ function compute_gtau(
     vc_ex::VariationalQuantumCircuit,
     state_gs::QulacsQuantumState,　
     state0_ex::QulacsQuantumState,
-    taus::Vector{Float64}, delta_theta=1e-8)
+    taus::Vector{Float64}, delta_theta=1e-8;
+    comm=nothing
+    )
 
     if taus[1] != 0.0
         error("The first element of taus must be 0!")
@@ -218,17 +218,14 @@ function compute_gtau(
        error("taus must in strictly asecnding order!")
     end
 
-    # Inverse temperature
-    beta = taus[end]
-
     circuit_right_ex = copy(vc_ex) 
     right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex)
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
 
     # exp(-tau H)c^{dag}_j|g.s>
-    thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[1]
-    log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta)[2]
+    thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)[1]
+    log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)[2]
     
     Gfunc_ij_list = Complex{Float64}[]
     E_gs = get_expectation_value(ham_op, state_gs)

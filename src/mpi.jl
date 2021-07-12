@@ -45,3 +45,7 @@ function distribute(size, comm_size, rank)
     end
     return start, size
 end
+
+function Allreduce(data, mpi_sum, comm)
+    return MPI.Allreduce(data, mpi_sum, comm)
+end
