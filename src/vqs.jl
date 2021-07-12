@@ -1,3 +1,4 @@
+using LinearAlgebra
 #Aの計算
 """
 Compute <phi (theta_bra) | phi(theta_ket)>
@@ -100,13 +101,15 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState,delta_theta=1e-8)
     #compute A
     A = compute_A(vc, state0, delta_theta)
-    println("A=", A)
+    #println("A=", A)
     #compute inverse of A
     #InvA = inv(A)
     #compute C
     C = compute_C(op, vc, state0, delta_theta)
     #compute AC
-    thetadot = A \ C
+    #thetadot = A \ C
+    X, r = LinearAlgebra.LAPACK.gelsy!(A, C)
+    thetadot = X
     #thetadot = InvA * C
     #return thetadot
     thetadot

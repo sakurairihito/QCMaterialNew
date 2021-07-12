@@ -219,7 +219,7 @@ end
     dn1 = down_index(1)
     up2 = up_index(2)
     dn2 = down_index(2)
-    d_theta = 0.01
+    d_theta = 1e-5
     
     #Hamiltonian
     ham_op = FermionOperator()
@@ -270,24 +270,26 @@ end
     right_op = jordan_wigner(right_op)
 
     ##Ansatz -> apply_qubit_op & imag_time_evolve
-    c_ex = QulacsParametricQuantumCircuit(n_qubit)
+    #c_ex = QulacsParametricQuantumCircuit(n_qubit)
     
-    add_X_gate!(c_ex, 1)
-    add_X_gate!(c_ex, 2)
-    add_X_gate!(c_ex, 3)
-    target = [2,4] 
-    pauli_ids = [pauli_Y, pauli_Y] 
-    add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.2*pi)
-    add_S_gate!(c_ex, 4)
+    #add_X_gate!(c_ex, 1)
+    #add_X_gate!(c_ex, 2)
+    #add_X_gate!(c_ex, 3)
+    #target = [2,4] 
+    #pauli_ids = [pauli_Y, pauli_Y] 
+    #add_parametric_multi_Pauli_rotation_gate!(c_ex, target, pauli_ids, 0.2*pi)
+    #add_S_gate!(c_ex, 4)
 
-    vc_ex = QulacsVariationalQuantumCircuit(c_ex)
-
+    #vc_ex = QulacsVariationalQuantumCircuit(c_ex)
+    # we use uccgsd
+    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false) 
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
     update_quantum_state!(vc, state_gs)
     E_gs_debug = get_expectation_value(ham_op, state_gs)
     norm_gs = inner_product(state_gs, state_gs)
-    state0_ex = QulacsQuantumState(n_qubit,0b0000)
+    n_electron_ex = 3
+    state0_ex = create_hf_state(n_qubit,n_electron_ex)
     
     taus = collect(range(0.0, 1, length=10))
     beta = taus[end]
