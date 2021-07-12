@@ -8,6 +8,7 @@ end
 
 MPI_rank = MPI.Comm_rank(MPI.COMM_WORLD)
 MPI_size = MPI.Comm_size(MPI.COMM_WORLD)
+MPI_COMM_WORLD = MPI.COMM_WORLD
 
 function distribute(size, comm_size, rank)
     """

@@ -38,4 +38,4 @@ export compute_gtau
 export compute_A
 export compute_C
 export compute_thetadot
-export _create_quantum_state
+#export _create_quantum_state
