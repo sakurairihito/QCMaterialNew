@@ -238,7 +238,7 @@ end
     ham_op = jordan_wigner(ham_op)
 
     #vc = QulacsVariationalQuantumCircuit(c)
-    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false,Doubles=false)
     
     #Perform VQE
     function cost(theta_list)
@@ -282,7 +282,7 @@ end
 
     #vc_ex = QulacsVariationalQuantumCircuit(c_ex)
     # we use uccgsd
-    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false) 
+    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false, Doubles=false) 
     #state_gs = QulacsQuantumState(n_qubit,0b0000)
     state_gs = create_hf_state(n_qubit, n_electron)
     update_quantum_state!(vc, state_gs)
@@ -291,7 +291,7 @@ end
     n_electron_ex = 3
     state0_ex = create_hf_state(n_qubit,n_electron_ex)
     
-    taus = collect(range(0.0, 1, length=10))
+    taus = collect(range(0.0, 0.02, length=4))
     beta = taus[end]
 
     k = (2 * t)/(ε + (ε^2 + 4 * t^2)^0.5)  
