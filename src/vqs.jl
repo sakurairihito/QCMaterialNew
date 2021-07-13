@@ -23,7 +23,11 @@ function overlap(vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
 end
 
 function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
-    comm=nothing)
+    comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
     num_thetas = num_theta(vc)
     thetas = get_thetas(vc)
 
@@ -104,7 +108,10 @@ Compute thetadot = A^(-1) C
 """
 
 function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
-    state0::QulacsQuantumState,delta_theta=1e-8; comm=nothing)
+    state0::QulacsQuantumState,delta_theta=1e-8; comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
     A = compute_A(vc, state0, delta_theta; comm=comm)
     C = compute_C(op, vc, state0, delta_theta)
     thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C)
@@ -130,8 +137,11 @@ return:
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=nothing
+    comm=MPI_COMM_WORLD
     )::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
     if taus[1] != 0.0
         error("The first element of taus must be 0!")
     end
@@ -207,8 +217,11 @@ function compute_gtau(
     state_gs::QulacsQuantumState,　
     state0_ex::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=nothing
+    comm=MPI_COMM_WORLD
     )
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
 
     if taus[1] != 0.0
         error("The first element of taus must be 0!")

@@ -31,7 +31,11 @@ function distribute(size, comm_size, rank)
         Offsets for the MPI process
     """
     if comm_size > size
-        error("comm_size is larger than size!")
+        if rank + 1 <= size
+            return rank + 1, 1
+        else
+            return 1, 0
+        end
     end
 
     base = div(size, comm_size)

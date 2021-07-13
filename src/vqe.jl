@@ -5,14 +5,16 @@ using LinearAlgebra
 Compute ground state
 """
 function solve_gs(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, state0::QuantumState;
-    theta_init=nothing, comm=nothing, maxiter=200, gtol=1e-5, verbose=false)
-    scipy_opt = pyimport("scipy.optimize")
-
+    theta_init=nothing, comm=MPI_COMM_WORLD, maxiter=200, gtol=1e-5, verbose=false)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
     if comm === nothing
         rank = 0
     else
         rank = MPI.Comm_rank(comm)
     end
+    scipy_opt = pyimport("scipy.optimize")
 
     # Define a cost function
     function cost(theta_list)
