@@ -25,30 +25,17 @@ enes_ed = eigvals(sparse_mat.toarray());
 #debug
 println("Ground energy_ED=",minimum(enes_ed))
 
-ham_op = jordan_wigner(ham_op)
-
+#ansatz
+state0 = create_hf_state(n_qubit, n_electron_gs)
 vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
-    
-#Perform VQE
-function cost(theta_list)
-    state0_gs = create_hf_state(n_qubit, n_electron_gs)
-    update_circuit_param!(vc, theta_list)
-    update_quantum_state!(vc, state0_gs)
-    get_expectation_value(ham_op, state0_gs)
-end
-
 theta_init = rand(num_theta(vc))
-cost_history = Float64[]
-init_theta_list = theta_init
-push!(cost_history, cost(init_theta_list))
 
-method = "BFGS"
-options = Dict("disp" => true, "maxiter" =>200, "gtol" =>1e-5)
-callback(x) = push!(cost_history, cost(x))
-Random.seed!(1)
-scipy_opt = pyimport("scipy.optimize")
-opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback)
-    
+#Perform VQE
+cost_history, thetas_opt = 
+QCMaterial.solve_gs(jordan_wigner(ham_op), vc, state0, theta_init=theta_init, verbose=true,
+    comm=QCMaterial.MPI_COMM_WORLD
+)
+
 #debug
 println("Ground energy_VQE=",cost_history[end])
 
@@ -67,17 +54,16 @@ vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
 
 #state_gs = QulacsQuantumState(n_qubit,0b0000)
 state_gs = create_hf_state(n_qubit, n_electron_gs)
+update_circuit_param!(vc, thetas_opt)
 update_quantum_state!(vc, state_gs)
-E_gs_debug = get_expectation_value(ham_op, state_gs)
-norm_gs = inner_product(state_gs, state_gs)
 
 n_electron_ex = 3
 state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-taus = collect(range(0.0, 1000.0, length=1000))
+taus = collect(range(0.0, 10.0, length=4))
 beta = taus[end]
 
-Gfunc_ij_list = compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
 println("Gfunc_ij_list=", Gfunc_ij_list)
 
 
