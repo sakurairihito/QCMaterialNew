@@ -81,11 +81,42 @@ end
 """
 Make a wrapped scipy minimizer
 """
-function mk_scipy_minimize(method::String="BFGS", callback=nothing, options=nothing)
+function mk_scipy_minimize(method::String="BFGS";
+    callback=nothing, options=nothing, use_mpi=true, verbose=false)
     scipy_opt = pyimport("scipy.optimize")
     function minimize(cost, x0)
-        res = scipy_opt.minimize(cost, x0, method=method, callback=callback, options=options)
+        jac = nothing
+        if use_mpi
+            jac = generate_numerical_grad(cost, verbose=verbose)
+        end
+        res = scipy_opt.minimize(cost, x0, method=method,
+           jac=jac, callback=callback, options=options)
         res["x"]
     end
     return minimize
+end
+
+"""
+Generates parallelized numerical grad_cost
+"""
+function generate_numerical_grad(f; verbose=false, comm=MPI_COMM_WORLD)
+    function grad(x)
+        t1 = time_ns()
+        if comm === nothing
+            first_idx, size = 1, length(x)
+        else
+            first_idx, size = distribute(length(x), MPI.Comm_size(comm), MPI.Comm_rank(comm))
+        end
+        last_idx = first_idx + size - 1
+        res = numerical_grad(f, x, first_idx=first_idx, last_idx=last_idx)
+        if comm !== nothing
+            res = MPI.Allreduce(res, MPI.SUM, comm)
+        end
+        t2 = time_ns()
+        if verbose && MPI_rank == 0
+            println("g: ", (t2-t1)*1e-9)
+        end
+        res
+    end
+    return grad
 end

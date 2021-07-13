@@ -24,26 +24,6 @@ function solve_gs(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, 
         return get_expectation_value(ham_qubit, state)
     end
 
-    # Define the gradient of the cost function
-    function grad_cost(theta_list)
-        t1 = time_ns()
-        if comm === nothing
-            first_idx, size = 1, length(theta_list)
-        else
-            first_idx, size = distribute(length(theta_list), MPI.Comm_size(comm), MPI.Comm_rank(comm))
-        end
-        last_idx = first_idx + size - 1
-        res = numerical_grad(cost, theta_list, first_idx=first_idx, last_idx=last_idx)
-        if comm !== nothing
-            res = MPI.Allreduce(res, MPI.SUM, comm)
-        end
-        t2 = time_ns()
-        if verbose && rank == 0
-            println("g: ", (t2-t1)*1e-9)
-        end
-        res
-    end
-
     if theta_init === nothing
         theta_init = rand(size(circuit.theta_offsets)[1])
     end
@@ -63,7 +43,8 @@ function solve_gs(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, 
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback, jac=grad_cost,
+    opt = scipy_opt.minimize(cost, init_theta_list, method=method,
+        callback=callback, jac=generate_numerical_grad(cost),
         options=options)
 
     return cost_history, get_thetas(circuit)

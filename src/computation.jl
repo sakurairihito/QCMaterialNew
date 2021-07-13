@@ -16,9 +16,10 @@ state0_bra will not be modified.
 function apply_qubit_op!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, state0_bra::QuantumState,
+    circuit::VariationalQuantumCircuit, state0_bra::QuantumState;
     minimizer=mk_scipy_minimize(),
-    verbose=false
+    verbose=false,
+    comm=MPI_COMM_WORLD
     )
     her, antiher = divide_real_imag(op)
 
@@ -29,7 +30,11 @@ function apply_qubit_op!(
         abs2(1.0 - (re_ + im_ * im))
     end
 
-    opt_thetas = minimizer(cost, get_thetas(circuit))
+    thetas_init = get_thetas(circuit)
+    if comm !== nothing
+        MPI.Bcast!(thetas_init, 0, comm)
+    end
+    opt_thetas = minimizer(cost, thetas_init)
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
        println("norm_right",norm_right)

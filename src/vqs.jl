@@ -232,7 +232,9 @@ function compute_gtau(
     end
 
     circuit_right_ex = copy(vc_ex) 
-    right_squared_norm = apply_qubit_op!(right_op, state_gs, circuit_right_ex, state0_ex)
+    right_squared_norm = apply_qubit_op!(right_op, state_gs,
+       circuit_right_ex, state0_ex,
+       minimizer=mk_scipy_minimize(verbose=true))
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
 
