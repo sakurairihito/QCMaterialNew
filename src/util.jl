@@ -88,6 +88,9 @@ function mk_scipy_minimize(method::String="BFGS";
         jac = nothing
         if use_mpi
             jac = generate_numerical_grad(cost, verbose=verbose)
+            if verbose
+                println("Using parallelized numerical grad")
+            end
         end
         res = scipy_opt.minimize(cost, x0, method=method,
            jac=jac, callback=callback, options=options)

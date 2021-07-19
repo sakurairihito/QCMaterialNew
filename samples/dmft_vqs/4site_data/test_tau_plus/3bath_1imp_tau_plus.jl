@@ -14,6 +14,9 @@ V = 1.0
 ε = 1.0
 d_theta = 1e-5
 
+# Output debug messages only on the master node
+verbose = QCMaterial.MPI_rank == 0
+
 #Hamiltonian
 ham_op = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε, nsite)
     
@@ -63,7 +66,7 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 taus = collect(range(0.0, 0.02, length=2))
 beta = taus[end]
 
-Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta, verbose=verbose)
 println("Gfunc_ij_list=", Gfunc_ij_list)
 
 

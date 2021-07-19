@@ -33,10 +33,12 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
 
     A = zeros(Complex{Float64}, num_thetas, num_thetas)
     j_start, j_local_size = distribute(num_thetas, MPI_size, MPI_rank)
+    #println("compute_A: $(MPI_rank) $(j_start) $(j_local_size)")
     for j in j_start:j_start+j_local_size-1
         thetas_j = copy(thetas)
         thetas_j[j] += delta_theta
         for i in 1:num_thetas
+            t1 = time_ns()
             thetas_i = copy(thetas)
             thetas_i[i] += delta_theta
             A[i, j] = real(
@@ -45,6 +47,10 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
                     - overlap(vc, state0, thetas,   thetas_j)
                     + overlap(vc, state0, thetas,   thetas, )
                 )/delta_theta^2
+            t2 = time_ns()
+            #if MPI_rank == 0
+                #println("timing in compute_A: $(1e-9*(t2-t1))")
+            #end
         end
     end
     if comm === nothing
@@ -112,7 +118,9 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
+    #println("Computing A")
     A = compute_A(vc, state0, delta_theta; comm=comm)
+    #println("Computing C")
     C = compute_C(op, vc, state0, delta_theta)
     thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C)
     thetadot
@@ -137,7 +145,7 @@ return:
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD
+    comm=MPI_COMM_WORLD, verbose=false
     )::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -149,6 +157,7 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
     log_norm_tau = zeros(Float64, length(taus))  #エルミートの期待値だから必ず実数
 
     for i in 1:length(taus)-1
+        println("imag_time_evolve: starting step $(i)...")
         vc_ = copy(vc)
         update_circuit_param!(vc_, thetas_tau[i])
         #compute expectation value
@@ -217,7 +226,7 @@ function compute_gtau(
     state_gs::QulacsQuantumState,　
     state0_ex::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD
+    comm=MPI_COMM_WORLD, verbose=false
     )
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -231,18 +240,24 @@ function compute_gtau(
        error("taus must in strictly asecnding order!")
     end
 
+    if verbose
+        println("Applying to an operator to the ket...")
+    end
     circuit_right_ex = copy(vc_ex) 
     right_squared_norm = apply_qubit_op!(right_op, state_gs,
        circuit_right_ex, state0_ex,
-       minimizer=mk_scipy_minimize(verbose=true))
+       minimizer=mk_scipy_minimize(
+           options = Dict("disp" => verbose),
+           verbose=verbose)
+        )
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
-
-
+    if verbose
+        println("Successfully applied an operator to the ket!")
+    end
 
     # exp(-tau H)c^{dag}_j|g.s>
-    thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)[1]
-    log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)[2]
+    thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
     
     #thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
 
