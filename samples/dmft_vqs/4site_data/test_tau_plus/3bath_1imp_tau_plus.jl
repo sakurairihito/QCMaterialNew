@@ -67,5 +67,13 @@ Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  s
 println("Gfunc_ij_list=", Gfunc_ij_list)
 
 
+function write_to_txt(file_name, x, y)
+    open(file_name,"w") do fp
+        for i in 1:length(x)
+            println(fp, x[i], " ", real(y[i]))
+        end
+    end
+end
 
+write_to_txt("gf_upup_4site_plus_points_2.txt", taus, Gfunc_ij_list)
   
