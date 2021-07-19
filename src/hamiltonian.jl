@@ -36,11 +36,11 @@ function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::F
     ham += FermionOperator("$(up_index(1))^ $(down_index(1))^ $(up_index(1)) $(down_index(1))", -U)
 
     #hybridization
-    for i in 1:nsite-1
-        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", -V)
-        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", -V)
-        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", -V)
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", -V)
+    for i in 2:nsite
+        ham += FermionOperator("$(up_index(1))^ $(up_index(i))", -V)
+        ham += FermionOperator("$(up_index(i))^ $(up_index(1))", -V)
+        ham += FermionOperator("$(down_index(1))^ $(down_index(i))", -V)
+        ham += FermionOperator("$(down_index(i))^ $(down_index(1))", -V)
     end
 
     #chemical potential

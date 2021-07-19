@@ -18,7 +18,7 @@ function apply_qubit_op!(
     state_ket::QuantumState,
     circuit::VariationalQuantumCircuit, state0_bra::QuantumState;
     minimizer=mk_scipy_minimize(),
-    verbose=false,
+    verbose=true,
     comm=MPI_COMM_WORLD
     )
     her, antiher = divide_real_imag(op)

@@ -238,10 +238,14 @@ function compute_gtau(
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
 
+
+
     # exp(-tau H)c^{dag}_j|g.s>
     thetas_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)[1]
     log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)[2]
     
+    #thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
+
     Gfunc_ij_list = Complex{Float64}[]
     E_gs = get_expectation_value(ham_op, state_gs)
 
