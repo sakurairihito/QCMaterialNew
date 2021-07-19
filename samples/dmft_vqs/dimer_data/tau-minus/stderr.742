@@ -1,0 +1,180 @@
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782042): Gdk-CRITICAL **: 16:25:49.240: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782040): Gdk-CRITICAL **: 16:25:49.275: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782039): Gdk-CRITICAL **: 16:25:49.297: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782045): Gdk-CRITICAL **: 16:25:49.329: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782044): Gdk-CRITICAL **: 16:25:49.338: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782041): Gdk-CRITICAL **: 16:25:49.341: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782046): Gdk-CRITICAL **: 16:25:49.345: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782047): Gdk-CRITICAL **: 16:25:49.347: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782043): Gdk-CRITICAL **: 16:25:49.362: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+Unable to init server: 接続できませんでした: 接続を拒否されました
+
+(.:1782048): Gdk-CRITICAL **: 16:25:49.365: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+┌ Warning: Package QCMaterial does not have MPI in its dependencies:
+│ - If you have QCMaterial checked out for development and have
+│   added MPI as a dependency but haven't updated your primary
+│   environment's manifest file, try `Pkg.resolve()`.
+│ - Otherwise you may need to report an issue with QCMaterial
+└ Loading MPI into QCMaterial from project dependency, future warnings for QCMaterial are suppressed.
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'
+/home/sakurai/.local/lib/python3.8/site-packages/pyscf/lib/misc.py:46: H5pyDeprecationWarning: Using default_file_mode other than 'r' is deprecated. Pass the mode to h5py.File() instead.
+  h5py.get_config().default_file_mode = 'a'

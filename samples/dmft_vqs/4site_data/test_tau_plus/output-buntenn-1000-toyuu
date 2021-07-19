@@ -1,0 +1,204 @@
+1
+20
+julia version 1.6.1
+Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+-2.7172894390106483
+iter 2 0.9155992117411512
+iter 3 0.0577764477829909
+iter 4 -0.705564377127826
+iter 5 -1.2730420518678314
+iter 6 -1.7279871122975976
+iter 7 -1.9178254420633787
+iter 8 -2.1984356929296673
+iter 9 -2.4577340687378766
+iter 10 -2.5209169254436223
+iter 11 -2.6058209440740305
+iter 12 -2.668120418351276
+iter 13 -2.698857160487854
+iter 14 -2.7105700841028666
+iter 15 -2.7145695985843568
+iter 16 -2.7161739366717863
+iter 17 -2.716813891644803
+iter 18 -2.717078338386812
+iter 19 -2.717211232938179
+iter 20 -2.7172606737456206
+iter 21 -2.717279547261534
+iter 22 -2.7172864597166675
+iter 23 -2.7172885508647737
+iter 24 -2.71728923039034
+iter 25 -2.717289409750618
+iter 26 -2.7172894311625777
+iter 27 -2.717289437403623
+iter 28 -2.717289438614328
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+iter 29 -2.7172894389288667
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Optimization terminated successfully.
+         Current function value: -2.717289
+         Iterations: 28
+         Function evaluations: 47
+         Gradient evaluations: 47
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+Ground energy_VQE=-2.7172894389288667
+g: 1.3660176560000001
+g: 1.32836452
+g: 1.465764623
+g: 1.367578921
+g: 1.341121534
+g: 1.346983826
+g: 1.336575651
+g: 1.3714232130000001
+g: 1.3740733410000001
+g: 1.537271191
+g: 1.34136137
+g: 1.4256974850000002
+g: 1.3604176600000002
+g: 1.3430430800000002
+g: 1.4307597440000002
+g: 1.381361124
+g: 1.350976462
+g: 1.348040925
+g: 1.36082046
+g: 1.6421969390000002
+g: 1.333620561
+g: 1.4139537
+g: 1.380636261
+g: 1.33802204
+g: 1.406660446
+g: 1.3675128250000002
+g: 1.351473485
+g: 1.414118243
+g: 1.400217156
+g: 6.082914337
+g: 1.4085636490000002
+g: 1.414133133
+g: 1.348194257

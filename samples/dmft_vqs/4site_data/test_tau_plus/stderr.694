@@ -1,0 +1,357 @@
+ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: ERROR: SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1]   [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] SystemError: opening file "/home/sakurai/QCMaterial.jl/samples/dmft_vqs/4site_data/test_tau_plus/dimer_tau_minus.jl": そのようなファイルやディレクトリはありません
+Stacktrace:
+  [1] systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(systemerror(p::systemerror(systemerror(p::systemerror(systemerror(p::systemerror(p::p::p::p::p::p::p::p::p::p::p::p::String, errno::Int32; extrainfo::Nothing)
+    @ p::p::String, errno::Int32; extrainfo::Nothing)
+    @ p::p::String, errno::Int32; extrainfo::Nothing)
+    @ p::String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ Base ./String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ Base ./error.jl:String, errno::Int32; extrainfo::Nothing)
+    @ Base ./String, errno::Int32; extrainfo::Nothing)
+    @ String, errno::Int32; extrainfo::Nothing)
+    @ Base ./168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base.var"#326#327"{String}, args::String; kwargs::Base ./Base ./Base ./error.jl:error.jl:168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::error.jl:Base ./Base.var"#326#327"{String}, args::String; kwargs::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] Base.var"#326#327"{String}, args::String; kwargs::error.jl:Base ./error.jl:Base ./Base ./Base ./error.jl:168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base ./Base ./Base.var"#326#327"{String}, args::String; kwargs::Base ./168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base.var"#326#327"{String}, args::String; kwargs::Base.var"#326#327"{String}, args::String; kwargs::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base.var"#326#327"{String}, args::String; kwargs::Base ./error.jl:Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] Base ./Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] error.jl:error.jl:error.jl:error.jl:168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] error.jl:error.jl:Base.var"#326#327"{String}, args::String; kwargs::error.jl:Base ./Base ./168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::Base.var"#326#327"{String}, args::String; kwargs::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] Base.Iterators.Pairsopen(fname::{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base String; lock::./io.jlBool, read::Nothing, write::Nothing, create::Nothing:328
+  [7] open
+, truncate::Nothing,     @ ./io.jl:append::Nothing)
+    @ Base ./328 [inlined]
+  [8] read
+    @ ./iostream.jl:293
+io.jl:434 [inlined]
+  [5] open
+    @ ./iostream.jl:282  [9]  [inlined]
+  [6] open(f::Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] Base.var"#326#327"{String}, args::String; kwargs::168
+  [2] #systemerror#62
+    @ ./168
+  [2] #systemerror#62
+    @ ./error.jl:error.jl:167 [inlined]
+  [3] 167 [inlined]
+  [3] systemerrorsystemerror
+    @ ./error.jl:167 [inlined]
+  [4] 
+    @ ./error.jl:167 [inlined]
+  [4] Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}}Base open(fname::open(fname::)
+    @ Base ./String; lock::Bool, read::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing./io.jl:328
+  [7] Nothing, write::Nothing, create::Nothing, truncate::Nothing, open
+    @ ./, append::Nothing)
+append::Nothing)
+    @     @ Base ./iostream.jl:293
+io.jl:328 [inlined]
+  [8] read
+    @ ./Base ./iostream.jl:293
+ io.jl:434 [inlined]  [5] open
+    @  [5] open
+    @ ././iostream.jl:282 [inlined]
+  [6] 
+  [9] iostream.jl:282 [inlined]
+  [6] open(open(ff::::Base.var"#326#327"{String}, args::String; kwargs::Base.var"#326#327"{String}, args::String; kwargs::error.jl:error.jl:168
+  [2] #systemerror#62
+    @ ./error.jl:168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]167 [inlined]
+  [3] systemerror
+
+  [3] systemerror
+    @     @ ./error.jl:167 [inlined]
+  [4] ./error.jl:167 [inlined]
+  [4] open(fnameopen(fname::::String; lock::BoolString; lock::Bool, , read::Nothing, read::Nothing, write::Nothing, create::Nothing, truncate::Nothingwrite::Nothing, create::Nothing, truncate::Nothing, append::Nothing), append::Nothing
+    @ Base ./iostream.jl:293)
+    @ Base ./iostream.jl:293
+  [5] 
+  [5]open
+    @ ./iostream.jl:282 [inlined]
+ open
+    @ ./iostream.jl:282 [inlined]
+  [6]   [6] open(f::open(f::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+    @ Base ./iostream.jl:293
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+Base.var"#326#327"{String}  [6] Base.var"#326#327"{String}, args::String; kwargs::, args::String; kwargs::open(f::Base.var"#326#327"{String}, args::String; kwargs::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Nothing, append::Nothing)
+168    @ Base ./iostream.jl:293
+  [5] 
+  [2] #systemerror#62open
+    @ ./iostream.jl:282 [inlined]
+
+    @   [6] ./error.jl:167 [inlined]
+  [3]open(f:: systemerror
+    @ ./error.jl:167 [inlined]
+  [4] open(fname::String; lock::Bool, read::Nothing, write::Nothing, create::_include(mapexpr::Nothing, truncate::Nothing, append::NothingFunction, mod::Module, _path::String)
+)
+    @ Base ./iostream.jl:293
+  [5]    @ Base  open
+    @ ./loading.jl:1144
+./iostream.jl:282 [inlined]
+  [6]  [10] include(mod::Moduleopen(f::, _path::String)
+    @ Base ./Base.jl:386
+ [11] exec_options(opts::Base.JLOptions)
+    @ Base ./client.jl:285
+ [12] _start()
+    @ Base ./client.jl:485
+Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] Base.var"#326#327"{String}, args::String; kwargs::Base.var"#326#327"{String}, args::String; kwargs::error.jl:error.jl:Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] error.jl:Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]io.jl:328 [inlined]
+  [8] read
+    @ 
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] ./io.jl:434 [inlined]
+  [9] 168
+  [2] #systemerror#62
+    @ ./error.jl:168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]167 [inlined]
+  [3] systemerror
+    @ 
+  [3] systemerror
+    @ ./error.jl:167 [inlined]
+  [4] ./error.jl:167 [inlined]
+  [4] open(fname::open(fname::String; lock::String; lock::Bool, read::Nothing, write::Nothing, Bool, read::Nothing, write::Nothing, create::Nothing, truncate::Base.Iterators.Pairscreate::Nothing, truncate::NothingBase.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base Nothing, append::Nothing)
+    @ Base ./iostream.jl, append::Nothing)
+    @ Base ./iostream.jl::293
+ ./io.jl./io.jl293
+  [5] :328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+  [5] open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f:::328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ open
+    @ ./iostream.jl:282 [inlined]
+  [6] open(f::./io.jl:434    @ ./io.jl:434 [inlined] [inlined]
+  [9] 
+  [9] Base.Iterators.Pairs{Union{}, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
+    @ Base ./io.jl:328
+  [7] open
+    @ ./io.jl:328 [inlined]
+  [8] read
+    @ ./io.jl:434 [inlined]
+  [9] Base.var"#326#327"{String}, args::String; kwargs::Base.var"#326#327"{String}, args::String; kwargs::168
+  [2] #systemerror#62
+    @ ./error.jl:167 [inlined]
+  [3] _include(mapexpr::Function, mod::Module, _path::String)
+    @ Base ./loading.jl:1144
+systemerror
+    @ ./error.jl:167 [inlined]
+ [10] include  [4] open(fname::(mod::Module, _path::String)
+    @ Base ./Base.jl:386
+ [11] String; lock::Bool, read::Nothing, write::Nothing, createexec_options(opts::Base.JLOptions)
+    @ Base ::Nothing, truncate::Nothing, append::./client.jl:285Nothing)
+    @ 
+ [12] _start()
+    @ Base ./iostream.jl:293
+Base ./client.jl  [5] open
+    @ :485
+./iostream.jl:282 [inlined]
+  [6] open(f::--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+Base.var"#326#327"{String}, args::String; kwargs::--------------------------------------------------------------------------
+mpirun detected that one or more processes exited with non-zero status, thus causing
+the job to be terminated. The first process to do so was:
+
+  Process name: [[29150,1],0]
+  Exit code:    1
+--------------------------------------------------------------------------
