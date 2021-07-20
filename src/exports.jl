@@ -39,3 +39,5 @@ export compute_A
 export compute_C
 export compute_thetadot
 #export _create_quantum_state
+export taus_list
+export read_taus_list

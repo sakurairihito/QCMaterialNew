@@ -1,9 +1,12 @@
 using QCMaterial
 using PyCall
 using LinearAlgebra
-
+using HDF5
 import Random
 import PyCall: pyimport
+
+
+
 
 "tau plus"
 nsite = 2
@@ -67,8 +70,15 @@ update_quantum_state!(vc, state_gs)
 n_electron_ex = 3
 state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-taus = collect(range(0.0, 0.02, length=2))
-beta = taus[end]
+taus1 = collect(range(0.0, 0.02, length=2))
+println("taus1=",taus1)
+#beta = taus[end]
+
+#make taus list file
+taus_list("test2.h5")
+#generate taus list file
+taus = read_taus_list("test2.h5")
+println("taus=",taus)
 
 Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta, verbose=verbose)
 println("Gfunc_ij_list=", Gfunc_ij_list)
@@ -81,7 +91,7 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("g_of_tau_dimer_buntenn_3000.txt", taus, Gfunc_ij_list)
+write_to_txt("g_of_tau_dimer_buntenn_10.txt", taus, Gfunc_ij_list)
 
 
 

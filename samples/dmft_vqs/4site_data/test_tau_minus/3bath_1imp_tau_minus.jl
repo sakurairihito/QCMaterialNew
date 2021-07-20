@@ -54,7 +54,7 @@ left_op = jordan_wigner(left_op)
 #left_op = jordan_wigner(left_op)
 
 
-vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false) 
+vc_ex = uccgsd(n_qubit, orbital_rot=true) 
 
 
 #state_gs = QulacsQuantumState(n_qubit,0b0000)
@@ -66,9 +66,19 @@ n_electron_ex = 3
 state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
 #@assert mod(n_electron_ex, 1) == 0
-taus = collect(range(0.0, 10, length=1000))
-beta = taus[end]
+taus = collect(range(0.0, 0.2, length=4))
+half_beta = taus[end]
 
 Gfunc_ij_list = -compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
 println("Gfunc_ij_list=", Gfunc_ij_list)
 
+function write_to_txt(file_name, x, y)
+    open(file_name,"w") do fp
+        for i in 1:length(x)
+            println(fp, x[i], " ", real(y[i]))
+        end
+    end
+end
+
+write_to_txt("gf_upup_4site_mius_points_4.txt", taus, Gfunc_ij_list)
+  

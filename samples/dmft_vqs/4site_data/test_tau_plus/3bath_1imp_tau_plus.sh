@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p defq
-#SBATCH -n 32
+#SBATCH -n 10
 #SBATCH -J uccgsd_dimer_tau_minus
 #SBATCH -o stdout.%J
 #SBATCH -e stderr.%J
@@ -11,4 +11,4 @@ export OMP_NUM_THREADS=1
 echo $OMP_NUM_THREADS > output-np$SLURM_NTASKS
 echo $SLURM_NTASKS >> output-np$SLURM_NTASKS
 julia --version >> output-np$SLURM_NTASKS
-mpirun -np $SLURM_NTASKS julia --project=@. 3bath_1imp_tau_plus.jl >> output-np$SLURM_NTASKS-2
+mpirun -np $SLURM_NTASKS julia --project=@. 3bath_1imp_tau_plus.jl >> output-np$SLURM_NTASKS-p=8

@@ -63,8 +63,8 @@ update_quantum_state!(vc, state_gs)
 n_electron_ex = 5
 state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-taus = collect(range(0.0, 0.02, length=2))
-beta = taus[end]
+taus = collect(range(0.0, 0.2, length=8))
+half_beta = taus[end]
 
 Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta, verbose=verbose)
 println("Gfunc_ij_list=", Gfunc_ij_list)
@@ -78,5 +78,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_upup_4site_plus_points_2.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_upup_4site_plus_points_8.txt", taus, Gfunc_ij_list)
   

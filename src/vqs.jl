@@ -1,4 +1,5 @@
 using LinearAlgebra
+using HDF5
 #Aの計算
 """
 Compute <phi (theta_bra) | phi(theta_ket)>
@@ -276,3 +277,25 @@ function compute_gtau(
     Gfunc_ij_list
 end
 
+
+
+#make taus list file
+#length=8
+function taus_list(file_name)
+	x = Float64[]
+	for i in 1:10
+        tau = 0.005*(i-1) + exp((0.1*(i-1))) -1
+		push!(x,tau)
+	end
+	fid = h5open(file_name,"w")
+	fid["/test/data"] = x
+	close(fid)	
+end
+
+#read taus list file
+function read_taus_list(file_name)
+	fid = h5open(file_name,"r")
+	x = fid["/test/data"][:]
+	close(fid)
+	return x
+end
