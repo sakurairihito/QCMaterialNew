@@ -74,6 +74,28 @@ taus1 = collect(range(0.0, 0.02, length=2))
 println("taus1=",taus1)
 #beta = taus[end]
 
+
+#make taus list file
+#length=8
+function taus_list(file_name)
+	x = Float64[]
+	for i in 1:10
+        tau = 0.005*(i-1) + exp((0.1*(i-1))) -1
+		push!(x,tau)
+	end
+	fid = h5open(file_name,"w")
+	fid["/test/data"] = x
+	close(fid)	
+end
+
+#read taus list file
+function read_taus_list(file_name)
+	fid = h5open(file_name,"r")
+	x = fid["/test/data"][:]
+	close(fid)
+	return x
+end
+
 #make taus list file
 taus_list("test2.h5")
 #generate taus list file
@@ -91,7 +113,7 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("g_of_tau_dimer_buntenn_10.txt", taus, Gfunc_ij_list)
+write_to_txt("g_of_tau_dimer_points_10.txt", taus, Gfunc_ij_list)
 
 
 
