@@ -143,7 +143,7 @@ if ARGS[2] == "minus_true"
     state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
     #@assert mod(n_electron_ex, 1) == 0
-    taus = collect(range(0.0, 4, length=10))
+    taus = collect(range(0.0, 4, length=2))
     beta = taus[end]
 
     Gfunc_ij_list = -compute_gtau(jordan_wigner(ham_op), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
@@ -158,5 +158,5 @@ if ARGS[2] == "minus_true"
         end
     end
 
-    write_to_txt("gf_dimer_minus_points_10.txt", taus, Gfunc_ij_list)
+    write_to_txt("gf_dimer_minus_points_2.txt", taus, Gfunc_ij_list)
 end

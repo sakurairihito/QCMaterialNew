@@ -36,22 +36,23 @@ function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::F
     ham += FermionOperator("$(up_index(1))^ $(down_index(1))^ $(up_index(1)) $(down_index(1))", -U)
 
     #hybridization
-    for i in 2:nsite
-        ham += FermionOperator("$(up_index(1))^ $(up_index(i))", -V)
-        ham += FermionOperator("$(up_index(i))^ $(up_index(1))", -V)
-        ham += FermionOperator("$(down_index(1))^ $(down_index(i))", -V)
-        ham += FermionOperator("$(down_index(i))^ $(down_index(1))", -V)
+    for spin in [up_index, down_index]
+        for i in 2:nsite
+            ham += FermionOperator("$(spin(1))^ $(spin(i))", -V)
+            ham += FermionOperator("$(spin(i))^ $(spin(1))", -V)
+        end
     end
 
     #chemical potential
-    ham += FermionOperator("$(up_index(1))^ $(up_index(1))", -μ)
-    ham += FermionOperator("$(down_index(1))^ $(down_index(1))", -μ)
-
-    #bath energy level
-    for i in 2:nsite
-        ham += FermionOperator("$(up_index(i))^ $(up_index(i))", ε)
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i))", ε)
+    for spin in [up_index, down_index]
+        ham += FermionOperator("$(spin(1))^ $(spin(1))", -μ)
     end
 
+    #bath energy level
+    for spin in [up_index, down_index]
+        for i in 2:nsite
+            ham += FermionOperator("$(spin(i))^ $(spin(i))", ε)
+        end
+    end
     ham
 end
