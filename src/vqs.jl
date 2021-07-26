@@ -39,16 +39,29 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
         thetas_j = copy(thetas)
         thetas_j[j] += delta_theta
         for i in 1:num_thetas
-            t1 = time_ns()
+            #t1 = time_ns()
             thetas_i = copy(thetas)
             thetas_i[i] += delta_theta
-            A[i, j] = real(
-                      overlap(vc, state0, thetas_i, thetas_j)
-                    - overlap(vc, state0, thetas_i, thetas, )
-                    - overlap(vc, state0, thetas,   thetas_j)
-                    + overlap(vc, state0, thetas,   thetas, )
-                )/delta_theta^2
-            t2 = time_ns()
+            if i == j
+                A[i, j] = real(
+                          overlap(vc, state0, thetas_i, thetas_j)
+                        - overlap(vc, state0, thetas_i, thetas, )
+                        - overlap(vc, state0, thetas,   thetas_j)
+                        + overlap(vc, state0, thetas,   thetas, )
+                    )/delta_theta^2
+            end
+            if i > j
+                A[i, j] = real(
+                    overlap(vc, state0, thetas_i, thetas_j)
+                  - overlap(vc, state0, thetas_i, thetas, )
+                  - overlap(vc, state0, thetas,   thetas_j)
+                  + overlap(vc, state0, thetas,   thetas, )
+              )/delta_theta^2
+            
+            A[j, i] = A[i,j]
+            end
+    
+            #t2 = time_ns()
             #if MPI_rank == 0
                 #println("timing in compute_A: $(1e-9*(t2-t1))")
             #end

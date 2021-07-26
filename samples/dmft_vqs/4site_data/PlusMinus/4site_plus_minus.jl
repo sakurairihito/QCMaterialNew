@@ -103,48 +103,12 @@ if ARGS[1] == "plus_true"
     right_op = jordan_wigner(right_op)
     left_op = FermionOperator("$(up1) ", 1.0)
     left_op = jordan_wigner(left_op)
-    #right_op = FermionOperator("$(down1)^ ", 1.0)
-    #right_op = jordan_wigner(right_op)
-    #left_op = FermionOperator("$(down1) ", 1.0)
-    #left_op = jordan_wigner(left_op)
-
-    ##Ansatz -> apply_qubit_op & imag_time_evolve
-    vc_ex = uccgsd(n_qubit, orbital_rot=true)
-
-    #state_gs = QulacsQuantumState(n_qubit,0b0000)
-    state_gs = create_hf_state(n_qubit, n_electron_gs)
-    update_circuit_param!(vc, thetas_opt)
-    update_quantum_state!(vc, state_gs)
 
     n_electron_ex = 5
-    state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-    taus = collect(range(0.0, 0.02, length=2))
-    #println("taus1=",taus1)
-    #beta = taus[end]
-
-
-
-    #make taus list file
-    #taus_list("dimer_plus.h5")
-    #generate taus list file
-    #taus = read_taus_list("dimer_plus.h5")
-    #println("taus=",taus)
-
-    Gfunc_ij_list = compute_gtau(jordan_wigner(ham_op1), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta, verbose=verbose)
-    println("Gfunc_ij_list_plus=", Gfunc_ij_list)
-
-    function write_to_txt(file_name, x, y)
-        open(file_name,"w") do fp
-            for i in 1:length(x)
-                println(fp, x[i], " ", real(y[i]))
-            end
-        end
-    end
-
-    write_to_txt("gf_dimer_plus_points_2_dmft_debug.txt", taus, Gfunc_ij_list)
+    sign = 1
 end
- 
+
 
 if ARGS[2] == "minus_true"
     right_op = FermionOperator("$(up1) ", 1.0)
@@ -152,38 +116,49 @@ if ARGS[2] == "minus_true"
     left_op = FermionOperator("$(up1)^ ", 1.0)
     left_op = jordan_wigner(left_op)
 
-    #right_op = FermionOperator("$(down1) ", 1.0)
-    #right_op = jordan_wigner(right_op)
-    #left_op = FermionOperator("$(down1)^ ", 1.0)
-    #left_op = jordan_wigner(left_op)
-
-
-    vc_ex = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false) 
-
-
-    #state_gs = QulacsQuantumState(n_qubit,0b0000)
-    state_gs = create_hf_state(n_qubit, n_electron_gs)
-    update_circuit_param!(vc, thetas_opt)
-    update_quantum_state!(vc, state_gs)
-
     n_electron_ex = 3
-    state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-    #@assert mod(n_electron_ex, 1) == 0
-    taus = collect(range(0.0, 4, length=2))
-    beta = taus[end]
-
-    Gfunc_ij_list = -compute_gtau(jordan_wigner(ham_op1), left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
-    println("Gfunc_ij_list_minus=", Gfunc_ij_list)
-
-
-    function write_to_txt(file_name, x, y)
-        open(file_name,"w") do fp
-            for i in 1:length(x)
-                println(fp, x[i], " ", real(y[i]))
-            end
-        end
-    end
-    write_to_txt("gf_dimer_minus_points_2.txt", taus, Gfunc_ij_list)
+    sign = -1
 end
 
+
+vc_ex = uccgsd(n_qubit, orbital_rot = true)
+
+state_gs = create_hf_state(n_qubit, n_electron_gs)
+update_circuit_param!(vc, thetas_opt)
+update_quantum_state!(vc, state_gs)
+
+state0_ex = create_hf_state(n_qubit, n_electron_ex)
+
+taus = collect(range(0.0, 0.02, length = 2))
+
+#make taus list file
+#taus_list("dimer_plus.h5")
+#generate taus list file
+#taus = read_taus_list("dimer_plus.h5")
+#println("taus=",taus)
+
+Gfunc_ij_list = sign * compute_gtau(
+    jordan_wigner(ham_op1),
+    left_op,
+    right_op,
+    vc_ex,
+    state_gs,
+    state0_ex,
+    taus,
+    d_theta,
+    verbose = verbose,
+)
+println("Gfunc_ij_list_plus=", Gfunc_ij_list)
+
+
+
+function write_to_txt(file_name, x, y)
+    open(file_name, "w") do fp
+        for i = 1:length(x)
+            println(fp, x[i], " ", real(y[i]))
+        end
+    end
+end
+
+write_to_txt("gf_4site_plus_2poinsts_dmft_test_.txt", taus, Gfunc_ij_list)
