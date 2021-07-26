@@ -31,37 +31,28 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
 
     num_thetas = num_theta(vc)
     thetas = get_thetas(vc)
+    UpperTriangularMat_size = (num_thetas^2 + num_thetas)/2
 
     A = zeros(Complex{Float64}, num_thetas, num_thetas)
-    j_start, j_local_size = distribute(num_thetas, MPI_size, MPI_rank)
+    local_start, local_size = distribute(UpperTriangularMat_size, MPI_size, MPI_rank)
     #println("compute_A: $(MPI_rank) $(j_start) $(j_local_size)")
-    for j in j_start:j_start+j_local_size-1
-        thetas_j = copy(thetas)
-        thetas_j[j] += delta_theta
-        for i in 1:num_thetas
-            #t1 = time_ns()
-            thetas_i = copy(thetas)
-            thetas_i[i] += delta_theta
-            if i == j
+    idx = 1
+    for i in 1:num_thetas
+        thetas_i = copy(thetas)
+        thetas_i[i] += delta_theta
+        for j in i:num_thetas
+            if local_start <= idx < local_start + local_size
+                thetas_j = copy(thetas)
+                thetas_j[j] += delta_theta
                 A[i, j] = real(
                           overlap(vc, state0, thetas_i, thetas_j)
                         - overlap(vc, state0, thetas_i, thetas, )
                         - overlap(vc, state0, thetas,   thetas_j)
                         + overlap(vc, state0, thetas,   thetas, )
                     )/delta_theta^2
+                A[j, i] = A[i, j]
             end
-            if i > j
-                A[i, j] = real(
-                    overlap(vc, state0, thetas_i, thetas_j)
-                  - overlap(vc, state0, thetas_i, thetas, )
-                  - overlap(vc, state0, thetas,   thetas_j)
-                  + overlap(vc, state0, thetas,   thetas, )
-              )/delta_theta^2
-            
-            A[j, i] = A[i,j]
-            end
-    
-            #t2 = time_ns()
+            idx += 1
             #if MPI_rank == 0
                 #println("timing in compute_A: $(1e-9*(t2-t1))")
             #end
@@ -73,6 +64,7 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
         return Allreduce(A, MPI.SUM, comm)
     end
 end
+
 
 #Cの計算
 """
