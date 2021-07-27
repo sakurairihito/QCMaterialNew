@@ -6,7 +6,7 @@ import Random
 import PyCall: pyimport
 
 
-#make taus list file
+#make taus list file.h5
 #length=8
 function taus_list(file_name)
     x = Float64[]
@@ -19,11 +19,24 @@ function taus_list(file_name)
     close(fid)
 end
 
-#read taus list file
+#read taus list file.h5
 function read_taus_list(file_name)
     fid = h5open(file_name, "r")
     x = fid["/test/data"][:]
     close(fid)
+    return x
+end
+
+#read taus list file.txt
+function read_and_parse_float(file_name, n)
+    x = zeros(Float64, n)
+    open(file_name, "r") do fp
+        num_elm = parse(Int64,readline(fp))
+        @assert n == num_elm
+        for i in 1:n
+            x[i] = parse(Float64, readline(fp))
+        end
+    end
     return x
 end
 
@@ -104,14 +117,17 @@ update_quantum_state!(vc, state_gs)
 
 state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-taus = collect(range(0.0, 0.02, length=2))
+#taus = collect(range(0.0, 0.02, length=2))
 #println("taus1=",taus1)
 
 #make taus list file
 #taus_list("dimer_plus.h5")
 #generate taus list file
-#taus = read_taus_list("dimer_plus.h5")
-#println("taus=",taus)
+#taus = read_taus_list("sp_tau_plus.h5")
+
+num_taus = 70
+taus = read_and_parse_float("sp_tau_plus.txt", num_taus)
+println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(
     jordan_wigner(ham_op),
@@ -134,5 +150,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_plus_points_2.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_dimer_plus_points_sparse_samp.txt", taus, Gfunc_ij_list)
 
