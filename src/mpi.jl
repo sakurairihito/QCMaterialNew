@@ -13,7 +13,7 @@ MPI_COMM_WORLD = MPI.COMM_WORLD
 mpirank(comm) = MPI.Comm_rank(comm)
 mpisize(comm) = MPI.Comm_size(comm)
 
-function distribute(size, comm_size, rank)
+function distribute(size::Int, comm_size::Int, rank::Int)
     """
     Compute the first element and size for a given rank
 

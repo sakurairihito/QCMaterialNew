@@ -7,7 +7,7 @@ MPI_COMM_WORLD = nothing
 mpirank(comm) = 0
 mpisize(comm) = 1
 
-function distribute(size, comm_size, rank)
+function distribute(size::Int, comm_size::Int, rank::Int)
     return 1, size
 end
 

@@ -31,11 +31,10 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
 
     num_thetas = num_theta(vc)
     thetas = get_thetas(vc)
-    UpperTriangularMat_size = (num_thetas^2 + num_thetas)/2
+    UpperTriangularMat_size = (num_thetas^2 + num_thetas) ÷ 2
 
     A = zeros(Complex{Float64}, num_thetas, num_thetas)
     local_start, local_size = distribute(UpperTriangularMat_size, MPI_size, MPI_rank)
-    #println("compute_A: $(MPI_rank) $(j_start) $(j_local_size)")
     idx = 1
     for i in 1:num_thetas
         thetas_i = copy(thetas)
