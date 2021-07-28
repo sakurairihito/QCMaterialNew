@@ -128,7 +128,8 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     A = compute_A(vc, state0, delta_theta; comm=comm)
     #println("Computing C")
     C = compute_C(op, vc, state0, delta_theta)
-    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C)
+    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-10)
+    println("rank=", r)
     thetadot
 end
 

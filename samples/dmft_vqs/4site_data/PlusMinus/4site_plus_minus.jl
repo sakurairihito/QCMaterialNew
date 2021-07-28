@@ -179,4 +179,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_4site_plus_2poinsts_dmft_test_.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_4site_plus_35poinsts_dmft_test_.txt", taus, Gfunc_ij_list)
+println("done!")

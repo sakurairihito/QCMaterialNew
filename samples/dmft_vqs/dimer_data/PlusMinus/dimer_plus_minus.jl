@@ -10,18 +10,18 @@ import PyCall: pyimport
 #length=8
 function taus_list(file_name)
     x = Float64[]
-    for i = 1:10
-        tau = 0.005 * (i - 1) + exp((0.1 * (i - 1))) - 1
-        push!(x, tau)
+    for i in 1:10
+        tau = 0.005*(i-1) + exp((0.1*(i-1))) -1
+        push!(x,tau)
     end
-    fid = h5open(file_name, "w")
+    fid = h5open(file_name,"w")
     fid["/test/data"] = x
-    close(fid)
+    close(fid)	
 end
 
 #read taus list file.h5
 function read_taus_list(file_name)
-    fid = h5open(file_name, "r")
+    fid = h5open(file_name,"r")
     x = fid["/test/data"][:]
     close(fid)
     return x
@@ -41,7 +41,6 @@ function read_and_parse_float(file_name, n)
 end
 
 
-"tau plus"
 nsite = 2
 n_qubit = 2 * nsite
 U = 1.0
@@ -60,25 +59,21 @@ sparse_mat = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_g
 enes_ed = eigvals(sparse_mat.toarray());
 
 #debug
-println("Ground energy_ED=", minimum(enes_ed))
+println("Ground energy_ED=",minimum(enes_ed))
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
-vc = uccgsd(n_qubit, orbital_rot = true, conserv_Sz_singles = true)
+vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=true)
 theta_init = rand(num_theta(vc))
 
 #Perform VQE
-cost_history, thetas_opt = QCMaterial.solve_gs(
-    jordan_wigner(ham_op),
-    vc,
-    state0,
-    theta_init = theta_init,
-    verbose = true,
-    comm = QCMaterial.MPI_COMM_WORLD,
+cost_history, thetas_opt = 
+QCMaterial.solve_gs(jordan_wigner(ham_op), vc, state0, theta_init=theta_init, verbose=true,
+    comm=QCMaterial.MPI_COMM_WORLD
 )
 
 #debug
-println("Ground energy_VQE=", cost_history[end])
+println("Ground energy_VQE=",cost_history[end])
 
 #c^{dag},c
 up1 = up_index(1)
@@ -87,13 +82,14 @@ up2 = up_index(2)
 down2 = down_index(2)
 
 
-#1down
 if ARGS[1] == "plus_true"
     right_op = FermionOperator("$(up1)^ ", 1.0)
     right_op = jordan_wigner(right_op)
     left_op = FermionOperator("$(up1) ", 1.0)
     left_op = jordan_wigner(left_op)
+
     n_electron_ex = 3
+
     sign = 1
 end
 
@@ -103,30 +99,31 @@ if ARGS[2] == "minus_true"
     right_op = jordan_wigner(right_op)
     left_op = FermionOperator("$(up1)^ ", 1.0)
     left_op = jordan_wigner(left_op)
+
     n_electron_ex = 1
+
     sign = -1
 end
 
-##Ansatz -> apply_qubit_op & imag_time_evolve
+
 vc_ex = uccgsd(n_qubit, orbital_rot = true)
 
-#state_gs = QulacsQuantumState(n_qubit,0b0000)
 state_gs = create_hf_state(n_qubit, n_electron_gs)
 update_circuit_param!(vc, thetas_opt)
 update_quantum_state!(vc, state_gs)
 
 state0_ex = create_hf_state(n_qubit, n_electron_ex)
 
-#taus = collect(range(0.0, 0.02, length=2))
-#println("taus1=",taus1)
+#taus = collect(range(0.0, 0.02, length = 2))
 
 #make taus list file
 #taus_list("dimer_plus.h5")
 #generate taus list file
-#taus = read_taus_list("sp_tau_plus.h5")
+#taus = read_taus_list("dimer_plus.h5")
+#println("taus=",taus)
 
-num_taus = 70
-taus = read_and_parse_float("sp_tau_plus.txt", num_taus)
+num_taus = 2
+taus = read_and_parse_float("sp_tau.txt", num_taus)
 println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(
@@ -142,6 +139,8 @@ Gfunc_ij_list = sign * compute_gtau(
 )
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
 
+
+
 function write_to_txt(file_name, x, y)
     open(file_name, "w") do fp
         for i = 1:length(x)
@@ -150,5 +149,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_plus_points_sparse_samp.txt", taus, Gfunc_ij_list)
-
+write_to_txt("gf_dimer_sparse_samp.txt", taus, Gfunc_ij_list)
+println("done!!")
