@@ -80,6 +80,7 @@ U = 4.0
 μ = U/2
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
+Random.seed!(100)
  
 #Hamiltonian
 ham_op1 = generate_impurity_ham_with_1imp_3bath_dmft(U, μ, nsite)

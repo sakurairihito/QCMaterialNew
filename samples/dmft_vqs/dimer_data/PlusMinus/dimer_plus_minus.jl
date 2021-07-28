@@ -49,6 +49,8 @@ V = 1.0
 ε = 1.0
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
+Random.seed!(100)
+
 
 #Hamiltonian
 ham_op = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε, nsite)
