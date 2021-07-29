@@ -151,5 +151,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_sparse_samp.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_dimer_sparse_samp_proc3.txt", taus, Gfunc_ij_list)
 println("done!!")

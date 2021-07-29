@@ -10,8 +10,8 @@ MPI_rank = MPI.Comm_rank(MPI.COMM_WORLD)
 MPI_size = MPI.Comm_size(MPI.COMM_WORLD)
 MPI_COMM_WORLD = MPI.COMM_WORLD
 
-mpirank(comm) = MPI.Comm_rank(comm)
-mpisize(comm) = MPI.Comm_size(comm)
+mpirank(comm::MPI.Comm) = MPI.Comm_rank(comm)
+mpisize(comm::MPI.Comm) = MPI.Comm_size(comm)
 
 function distribute(size::Int, comm_size::Int, rank::Int)
     """
@@ -54,5 +54,8 @@ function distribute(size::Int, comm_size::Int, rank::Int)
 end
 
 function Allreduce(data, mpi_sum, comm)
+    if comm === nothing
+        return data
+    end
     return MPI.Allreduce(data, mpi_sum, comm)
 end

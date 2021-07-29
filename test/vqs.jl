@@ -103,7 +103,7 @@ end
     vc = QulacsVariationalQuantumCircuit(c)
 
     taus = collect(range(0.0, 1, length=100))
-    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta)[1]
+    thetas_tau = imag_time_evolve(ham, vc, state0, taus, d_theta, verbose=true)[1]
 
     theta_extact(τ) = 2*acos(exp(-τ)/sqrt(exp(-2*τ) + exp(2*τ)))
 

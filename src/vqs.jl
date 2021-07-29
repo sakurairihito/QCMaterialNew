@@ -31,10 +31,10 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
 
     num_thetas = num_theta(vc)
     thetas = get_thetas(vc)
-    UpperTriangularMat_size = (num_thetas^2 + num_thetas) ÷ 2
+    upper_triangle_size = (num_thetas^2 + num_thetas) ÷ 2
 
     A = zeros(Complex{Float64}, num_thetas, num_thetas)
-    local_start, local_size = distribute(UpperTriangularMat_size, MPI_size, MPI_rank)
+    local_start, local_size = distribute(upper_triangle_size, mpisize(comm), mpirank(comm))
     idx = 1
     for i in 1:num_thetas
         thetas_i = copy(thetas)
@@ -58,9 +58,9 @@ function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, de
         end
     end
     if comm === nothing
-        return A
+      return A
     else
-        return Allreduce(A, MPI.SUM, comm)
+      return Allreduce(A, MPI.SUM, comm)
     end
 end
 
@@ -91,12 +91,16 @@ end
 
 
 function compute_C(op::OFQubitOperator, vc::VariationalQuantumCircuit,
-    state0::QulacsQuantumState, delta_theta=1e-8)
+    state0::QulacsQuantumState, delta_theta=1e-8;comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given whn mpi is one!")
+    end
     num_thetas = num_theta(vc)
     thetas = get_thetas(vc)
 
     C = zeros(Complex{Float64}, num_thetas)
-    for i in 1:num_thetas
+    local_start, local_size = distribute(num_thetas, mpisize(comm), mpirank(comm))
+    for i in local_start:local_start+local_size-1
         thetas_i = copy(thetas)
         thetas_i[i] += delta_theta
 
@@ -108,7 +112,11 @@ function compute_C(op::OFQubitOperator, vc::VariationalQuantumCircuit,
             -transition(op, vc, state0, thetas, thetas_i2)
         )/(2*delta_theta)
     end
-    C
+    if comm === nothing
+      return C
+    else
+      return Allreduce(C, MPI.SUM, comm)
+    end
 end
 
 
@@ -119,16 +127,19 @@ Compute thetadot = A^(-1) C
 """
 
 function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
-    state0::QulacsQuantumState,delta_theta=1e-8; comm=MPI_COMM_WORLD)
+    state0::QulacsQuantumState,delta_theta=1e-8; comm=MPI_COMM_WORLD, verbose=false)
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
-    #println("Computing A")
+    t1 = time_ns()
     A = compute_A(vc, state0, delta_theta; comm=comm)
-    #println("Computing C")
+    t2 = time_ns()
     C = compute_C(op, vc, state0, delta_theta)
+    t3 = time_ns()
+    if verbose && mpirank(comm) == 0
+        println("timing in compute_thetadot: $(1e-9*(t2-t1)) sec for A $(1e-9*(t3-t2)) sec for C")
+    end
     thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-10)
-    println("rank=", r)
     thetadot
 end
 
@@ -163,7 +174,9 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
     log_norm_tau = zeros(Float64, length(taus))  #エルミートの期待値だから必ず実数
 
     for i in 1:length(taus)-1
-        println("imag_time_evolve: starting step $(i)...")
+        if verbose && mpirank(comm) == 0
+          println("imag_time_evolve: starting step $(i)...")
+        end
         vc_ = copy(vc)
         update_circuit_param!(vc_, thetas_tau[i])
         #compute expectation value
@@ -171,7 +184,7 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
         update_quantum_state!(vc_, state0_)
 
         # Compute theta 
-        thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm)
+        thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm, verbose=verbose)
         if taus[i+1] <= taus[i]
             error("taus must be in strictly asecnding order!")
         end
@@ -246,7 +259,7 @@ function compute_gtau(
        error("taus must in strictly asecnding order!")
     end
 
-    if verbose
+    if verbose && mpirank(comm) == 0
         println("Applying to an operator to the ket...")
     end
     circuit_right_ex = copy(vc_ex) 
@@ -263,7 +276,8 @@ function compute_gtau(
     end
 
     # exp(-tau H)c^{dag}_j|g.s>
-    thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
+    thetas_tau_right, log_norm_tau_right = imag_time_evolve(
+        ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm, verbose=verbose)
     
     #thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
 

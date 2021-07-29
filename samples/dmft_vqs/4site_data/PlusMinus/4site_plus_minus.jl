@@ -153,8 +153,8 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 #taus = read_taus_list("dimer_plus.h5")
 #println("taus=",taus)
 
-num_taus = 35
-taus = read_and_parse_float("sp_tau_plus_p_35.txt", num_taus)
+num_taus = 2
+taus = read_and_parse_float("sp_tau_plus_p_2.txt", num_taus)
 println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(
@@ -180,5 +180,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_4site_plus_35poinsts_dmft_test_.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_4site_plus_2poinsts_dmft_proc16.txt", taus, Gfunc_ij_list)
 println("done!")

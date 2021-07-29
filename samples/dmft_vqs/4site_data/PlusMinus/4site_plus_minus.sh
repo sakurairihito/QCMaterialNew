@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p defq
-#SBATCH -n 32
+#SBATCH -n 16
 #SBATCH -J uccgsd_dimer_tau_plus
 #SBATCH -o stdout.%J
 #SBATCH -e stderr.%J
