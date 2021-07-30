@@ -43,7 +43,7 @@ end
 
 nsite = 2
 n_qubit = 2 * nsite
-U = 1.0
+U = 2.0
 V = 1.0
 μ = 1.0
 ε = 1.0
@@ -65,7 +65,7 @@ println("Ground energy_ED=",minimum(enes_ed))
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
-vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=true)
+vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=true,  conserv_Sz_doubles = false)
 theta_init = rand(num_theta(vc))
 
 #Perform VQE
@@ -108,7 +108,7 @@ if ARGS[2] == "minus_true"
 end
 
 
-vc_ex = uccgsd(n_qubit, orbital_rot = true)
+vc_ex = uccgsd(n_qubit, orbital_rot = true, conserv_Sz_doubles = false)
 
 state_gs = create_hf_state(n_qubit, n_electron_gs)
 update_circuit_param!(vc, thetas_opt)
@@ -124,8 +124,8 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 #taus = read_taus_list("dimer_plus.h5")
 #println("taus=",taus)
 
-num_taus = 2
-taus = read_and_parse_float("sp_tau.txt", num_taus)
+num_taus = 35
+taus = read_and_parse_float("sp_tau_35.txt", num_taus)
 println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(
@@ -151,5 +151,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_sparse_samp_proc3.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_dimer_sparse_samp_35_U2.txt", taus, Gfunc_ij_list)
 println("done!!")

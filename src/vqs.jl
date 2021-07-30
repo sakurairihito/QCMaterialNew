@@ -138,8 +138,14 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     t3 = time_ns()
     if verbose && mpirank(comm) == 0
         println("timing in compute_thetadot: $(1e-9*(t2-t1)) sec for A $(1e-9*(t3-t2)) sec for C")
+        println("condition number of A =", LinearAlgebra.cond(A))
+        U, s, Vt = LinearAlgebra.svd(A)
+        for i in eachindex(s)
+            println("singular values of A = ", s[i])
+        end
     end
-    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-10)
+
+    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
     thetadot
 end
 
