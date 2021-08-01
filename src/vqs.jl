@@ -145,7 +145,7 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
         end
     end
 
-    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
+    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-4)
     thetadot
 end
 
