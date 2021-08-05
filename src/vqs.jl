@@ -145,7 +145,7 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
         end
     end
 
-    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-4)
+    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
     thetadot
 end
 
@@ -188,6 +188,9 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
         #compute expectation value
         state0_ = copy(state0)
         update_quantum_state!(vc_, state0_)
+        if verbose && mpirank(comm) == 0
+            println("Etau=", get_expectation_value(ham_op, state0_))
+        end
 
         # Compute theta 
         thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm, verbose=verbose)
