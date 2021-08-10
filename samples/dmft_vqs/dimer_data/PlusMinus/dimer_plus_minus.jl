@@ -40,6 +40,28 @@ function read_and_parse_float(file_name, n)
     return x
 end
 
+function hev(n_qubit, depth)
+    circuit = QulacsParametricQuantumCircuit(n_qubit)
+    for d in 1:depth
+        for i in 1:n_qubit
+            add_parametric_RY_gate!(circuit, i, 0.0)
+            add_parametric_RZ_gate!(circuit, i, 0.0)
+        end
+        for i in 1:n_qubit÷2
+            add_CNOT_gate!(circuit, 2*i-1, 2*i)
+        end
+        for i in 1:n_qubit÷2-1
+            add_CNOT_gate!(circuit, 2*i, 2*i+1)
+        end
+    end
+    for i in 1:n_qubit
+        add_parametric_RY_gate!(circuit, i, 0.0)
+        add_parametric_RZ_gate!(circuit, i, 0.0)
+    end
+    circuit = QulacsVariationalQuantumCircuit(circuit)
+    circuit
+end
+
 
 nsite = 2
 n_qubit = 2 * nsite
@@ -65,7 +87,9 @@ println("Ground energy_ED=",minimum(enes_ed))
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
-vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=true,  conserv_Sz_doubles = false)
+#vc = uccgsd(n_qubit, nocc = 1, orbital_rot=true, uccgsd = false, p_uccgsd = true)
+depth = n_qubit 
+vc = hev(n_qubit, depth )
 theta_init = rand(num_theta(vc))
 
 #Perform VQE
@@ -108,8 +132,8 @@ if ARGS[2] == "minus_true"
 end
 
 
-vc_ex = uccgsd(n_qubit, orbital_rot = true, conserv_Sz_doubles = false)
-
+#vc_ex = uccgsd(n_qubit, nocc = 1, orbital_rot = true, uccgsd = false, p_uccgsd = true)
+vc_ex = hev(n_qubit, depth )
 state_gs = create_hf_state(n_qubit, n_electron_gs)
 update_circuit_param!(vc, thetas_opt)
 update_quantum_state!(vc, state_gs)
@@ -124,8 +148,8 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 #taus = read_taus_list("dimer_plus.h5")
 #println("taus=",taus)
 
-num_taus = 35
-taus = read_and_parse_float("sp_tau_35.txt", num_taus)
+num_taus = 139
+taus = read_and_parse_float("sp_2_tau.txt", num_taus)
 println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(
@@ -151,5 +175,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_sparse_samp_35_U2.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_dimer_hev.txt", taus, Gfunc_ij_list)
 println("done!!")

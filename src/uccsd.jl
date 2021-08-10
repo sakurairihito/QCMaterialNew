@@ -135,7 +135,7 @@ end
 """
 Returns UCCGSD circuit.
 """
-function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true, Doubles=true)
+function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true, Doubles=true, uccgsd = true, p_uccgsd=false)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -168,33 +168,52 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
         end
     end
 
-    if Doubles 
-        #Doubles
-        for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
-            for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
-                if conserv_Sz_doubles && sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
-                    continue
-                end
-                #Spatial Orbital Indices
-                aa = so_idx(a, spin_a)
-                ia = so_idx(i, spin_i)
-                bb = so_idx(b, spin_b)
-                jb = so_idx(j, spin_j)
-                #perform loop only if ia>jb && aa>bb               
+    if Doubles
+        if uccgsd  
+            #Doubles
+            for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
+                for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
+                    if conserv_Sz_doubles && sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
+                        continue
+                    end
+                    #Spatial Orbital Indices
+                    aa = so_idx(a, spin_a)
+                    ia = so_idx(i, spin_i)
+                    bb = so_idx(b, spin_b)
+                    jb = so_idx(j, spin_j)
+                    #perform loop only if ia>jb && aa>bb               
                 　
-                if aa<=bb || ia <= jb
-                    continue
-                end
+                    if aa<=bb || ia <= jb
+                        continue
+                    end
                          
-                #t2 operator
+                    #t2 operator
+                    generator = gen_p_t2(aa, ia, bb, jb)
+                    #Add p-t2 into the circuit
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                end
+            end
+            circuit
+        end
+
+        if p_uccgsd
+            spin_a = 1
+            spin_b = 2
+            for (a,i) in Iterators.product(nocc+1:norb, 1:nocc)
+                aa = so_idx(a, spin_a)
+                ia = so_idx(i, spin_a)
+                bb = so_idx(a, spin_b)
+                jb = so_idx(i, spin_b)  
+
                 generator = gen_p_t2(aa, ia, bb, jb)
                 #Add p-t2 into the circuit
                 add_parametric_circuit_using_generator!(circuit, generator, 0.0)
             end
+            circuit
         end
     end
-    circuit
 end 
     
+
 
 
