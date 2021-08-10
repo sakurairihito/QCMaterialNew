@@ -199,7 +199,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
         if p_uccgsd
             spin_a = 1
             spin_b = 2
-            for (a,i) in Iterators.product(nocc+1:norb, 1:nocc)
+            for (a,i) in Iterators.product(1:norb, 1:norb)
                 aa = so_idx(a, spin_a)
                 ia = so_idx(i, spin_a)
                 bb = so_idx(a, spin_b)
