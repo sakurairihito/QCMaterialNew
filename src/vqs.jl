@@ -309,7 +309,7 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
 
 
         # Compute norm
-        log_norm_tau[i+1] = log_norm_tau[i] - get_expectation_value(ham_op, state0) * (taus[i+1] - taus[i])
+        log_norm_tau[i+1] = log_norm_tau[i] - Etau * (taus[i+1] - taus[i])
     end
     thetas_tau, log_norm_tau
 end

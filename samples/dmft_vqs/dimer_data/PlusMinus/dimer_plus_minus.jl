@@ -64,9 +64,9 @@ end
 
 nsite = 2
 n_qubit = 2 * nsite
-U = 2.0
+U = 1.0
 V = 1.0
-μ = 1.0
+μ = U/2
 ε = 1.0
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
@@ -173,5 +173,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_dimer_recursive_taus.txt", taus, Gfunc_ij_list)
 println("done!!")
