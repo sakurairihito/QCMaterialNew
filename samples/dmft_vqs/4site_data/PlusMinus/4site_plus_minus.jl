@@ -28,13 +28,12 @@ function read_taus_list(file_name)
 end
 
 #read taus list file.txt
-function read_and_parse_float(file_name, n)
-    x = zeros(Float64, n)
+function read_and_parse_float(file_name)
+    x = Float64[]
     open(file_name, "r") do fp
         num_elm = parse(Int64,readline(fp))
-        @assert n == num_elm
-        for i in 1:n
-            x[i] = parse(Float64, readline(fp))
+        for i in 1:num_elm
+            push!(x, parse(Float64, readline(fp)))
         end
     end
     return x
@@ -105,7 +104,10 @@ U = 4.0
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
 Random.seed!(100)
- 
+
+taus = read_and_parse_float(ARGS[3])
+println("taus=",taus)
+
 #Hamiltonian
 ham_op1 = generate_impurity_ham_with_1imp_3bath_dmft(U, μ, nsite)
 n_electron_gs = 4
@@ -162,7 +164,6 @@ if ARGS[2] == "minus_true"
     sign = -1
 end
 
-
 vc_ex = uccgsd(n_qubit, nocc = 2, orbital_rot=true, uccgsd = true, p_uccgsd = false)
 #vc_ex = hev(n_qubit, depth)
 #println(vc_ex)
@@ -180,9 +181,6 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 #taus = read_taus_list("dimer_plus.h5")
 #println("taus=",taus)
 
-num_taus = 139
-taus = read_and_parse_float("sp_tau_plus2_p_139.txt", num_taus)
-println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(
     jordan_wigner(ham_op1),
