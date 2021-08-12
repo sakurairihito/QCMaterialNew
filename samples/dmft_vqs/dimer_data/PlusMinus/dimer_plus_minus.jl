@@ -87,9 +87,9 @@ println("Ground energy_ED=",minimum(enes_ed))
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
-#vc = uccgsd(n_qubit, nocc = 1, orbital_rot=true, uccgsd = false, p_uccgsd = true)
-depth = n_qubit 
-vc = hev(n_qubit, depth )
+vc = uccgsd(n_qubit, nocc = 1, orbital_rot=true, uccgsd = true, p_uccgsd = false)
+#depth = n_qubit 
+#vc = hev(n_qubit, depth )
 theta_init = rand(num_theta(vc))
 
 #Perform VQE
@@ -132,8 +132,8 @@ if ARGS[2] == "minus_true"
 end
 
 
-#vc_ex = uccgsd(n_qubit, nocc = 1, orbital_rot = true, uccgsd = false, p_uccgsd = true)
-vc_ex = hev(n_qubit, depth )
+vc_ex = uccgsd(n_qubit, nocc = 1, orbital_rot = true, uccgsd = true, p_uccgsd = false)
+#vc_ex = hev(n_qubit, depth )
 state_gs = create_hf_state(n_qubit, n_electron_gs)
 update_circuit_param!(vc, thetas_opt)
 update_quantum_state!(vc, state_gs)
@@ -175,5 +175,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_hev.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_dimer.txt", taus, Gfunc_ij_list)
 println("done!!")
