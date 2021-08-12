@@ -238,7 +238,7 @@ end
     ham_op = jordan_wigner(ham_op)
 
     #vc = QulacsVariationalQuantumCircuit(c)
-    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false,Doubles=false)
+    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false, Doubles=false, uccgsd=false, p_uccgsd=false)
     
     #Perform VQE
     function cost(theta_list)
@@ -344,7 +344,7 @@ end
     ham_op = jordan_wigner(ham_op)
 
     #vc = QulacsVariationalQuantumCircuit(c)
-    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false, Doubles=false)
+    vc = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false, Doubles=false, uccgsd=false, p_uccgsd=false)
     
     #Perform VQE
     function cost(theta_list)

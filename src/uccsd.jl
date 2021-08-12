@@ -193,7 +193,6 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
                     add_parametric_circuit_using_generator!(circuit, generator, 0.0)
                 end
             end
-            circuit
         end
 
         if p_uccgsd
@@ -209,9 +208,10 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
                 #Add p-t2 into the circuit
                 add_parametric_circuit_using_generator!(circuit, generator, 0.0)
             end
-            circuit
         end
     end
+
+    circuit
 end 
     
 

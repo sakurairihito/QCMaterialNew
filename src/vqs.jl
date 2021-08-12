@@ -119,6 +119,56 @@ function compute_C(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     end
 end
 
+function compute_next_thetas_vqs(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau, delta_theta=1e-8; comm=MPI_COMM_WORLD, verbose=false)
+    thetas_dot = compute_thetadot(op, vc, state0, delta_theta, comm=comm, verbose=verbose)
+    return get_thetas(vc) .+ dtau * thetas_dot
+end
+
+"Improved VQS"
+
+function compute_next_thetas_direct(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau;
+    comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5,verbose=true
+    )
+
+    state_tau = copy(state0)
+    update_quantum_state!(vc, state_tau)
+    Etau = get_expectation_value(op, state_tau)
+
+    function cost(thetas::Vector{Float64})
+        vc_ = copy(vc)
+        state_ = copy(state0)
+        update_circuit_param!(vc_, thetas)
+        update_quantum_state!(vc_, state_)
+        cost_term1 = dtau * get_transition_amplitude(op, state_, state_tau)
+        cost_term2 = (dtau * Etau + 1) * inner_product(state_, state_tau)
+        real(cost_term1 - cost_term2) 
+    end
+
+    cost_history = Float64[] #コスト関数の箱
+    thetas_init = get_thetas(vc)
+    init_theta_list = thetas_init
+
+    function callback(x)
+        push!(cost_history, cost(x))
+        if verbose && rank == 0
+            println("iter ", length(cost_history), " ", cost_history[end])
+        end
+    end
+
+    if comm !== nothing
+        MPI.Bcast!(thetas_init, 0, comm)
+    end
+    
+    scipy_opt = pyimport("scipy.optimize")
+    method = "BFGS"
+    options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol)
+    opt = scipy_opt.minimize(cost, init_theta_list, method=method,
+        callback=callback, jac=generate_numerical_grad(cost),
+        options=options)
+    return opt["x"]
+end    
 
 
 #theta(tau)の微分の計算
@@ -168,7 +218,7 @@ return:
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD, verbose=false
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct"
     )::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -193,11 +243,17 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
         end
 
         # Compute theta 
-        thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm, verbose=verbose)
-        if taus[i+1] <= taus[i]
+        dtau = taus[i+1] - taus[i]
+        #thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm, verbose=verbose)
+        if dtau < 0.0
             error("taus must be in strictly asecnding order!")
         end
-        thetas_next_ = thetas_tau[i] + (taus[i+1] - taus[i]) * thetas_dot_
+        if algorithm == "vqs"
+            thetas_next_ = compute_next_thetas_vqs(ham_op, vc_, state0, dtau, delta_theta, comm=comm, verbose=verbose)
+        elseif algorithm == "direct"
+            thetas_next_ = compute_next_thetas_direct(ham_op, vc_, state0, dtau, comm=comm)
+        end
+        #thetas_next_ = thetas_tau[i] + (taus[i+1] - taus[i]) * thetas_dot_
         push!(thetas_tau, thetas_next_)
 
         # Compute norm
@@ -254,7 +310,7 @@ function compute_gtau(
     state_gs::QulacsQuantumState,　
     state0_ex::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD, verbose=false
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct"
     )
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -285,9 +341,15 @@ function compute_gtau(
     end
 
     # exp(-tau H)c^{dag}_j|g.s>
-    thetas_tau_right, log_norm_tau_right = imag_time_evolve(
-        ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm, verbose=verbose)
-    
+    if algorithm == "vqs"
+        thetas_tau_right, log_norm_tau_right = imag_time_evolve(
+            ham_op, circuit_right_ex, state0_ex, taus, delta_theta,
+            comm=comm, verbose=verbose, algorithm="vqs")
+    elseif algorithm == "direct"
+        thetas_tau_right, log_norm_tau_right = imag_time_evolve(
+            ham_op, circuit_right_ex, state0_ex, taus, delta_theta,
+            comm=comm, verbose=verbose, algorithm="direct")
+    end
     #thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
 
     Gfunc_ij_list = Complex{Float64}[]
