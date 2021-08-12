@@ -259,7 +259,7 @@ return:
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct"
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct", tol_dE_dtau=1e-5
     )::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -270,38 +270,46 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
     thetas_tau = [copy(get_thetas(vc))]
     log_norm_tau = zeros(Float64, length(taus))  #エルミートの期待値だから必ず実数
 
+    stop_imag_time_evol = false
     for i in 1:length(taus)-1
         if verbose && mpirank(comm) == 0
           println("imag_time_evolve: starting step $(i)...")
         end
-        vc_ = copy(vc)
-        update_circuit_param!(vc_, thetas_tau[i])
+
         #compute expectation value
-        state0_ = copy(state0)
-        update_quantum_state!(vc_, state0_)
+        Etau = _expval(vc, state0, thetas_tau[end], ham_op)
         if verbose && mpirank(comm) == 0
-            println("Etau=", get_expectation_value(ham_op, state0_))
+            println("Etau= ", Etau)
         end
 
         # Compute theta 
         dtau = taus[i+1] - taus[i]
-        #thetas_dot_ = compute_thetadot(ham_op, vc_, state0, delta_theta, comm=comm, verbose=verbose)
         if dtau < 0.0
             error("taus must be in strictly asecnding order!")
         end
-        #if algorithm == "vqs"
-            #thetas_next_ = compute_next_thetas_vqs(ham_op, vc_, state0, dtau, delta_theta, comm=comm, verbose=verbose)
-        #elseif algorithm == "direct"
-            #thetas_next_ = compute_next_thetas_direct(ham_op, vc_, state0, dtau, comm=comm)
-        #end
-        #thetas_next_ = thetas_tau[i] + (taus[i+1] - taus[i]) * thetas_dot_
-        thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau,
-            algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
+        if stop_imag_time_evol
+            if verbose && mpirank(comm) == 0
+                println("Skipping imag_time_evolve")
+            end
+            thetas_next_ = copy(thetas_tau[end])
+        else
+            vc_ = copy(vc)
+            update_circuit_param!(vc_, thetas_tau[i])
+            thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau,
+                algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
+            Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
+            if abs(Etau - Etau_next) / dtau < tol_dE_dtau
+                if verbose && mpirank(comm) == 0
+                    println("Energy converged!")
+                end
+                stop_imag_time_evol = true
+            end
+        end
         push!(thetas_tau, thetas_next_)
 
-        # Compute norm
-        log_norm_tau[i+1] = log_norm_tau[i] - get_expectation_value(ham_op, state0_) * (taus[i+1] - taus[i])
 
+        # Compute norm
+        log_norm_tau[i+1] = log_norm_tau[i] - get_expectation_value(ham_op, state0) * (taus[i+1] - taus[i])
     end
     thetas_tau, log_norm_tau
 end
