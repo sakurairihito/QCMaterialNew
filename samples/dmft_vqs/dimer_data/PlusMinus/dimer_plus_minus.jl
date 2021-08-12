@@ -28,13 +28,12 @@ function read_taus_list(file_name)
 end
 
 #read taus list file.txt
-function read_and_parse_float(file_name, n)
-    x = zeros(Float64, n)
+function read_and_parse_float(file_name)
+    x = zeros(Float64, 0)
     open(file_name, "r") do fp
         num_elm = parse(Int64,readline(fp))
-        @assert n == num_elm
-        for i in 1:n
-            x[i] = parse(Float64, readline(fp))
+        for i in 1:num_elm
+            push!(x, parse(Float64, readline(fp)))
         end
     end
     return x
@@ -148,8 +147,7 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 #taus = read_taus_list("dimer_plus.h5")
 #println("taus=",taus)
 
-num_taus = 139
-taus = read_and_parse_float("sp_2_tau.txt", num_taus)
+taus = read_and_parse_float(ARGS[3])
 println("taus=",taus)
 
 Gfunc_ij_list = sign * compute_gtau(

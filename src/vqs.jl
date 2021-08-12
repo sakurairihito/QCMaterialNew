@@ -120,7 +120,7 @@ function compute_C(op::OFQubitOperator, vc::VariationalQuantumCircuit,
 end
 
 function compute_next_thetas_vqs(op::OFQubitOperator, vc::VariationalQuantumCircuit,
-    state0::QulacsQuantumState, dtau, delta_theta=1e-8; comm=MPI_COMM_WORLD, verbose=false)
+    state0::QulacsQuantumState, dtau; delta_theta=1e-8, comm=MPI_COMM_WORLD, verbose=false)
     thetas_dot = compute_thetadot(op, vc, state0, delta_theta, comm=comm, verbose=verbose)
     return get_thetas(vc) .+ dtau * thetas_dot
 end
@@ -169,6 +169,47 @@ function compute_next_thetas_direct(op::OFQubitOperator, vc::VariationalQuantumC
         options=options)
     return opt["x"]
 end    
+
+function _expval(vc, state0, thetas, op)
+    state = copy(state0)
+    vc_ = copy(vc)
+    update_circuit_param!(vc_, thetas)
+    update_quantum_state!(vc_, state)
+    return get_expectation_value(op, state)
+end
+
+function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau;
+    algorithm="direct", comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5, delta_theta=1e-8,
+    verbose=true, max_recursion=10)
+
+    Etau = _expval(vc, state0, get_thetas(vc), op)
+    if algorithm == "direct"
+        thetas_next = compute_next_thetas_direct(op, vc, state0, dtau,
+            comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose)
+    else
+        thetas_next = compute_next_thetas_vqs(op, vc, state0, dtau,
+            comm=comm, verbose=verbose, delta_theta=delta_theta)
+    end
+    Etau_next = _expval(vc, state0, thetas_next, op)
+    if verbose
+       println("dtau: $(dtau), Etau: $(Etau) -> $(Etau_next)")
+    end
+    if max_recursion == 0 || Etau_next <= Etau
+        return thetas_next
+    end
+
+    # Bad case: we need to decrease dtau
+    if verbose
+       println("Falling back to recursive model with max_recursion = $(max_recursion)")
+    end
+    thetas_next1 = compute_next_thetas_safe(op, vc, state0, 0.5*dtau,
+        comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose, max_recursion=max_recursion-1)
+    vc_ = copy(vc)
+    update_circuit_param!(vc_, thetas_next1)
+    return compute_next_thetas_safe(op, vc_, state0, 0.5*dtau,
+        comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose, max_recursion=max_recursion-1)
+end
 
 
 #theta(tau)の微分の計算
@@ -248,12 +289,14 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
         if dtau < 0.0
             error("taus must be in strictly asecnding order!")
         end
-        if algorithm == "vqs"
-            thetas_next_ = compute_next_thetas_vqs(ham_op, vc_, state0, dtau, delta_theta, comm=comm, verbose=verbose)
-        elseif algorithm == "direct"
-            thetas_next_ = compute_next_thetas_direct(ham_op, vc_, state0, dtau, comm=comm)
-        end
+        #if algorithm == "vqs"
+            #thetas_next_ = compute_next_thetas_vqs(ham_op, vc_, state0, dtau, delta_theta, comm=comm, verbose=verbose)
+        #elseif algorithm == "direct"
+            #thetas_next_ = compute_next_thetas_direct(ham_op, vc_, state0, dtau, comm=comm)
+        #end
         #thetas_next_ = thetas_tau[i] + (taus[i+1] - taus[i]) * thetas_dot_
+        thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau,
+            algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
         push!(thetas_tau, thetas_next_)
 
         # Compute norm
