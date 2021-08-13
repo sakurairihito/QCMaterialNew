@@ -42,3 +42,4 @@ export compute_thetadot
 export taus_list
 export read_taus_list
 export compute_next_thetas_direct
+export compute_next_thetas_vqs

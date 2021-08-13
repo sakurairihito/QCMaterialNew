@@ -122,6 +122,7 @@ end
 function compute_next_thetas_vqs(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState, dtau; delta_theta=1e-8, comm=MPI_COMM_WORLD, verbose=false)
     thetas_dot = compute_thetadot(op, vc, state0, delta_theta, comm=comm, verbose=verbose)
+    thetas_dot = convert(Vector{Float64}, thetas_dot)
     return get_thetas(vc) .+ dtau * thetas_dot
 end
 

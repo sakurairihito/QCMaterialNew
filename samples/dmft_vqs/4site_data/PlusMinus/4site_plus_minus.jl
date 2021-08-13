@@ -192,6 +192,7 @@ Gfunc_ij_list = sign * compute_gtau(
     taus,
     d_theta,
     verbose = verbose,
+    algorithm = "vqs",
 )
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
 
