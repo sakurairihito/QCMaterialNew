@@ -206,5 +206,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_4site_plus_recursive_taus.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_4site_plus_honbann_vqs_p139.txt_minus", taus, Gfunc_ij_list)
 println("done!")
