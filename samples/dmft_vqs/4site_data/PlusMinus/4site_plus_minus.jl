@@ -115,8 +115,14 @@ n_electron_gs = 4
 sparse_mat = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_gs);
 enes_ed = eigvals(sparse_mat.toarray());
 
+#N+1 system
+n_electron_ex = 5
+sparse_mat_ex = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_ex);
+enes_ed_ex = eigvals(sparse_mat_ex.toarray());
 #debug
 println("Ground energy_ED=",minimum(enes_ed))
+println("Ground energy_N+1_ED=",minimum(enes_ed_ex))
+
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
@@ -193,6 +199,7 @@ Gfunc_ij_list = sign * compute_gtau(
     d_theta,
     verbose = verbose,
     algorithm = "vqs",
+    recursive=false
 )
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
 
@@ -206,5 +213,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_4site_plus_honbann_vqs_p139.txt_minus", taus, Gfunc_ij_list)
+write_to_txt("gf_4site_plus_non_recursive_vqs.txt", taus, Gfunc_ij_list)
 println("done!")

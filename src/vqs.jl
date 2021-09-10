@@ -180,10 +180,10 @@ function _expval(vc, state0, thetas, op)
 end
 
 function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCircuit,
-    state0::QulacsQuantumState, dtau;
+    state0::QulacsQuantumState, dtau, tau::Float64;
     algorithm="direct", comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5, delta_theta=1e-8,
     verbose=true, max_recursion=10)
-
+ 
     Etau = _expval(vc, state0, get_thetas(vc), op)
     if algorithm == "direct"
         thetas_next = compute_next_thetas_direct(op, vc, state0, dtau,
@@ -193,10 +193,25 @@ function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCir
             comm=comm, verbose=verbose, delta_theta=delta_theta)
     end
     Etau_next = _expval(vc, state0, thetas_next, op)
+
     if verbose
        println("dtau: $(dtau), Etau: $(Etau) -> $(Etau_next)")
     end
+   
+    #debug
+    #if verbose
+    #    println("tau point_2=", tau)
+    #    #println("next (recusive) tau point=", tau+0.5^(10-max_recursion)*dtau)
+    #    println("next (recusive) tau point_2=", tau+dtau)
+    #end
+
     if max_recursion == 0 || Etau_next <= Etau
+        if verbose
+            println("tau point", tau)
+            println("max_recursion=",max_recursion)
+            println("next (recusive) tau point1=", tau+0.5^(10-max_recursion)*dtau)
+            println("next (recusive) tau point2=", tau+dtau)
+        end
         return thetas_next
     end
 
@@ -204,14 +219,28 @@ function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCir
     if verbose
        println("Falling back to recursive model with max_recursion = $(max_recursion)")
     end
-    thetas_next1 = compute_next_thetas_safe(op, vc, state0, 0.5*dtau,
+    thetas_next1 = compute_next_thetas_safe(op, vc, state0, 0.5*dtau, tau,
         comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose, max_recursion=max_recursion-1)
     vc_ = copy(vc)
     update_circuit_param!(vc_, thetas_next1)
-    return compute_next_thetas_safe(op, vc_, state0, 0.5*dtau,
+    return compute_next_thetas_safe(op, vc_, state0, 0.5*dtau,tau,
         comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose, max_recursion=max_recursion-1)
 end
 
+function compute_next_thetas_unsafe(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau;
+    algorithm="direct", comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5, delta_theta=1e-8,
+    verbose=true
+    )
+    if algorithm == "direct"
+        thetas_next = compute_next_thetas_direct(op, vc, state0, dtau, 
+            comm=comm, maxiter=maxiter, gtol=gtol, verbose=verbose)
+    else
+        thetas_next = compute_next_thetas_vqs(op, vc, state0, dtau,
+            comm=comm, verbose=verbose, delta_theta=delta_theta)
+    end
+    return thetas_next 
+end
 
 #theta(tau)の微分の計算
 """
@@ -260,7 +289,7 @@ return:
 """
 function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct", tol_dE_dtau=1e-5
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct", tol_dE_dtau=1e-5, recursive=true
     )::Tuple{Vector{Vector{Float64}}, Vector{Float64}}
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -280,37 +309,49 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
         #compute expectation value
         Etau = _expval(vc, state0, thetas_tau[end], ham_op)
         if verbose && mpirank(comm) == 0
-            println("Etau= ", Etau)
+            println("tau_ite, Etau_ite=, ", taus[i], " ", Etau)
+            #println("tau_ite=", taus[i])
         end
 
-        # Compute theta 
         dtau = taus[i+1] - taus[i]
         if dtau < 0.0
             error("taus must be in strictly asecnding order!")
         end
-        if stop_imag_time_evol
-            if verbose && mpirank(comm) == 0
-                println("Skipping imag_time_evolve")
+        if recursive 
+            # Compute theta 
+
+            if stop_imag_time_evol
+                if verbose && mpirank(comm) == 0
+                    println("Skipping imag_time_evolve")
+                end
+                thetas_next_ = copy(thetas_tau[end])
+            else
+                vc_ = copy(vc)
+                update_circuit_param!(vc_, thetas_tau[i])
+                thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau, taus[i],
+                    algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
+                Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
+                if abs(Etau - Etau_next) / dtau < tol_dE_dtau
+                    if verbose && mpirank(comm) == 0
+                        println("Energy converged!")
+                    end
+                    stop_imag_time_evol = true
+                end
             end
-            thetas_next_ = copy(thetas_tau[end])
+            push!(thetas_tau, thetas_next_)
+            # Compute norm
+            log_norm_tau[i+1] = log_norm_tau[i] - Etau * (taus[i+1] - taus[i])
+
         else
             vc_ = copy(vc)
             update_circuit_param!(vc_, thetas_tau[i])
-            thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau,
-                algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
+            thetas_next_ = compute_next_thetas_unsafe(ham_op, vc_, state0, dtau,
+                algorithm=algorithm, comm=comm, delta_theta=delta_theta, verbose=verbose) 
             Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
-            if abs(Etau - Etau_next) / dtau < tol_dE_dtau
-                if verbose && mpirank(comm) == 0
-                    println("Energy converged!")
-                end
-                stop_imag_time_evol = true
-            end
+            push!(thetas_tau, thetas_next_)
+
+            log_norm_tau[i+1] = log_norm_tau[i] - Etau * (taus[i+1] - taus[i])
         end
-        push!(thetas_tau, thetas_next_)
-
-
-        # Compute norm
-        log_norm_tau[i+1] = log_norm_tau[i] - Etau * (taus[i+1] - taus[i])
     end
     thetas_tau, log_norm_tau
 end
@@ -362,7 +403,7 @@ function compute_gtau(
     state_gs::QulacsQuantumState,　
     state0_ex::QulacsQuantumState,
     taus::Vector{Float64}, delta_theta=1e-8;
-    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct"
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct",recursive=true
     )
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -396,11 +437,11 @@ function compute_gtau(
     if algorithm == "vqs"
         thetas_tau_right, log_norm_tau_right = imag_time_evolve(
             ham_op, circuit_right_ex, state0_ex, taus, delta_theta,
-            comm=comm, verbose=verbose, algorithm="vqs")
+            comm=comm, verbose=verbose, algorithm="vqs", recursive=recursive)
     elseif algorithm == "direct"
         thetas_tau_right, log_norm_tau_right = imag_time_evolve(
             ham_op, circuit_right_ex, state0_ex, taus, delta_theta,
-            comm=comm, verbose=verbose, algorithm="direct")
+            comm=comm, verbose=verbose, algorithm="direct", recursive=recursive)
     end
     #thetas_tau_right, log_norm_tau_right = imag_time_evolve(ham_op, circuit_right_ex, state0_ex, taus, delta_theta, comm=comm)
 
