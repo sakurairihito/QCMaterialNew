@@ -199,7 +199,7 @@ Gfunc_ij_list = sign * compute_gtau(
     d_theta,
     verbose = verbose,
     algorithm = "vqs",
-    recursive=false
+    recursive=true
 )
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
 

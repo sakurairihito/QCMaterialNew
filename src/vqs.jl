@@ -197,20 +197,10 @@ function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCir
     if verbose
        println("dtau: $(dtau), Etau: $(Etau) -> $(Etau_next)")
     end
-   
-    #debug
-    #if verbose
-    #    println("tau point_2=", tau)
-    #    #println("next (recusive) tau point=", tau+0.5^(10-max_recursion)*dtau)
-    #    println("next (recusive) tau point_2=", tau+dtau)
-    #end
 
     if max_recursion == 0 || Etau_next <= Etau
         if verbose
-            println("tau point", tau)
-            println("max_recursion=",max_recursion)
-            println("next (recusive) tau point1=", tau+0.5^(10-max_recursion)*dtau)
-            println("next (recusive) tau point2=", tau+dtau)
+            println("next (recusive) tau point=", tau+dtau)
         end
         return thetas_next
     end
