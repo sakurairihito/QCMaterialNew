@@ -198,7 +198,7 @@ Gfunc_ij_list = sign * compute_gtau(
     taus,
     d_theta,
     verbose = verbose,
-    algorithm = "vqs",
+    algorithm = "direct",
     recursive=true
 )
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
@@ -213,5 +213,5 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_4site_plus_non_recursive_vqs.txt", taus, Gfunc_ij_list)
+write_to_txt("gf_4site_plus_recursive_direct2.txt", taus, Gfunc_ij_list)
 println("done!")

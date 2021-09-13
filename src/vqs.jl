@@ -199,8 +199,9 @@ function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCir
     end
 
     if max_recursion == 0 || Etau_next <= Etau
-        if verbose
-            println("next (recusive) tau point=", tau+dtau)
+        if verbose && mpirank(comm) == 0
+            println("next (recusive) tau point= ", tau+dtau)
+            println("Etau=")
         end
         return thetas_next
     end
@@ -213,7 +214,7 @@ function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCir
         comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose, max_recursion=max_recursion-1)
     vc_ = copy(vc)
     update_circuit_param!(vc_, thetas_next1)
-    return compute_next_thetas_safe(op, vc_, state0, 0.5*dtau,tau,
+    return compute_next_thetas_safe(op, vc_, state0, 0.5*dtau, tau+0.5*dtau,
         comm=comm, maxiter=maxiter, gtol=gtol,verbose=verbose, max_recursion=max_recursion-1)
 end
 
@@ -321,12 +322,12 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
                 thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau, taus[i],
                     algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
                 Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
-                if abs(Etau - Etau_next) / dtau < tol_dE_dtau
-                    if verbose && mpirank(comm) == 0
-                        println("Energy converged!")
-                    end
-                    stop_imag_time_evol = true
-                end
+                #if abs(Etau - Etau_next) / dtau < tol_dE_dtau
+                #    if verbose && mpirank(comm) == 0
+                #        println("Energy converged!")
+                #    end
+                #    stop_imag_time_evol = true
+                #end
             end
             push!(thetas_tau, thetas_next_)
             # Compute norm
