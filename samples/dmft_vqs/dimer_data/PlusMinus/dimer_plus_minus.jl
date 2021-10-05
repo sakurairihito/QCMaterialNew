@@ -157,7 +157,7 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 taus = read_and_parse_float(ARGS[3])
 println("taus=",taus)
 
-Gfunc_ij_list = sign * compute_gtau(
+Gfunc_ij_list, norm =  compute_gtau(
     jordan_wigner(ham_op),
     left_op,
     right_op,
@@ -170,7 +170,11 @@ Gfunc_ij_list = sign * compute_gtau(
     algorithm = "vqs",
     recursive = true
 )
+
+Gfunc_ij_list *= sign
+
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
+println("norm=", norm)
 
 
 
@@ -182,5 +186,15 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_recurisive_vqs_plus2.txt", taus, Gfunc_ij_list)
+function write_to_txt_(file_name, x, y)
+    open(file_name, "w") do fp
+        for i = 1:length(x)
+            println(fp, 1000-x[i], " ", -real(y[i]))
+        end
+    end
+end
+
+write_to_txt("gf_dimer_minus_recurisive_vqs_.txt", taus, Gfunc_ij_list)
+write_to_txt("dimer_minus_vqs_norm.txt", taus, norm)
+#write_to_txt_("gf_dimer_recurisive_direct_minus3_freq.txt", taus, Gfunc_ij_list)
 println("done!!")

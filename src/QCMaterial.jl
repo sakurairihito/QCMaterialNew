@@ -13,7 +13,7 @@ function __init__()
     copy!(ofermion, pyimport("openfermion"))
     copy!(ofpyscf, pyimport("openfermionpyscf"))
     copy!(qulacs, pyimport("qulacs"))
-    pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__)
+    pushfirst!(PyVector(pyimport("sys")."path"), @__DIR__) #@_DIR_ファイルのある場所=pyutilの場所
     copy!(pyutil, pyimport("pyutil"))
     @require MPI="da04e1cc-30fd-572f-bb4f-1f8673147195" include("mpi.jl")
 end

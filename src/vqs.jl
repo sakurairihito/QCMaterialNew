@@ -322,12 +322,12 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
                 thetas_next_ = compute_next_thetas_safe(ham_op, vc_, state0, dtau, taus[i],
                     algorithm=algorithm, comm=comm, verbose=verbose, delta_theta=delta_theta)
                 Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
-                #if abs(Etau - Etau_next) / dtau < tol_dE_dtau
-                #    if verbose && mpirank(comm) == 0
-                #        println("Energy converged!")
-                #    end
-                #    stop_imag_time_evol = true
-                #end
+                if abs(Etau - Etau_next) / dtau < tol_dE_dtau
+                    if verbose && mpirank(comm) == 0
+                        println("Energy converged!")
+                    end
+                    stop_imag_time_evol = true
+                end
             end
             push!(thetas_tau, thetas_next_)
             # Compute norm
@@ -439,6 +439,8 @@ function compute_gtau(
     Gfunc_ij_list = Complex{Float64}[]
     E_gs = get_expectation_value(ham_op, state_gs)
 
+    norm = Complex{Float64}[]
+
     for t in eachindex(taus)
         state_right = _create_quantum_state(vc_ex, thetas_tau_right[t], state0_ex)
         state_left = copy(state_gs)
@@ -446,9 +448,10 @@ function compute_gtau(
         op_re, op_im = divide_real_imag(left_op)
         g_re = get_transition_amplitude(op_re, state_left, state_right)
         g_im = get_transition_amplitude(op_im, state_left, state_right)
+        push!(norm, exp(log_norm_tau_right[t]))
         push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] + E_gs *  taus[t]))
     end
-    Gfunc_ij_list
+    Gfunc_ij_list, norm
 end
 
 

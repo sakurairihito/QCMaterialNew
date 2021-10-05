@@ -123,6 +123,30 @@ enes_ed_ex = eigvals(sparse_mat_ex.toarray());
 println("Ground energy_ED=",minimum(enes_ed))
 println("Ground energy_N+1_ED=",minimum(enes_ed_ex))
 
+#1 system
+n_electron_1 = 1
+sparse_mat_enum_1 = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_1);
+enes_ed_enum_1 = eigvals(sparse_mat_enum_1.toarray());
+#debug
+#println("Ground energy_ED=",minimum(enes_ed_enum_1))
+println("Ground energy_1_ED=",minimum(enes_ed_enum_1))
+
+#2 system
+n_electron_2 = 2
+sparse_mat_enum_2 = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_2);
+enes_ed_enum_2 = eigvals(sparse_mat_enum_2.toarray());
+#debug
+#println("Ground energy_ED=",minimum(enes_ed_enum_2))
+println("Ground energy_2_ED=",minimum(enes_ed_enum_2))
+
+#3 system
+n_electron_3 = 3
+sparse_mat_enum_3 = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_3);
+enes_ed_enum_3 = eigvals(sparse_mat_enum_3.toarray());
+#debug
+#println("Ground energy_ED=",minimum(enes_ed_enum_2))
+println("Ground energy_3_ED=",minimum(enes_ed_enum_3))
+
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
@@ -188,7 +212,7 @@ state0_ex = create_hf_state(n_qubit, n_electron_ex)
 #println("taus=",taus)
 
 
-Gfunc_ij_list = sign * compute_gtau(
+Gfunc_ij_list, norm =  compute_gtau(
     jordan_wigner(ham_op1),
     left_op,
     right_op,
@@ -198,12 +222,14 @@ Gfunc_ij_list = sign * compute_gtau(
     taus,
     d_theta,
     verbose = verbose,
-    algorithm = "direct",
-    recursive=true
+    algorithm = "vqs",
+    recursive=false
 )
+
+Gfunc_ij_list *= sign
+
 println("Gfunc_ij_list_plus=", Gfunc_ij_list)
-
-
+println("norm=", norm)
 
 function write_to_txt(file_name, x, y)
     open(file_name, "w") do fp
@@ -213,5 +239,14 @@ function write_to_txt(file_name, x, y)
     end
 end
 
-write_to_txt("gf_4site_plus_recursive_direct2.txt", taus, Gfunc_ij_list)
+function write_to_txt_(file_name, x, y)
+    open(file_name, "w") do fp
+        for i = 1:length(x)
+            println(fp, 1000-x[i], " ", -real(y[i]))
+        end
+    end
+end
+write_to_txt("gf_4site_plus_vqs_fail.txt", taus, Gfunc_ij_list)
+write_to_txt("norm_4site_plus_vqs_fail", taus, norm)
+#write_to_txt_("gf_4site_minus_recursive_direct_doubles_.txt", taus, Gfunc_ij_list)
 println("done!")
