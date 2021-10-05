@@ -200,10 +200,10 @@ end
     taus = collect(range(0.0, 1, length=5))
     beta = taus[end]
 
-    Gfunc_ij_list = compute_gtau(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list, norm = compute_gtau(ham_op, c_op, cdagg_op, vc,  state_gs, state0_ex, taus, d_theta)
     Gfunc_ij_list_exact(τ) = -exp(-U * τ + µ * τ)
     Gfunc_ij_list_ref = Gfunc_ij_list_exact.(taus) 
-    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
+    @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.1)
 end
 
 
@@ -310,7 +310,7 @@ end
     Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
     
 
-    Gfunc_ij_list = compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list, norm = compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end
 
@@ -408,7 +408,8 @@ end
     Gfunc_ij_list_ref = Gfunc_ij_exact.(taus) 
     #println("Gfunc_ij_list_ref=", Gfunc_ij_list_ref)
 
-    Gfunc_ij_list = -compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
+    Gfunc_ij_list, norm = compute_gtau(ham_op, left_op, right_op, vc_ex,  state_gs, state0_ex, taus, d_theta)
     #println("Gfunc_ij_list=", Gfunc_ij_list)
+    Gfunc_ij_list *= -1
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
 end

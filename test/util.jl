@@ -29,3 +29,15 @@ end
     grad = QCMaterial.generate_numerical_grad(f)
     @test isapprox(grad(x), collect(1:N), rtol=1e-5)
 end
+
+@testset "util.fit_svd" begin
+    #test for truncated svd
+    #y = Ax
+    #A = U∑V^{dagger}
+    #x = V∑^{-1}(U^{dagger}y)
+    N = 10
+    A = randn(Float64, (N, N))
+    y = ones(Float64, N)
+    x = QCMaterial.fit_svd(y, A, 1e-10)
+    @test y ≈ A * x
+end

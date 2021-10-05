@@ -123,3 +123,12 @@ function generate_numerical_grad(f; verbose=false, comm=MPI_COMM_WORLD)
     end
     return grad
 end
+
+
+function fit_svd(y, A, eps=1e-10)
+    U, S, V = svd(A)
+    num_nz = sum(S .> S[1]*eps)
+    Uy = (U[:,1:num_nz]') * y
+    SUy = Uy ./ S[1:num_nz]
+    V[:,1:num_nz] * SUy
+end
