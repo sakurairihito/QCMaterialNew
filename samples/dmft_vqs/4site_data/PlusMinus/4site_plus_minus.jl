@@ -223,7 +223,7 @@ Gfunc_ij_list, norm =  compute_gtau(
     d_theta,
     verbose = verbose,
     algorithm = "vqs",
-    recursive=false
+    recursive= true
 )
 
 Gfunc_ij_list *= sign
@@ -246,7 +246,7 @@ function write_to_txt_(file_name, x, y)
         end
     end
 end
-write_to_txt("gf_4site_plus_vqs_fail.txt", taus, Gfunc_ij_list)
-write_to_txt("norm_4site_plus_vqs_fail", taus, norm)
+write_to_txt("gf_4site_plus_2.txt", taus, Gfunc_ij_list)
+write_to_txt("norm_4site_plus_minus_eg2", taus, norm)
 #write_to_txt_("gf_4site_minus_recursive_direct_doubles_.txt", taus, Gfunc_ij_list)
 println("done!")

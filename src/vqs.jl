@@ -257,7 +257,9 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
         end
     end
 
-    thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
+    #thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
+    #thetadot = fit_svd(C, A, 1e-5)
+    thetadot = tikhonov(C, A, 1e-3)
     thetadot
 end
 
@@ -448,7 +450,8 @@ function compute_gtau(
         op_re, op_im = divide_real_imag(left_op)
         g_re = get_transition_amplitude(op_re, state_left, state_right)
         g_im = get_transition_amplitude(op_im, state_left, state_right)
-        push!(norm, exp(log_norm_tau_right[t]))
+        #基底エネルギーを基準にする。
+        push!(norm, exp(log_norm_tau_right[t] + E_gs * taus[t]))
         push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] + E_gs *  taus[t]))
     end
     Gfunc_ij_list, norm

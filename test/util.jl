@@ -41,3 +41,11 @@ end
     x = QCMaterial.fit_svd(y, A, 1e-10)
     @test y ≈ A * x
 end
+
+@testset "util.tikhonov" begin
+    N = 10
+    A = rand(Float64, (N,N))
+    y = ones(Float64, N)
+    x = QCMaterial.tikhonov(y, A, 1e-10)
+    @test y ≈ A * x 
+end

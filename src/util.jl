@@ -132,3 +132,15 @@ function fit_svd(y, A, eps=1e-10)
     SUy = Uy ./ S[1:num_nz]
     V[:,1:num_nz] * SUy
 end
+
+"""
+y = Ax
+tikhov regularization: minimize ||Ax-b||^2 + λ||x^2|| 
+"""
+function tikhonov(y, A, eps = 1e-10)
+    AA(λ) = A'*A + λ*I
+    x = inv(AA(eps)) * A' * y
+end
+
+
+
