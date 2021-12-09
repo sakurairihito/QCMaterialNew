@@ -1,0 +1,162 @@
+1
+20
+julia version 1.6.1
+ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=ground energy_exact=-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+iter 2 -1.4491657925446604
+iter 3 -1.9030563745756583
+iter 4 -2.150251596908312
+iter 5 -2.1728922000736834
+iter 6 -2.1763799291180956
+iter 7 -2.176892537577449
+iter 8 -2.17740674297132
+iter 9 -2.177408925558111
+iter 10 -2.177409678197028
+iter 11 -2.17740968072131
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+iter 12 -2.1774096808992636
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 11
+         Function evaluations: 15
+         Gradient evaluations: 15
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+ground energy_vqe =-2.1774096808992636
+g: 0.027808583
+g: 0.004882742000000001
+g: 0.005059168
+g: 0.08978466700000001
+g: 0.005179472
+g: 0.005229153
+g: 0.00510709
+g: 0.005077239

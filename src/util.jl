@@ -1,6 +1,6 @@
 export topylist, doublefunc, numerical_grad
 export up_index, down_index, update_circuit_param!, update_quantum_state!
-import PyCall: PyVector
+using PyCall
 
 function count_qubit_in_qubit_operator(op)
     n_qubits = 0
@@ -77,3 +77,70 @@ function check_py_type(py_object::PyObject, py_class_name::String)
     end
     py_object
 end
+
+"""
+Make a wrapped scipy minimizer
+"""
+function mk_scipy_minimize(method::String="BFGS";
+    callback=nothing, options=nothing, use_mpi=true, verbose=false)
+    scipy_opt = pyimport("scipy.optimize")
+    function minimize(cost, x0)
+        jac = nothing
+        if use_mpi
+            jac = generate_numerical_grad(cost, verbose=verbose)
+            if verbose
+                println("Using parallelized numerical grad")
+            end
+        end
+        res = scipy_opt.minimize(cost, x0, method=method,
+           jac=jac, callback=callback, options=options)
+        res["x"]
+    end
+    return minimize
+end
+
+"""
+Generates parallelized numerical grad_cost
+"""
+function generate_numerical_grad(f; verbose=false, comm=MPI_COMM_WORLD)
+    function grad(x)
+        t1 = time_ns()
+        if comm === nothing
+            first_idx, size = 1, length(x)
+        else
+            first_idx, size = distribute(length(x), MPI.Comm_size(comm), MPI.Comm_rank(comm))
+        end
+        last_idx = first_idx + size - 1
+        res = numerical_grad(f, x, first_idx=first_idx, last_idx=last_idx)
+        if comm !== nothing
+            res = MPI.Allreduce(res, MPI.SUM, comm)
+        end
+        t2 = time_ns()
+        if verbose && MPI_rank == 0
+            println("g: ", (t2-t1)*1e-9)
+        end
+        res
+    end
+    return grad
+end
+
+
+function fit_svd(y, A, eps=1e-10)
+    U, S, V = svd(A)
+    num_nz = sum(S .> S[1]*eps)
+    Uy = (U[:,1:num_nz]') * y
+    SUy = Uy ./ S[1:num_nz]
+    V[:,1:num_nz] * SUy
+end
+
+"""
+y = Ax
+tikhov regularization: minimize ||Ax-b||^2 + λ||x^2|| 
+"""
+function tikhonov(y, A, eps = 1e-10)
+    AA(λ) = A'*A + λ*I
+    x = inv(AA(eps)) * A' * y
+end
+
+
+

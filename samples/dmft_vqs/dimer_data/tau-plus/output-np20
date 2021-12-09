@@ -1,0 +1,226 @@
+1
+20
+julia version 1.6.1
+Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=Ground energy_ED=-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+-2.1774096808992844
+iter 2 -0.8431274267093115
+iter 3 -0.9383187376843368
+iter 4 -1.1208809558255863
+iter 5 -2.126279691326504
+iter 6 -2.1414356578748692
+iter 7 -2.165259679328424
+iter 8 -2.176180749703848
+iter 9 -2.177094484289795
+iter 10 -2.1773670146992634
+iter 11 -2.1773998147929925
+iter 12 -2.1774095280744703
+iter 13 -2.1774095740334785
+iter 14 -2.1774096465268884
+iter 15 -2.177409680841711
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+iter 16 -2.1774096808955097
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Optimization terminated successfully.
+         Current function value: -2.177410
+         Iterations: 15
+         Function evaluations: 17
+         Gradient evaluations: 17
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+Ground energy_VQE=-2.1774096808955097
+g: 0.01676033
+g: 0.004325662
+g: 0.004479146000000001
+g: 0.004477526
+g: 0.004484907000000001
+g: 0.004453435
+g: 0.0045845190000000004
+g: 0.0047188640000000006
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983
+norm_right0.49023918387053983norm_right0.49023918387053983
+
+norm_right0.49023918387053983
+norm_rightnorm_rightnorm_right0.49023918387053983
+0.49023918387053983
+0.49023918387053983
+norm_right0.49023918387053983
+Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: Match in apply_qubit_op!: 0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.99999999994113530.9999999999411353 +  + 0.0im
+0.99999999994113530.99999999994113530.0im
+ + 0.0im
+0.9999999999411353 +  + 0.0im
+0.9999999999411353 + 0.9999999999411353 + 0.0im
+0.0im
+0.9999999999411353 + 0.00.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.0im
+im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+0.9999999999411353 + 0.0im
+Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=Gfunc_ij_list=ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585ComplexF64[-0.2403344573737585 - 0.0im,  - 0.0im, -0.23283314389610196 - -0.23283314389610196 - 0.0im]
+0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[ComplexF64[-0.2403344573737585 - 0.0-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]im, -0.23283314389610196 - 0.0im
+]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
+ComplexF64[-0.2403344573737585 - 0.0im, -0.23283314389610196 - 0.0im]
