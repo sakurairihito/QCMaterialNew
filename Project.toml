@@ -12,6 +12,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
 PyCall = "1.92"
+Requires = "1"
 julia = "1"
 
 [extras]
