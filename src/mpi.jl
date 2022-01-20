@@ -8,8 +8,12 @@ end
 
 MPI_rank = MPI.Comm_rank(MPI.COMM_WORLD)
 MPI_size = MPI.Comm_size(MPI.COMM_WORLD)
+MPI_COMM_WORLD = MPI.COMM_WORLD
 
-function distribute(size, comm_size, rank)
+mpirank(comm::MPI.Comm) = MPI.Comm_rank(comm)
+mpisize(comm::MPI.Comm) = MPI.Comm_size(comm)
+
+function distribute(size::Int, comm_size::Int, rank::Int)
     """
     Compute the first element and size for a given rank
 
@@ -30,7 +34,11 @@ function distribute(size, comm_size, rank)
         Offsets for the MPI process
     """
     if comm_size > size
-        error("comm_size is larger than size!")
+        if rank + 1 <= size
+            return rank + 1, 1
+        else
+            return 1, 0
+        end
     end
 
     base = div(size, comm_size)
@@ -43,4 +51,11 @@ function distribute(size, comm_size, rank)
         start = (base+1) * leftover + (rank-leftover) * base + 1
     end
     return start, size
+end
+
+function Allreduce(data, mpi_sum, comm)
+    if comm === nothing
+        return data
+    end
+    return MPI.Allreduce(data, mpi_sum, comm)
 end

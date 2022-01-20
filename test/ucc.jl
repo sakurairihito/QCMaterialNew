@@ -6,7 +6,7 @@ import PyCall: pyimport
 import Random
 
 @testset "ucc.uccgsd" begin
-    Random.seed!(1)
+    #Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
 
     nsite = 2 
@@ -57,12 +57,38 @@ import Random
     cost_history = Float64[] 
     init_theta_list = theta_init
     push!(cost_history, cost(init_theta_list))
+    
 
     method = "BFGS"
     options = Dict("disp" => true, "maxiter" => 200, "gtol" => 1e-5)
     callback(x) = push!(cost_history, cost(x))
     opt = scipy_opt.minimize(cost, init_theta_list, method=method, callback=callback)
-
+    println("Eigval_vqe=", cost_history[end])
     EigVal_min = minimum(enes_ed)
+    println("EigVal_min=", EigVal_min)
     @test abs(EigVal_min-cost_history[end]) < 1e-6 
+end
+
+
+@testset "ucc.UCCQuantumCircuit" begin
+    n_qubit = 4
+    c = uccgsd(n_qubit, orbital_rot=true)
+    c.thetas .= 1.0
+    c_copy = copy(c)
+    @test all(c_copy.thetas == c.thetas)
+end
+
+@testset "ucc.one_rotation_gate" begin
+    using LinearAlgebra
+    n_qubit = 1
+    theta = 1e-5
+
+    c = UCCQuantumCircuit(n_qubit)
+    add_parametric_multi_Pauli_rotation_gate!(
+            c.circuit, [1], [pauli_Y], theta)
+
+    state = QulacsQuantumState(n_qubit, 0b1)
+    update_quantum_state!(c, state)
+    vec = get_vector(state)
+    vec ≈ [0.5*theta, 1.0]
 end
