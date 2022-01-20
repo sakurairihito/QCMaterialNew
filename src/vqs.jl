@@ -12,17 +12,284 @@ function overlap(vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     # Compute state_left
     update_circuit_param!(circ_tmp, thetas_left)
     state_left = copy(state0)
+<<<<<<< HEAD
     update_quantum_state!(circ_tmp, state_left)
 
+=======
+
+    update_quantum_state!(circ_tmp, state_left)
+
+    #println("state_left_overlap=", state_left)
+
+>>>>>>> master
     # Compute state_right
     update_circuit_param!(circ_tmp, thetas_right)
     state_right = copy(state0)
     update_quantum_state!(circ_tmp, state_right)
+<<<<<<< HEAD
 
     res = inner_product(state_left, state_right)
     res
 end
 
+=======
+    #println("state_right_overlap=", state_right)
+
+    res = inner_product(state_left, state_right)
+    res
+end
+
+function compute_B(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
+    num_thetas = num_theta(vc)
+    thetas = get_thetas(vc)
+    upper_triangle_size = (num_thetas^2 + num_thetas) ÷ 2 
+
+    B = zeros(Complex{Float64}, num_thetas, num_thetas)
+    local_start, local_size = distribute(upper_triangle_size, mpisize(comm), mpirank(comm))
+    idx = 1
+    for i in 1:num_thetas
+        thetas_i = copy(thetas)
+        thetas_i2 = copy(thetas)
+        thetas_i[i] += delta_theta
+        thetas_i2[i] -= delta_theta
+        for j in i:num_thetas
+            if local_start <= idx < local_start + local_size
+                thetas_j = copy(thetas)
+                thetas_j[j] += delta_theta
+                thetas_j2 = copy(thetas)
+                thetas_j2[j] -= delta_theta
+                B[i,j] -= real(
+                 ((overlap(vc, state0, thetas_i, thetas)
+                - overlap(vc, state0, thetas_i2, thetas))/2*delta_theta)
+                *((overlap(vc, state0, thetas, thetas_j)
+                - overlap(vc, state0, thetas, thetas_j2))/2*delta_theta)
+            )
+            B[j, i] = B[i, j]
+            end
+            idx += 1
+        end
+    end
+    if comm === nothing
+      return B
+    else
+      return Allreduce(B, MPI.SUM, comm)
+    end
+end
+
+function diff_state(vc::VariationalQuantumCircuit, state0::QulacsQuantumState,thetas, thetas_delta)
+    circ_tmp = copy(vc)
+    update_circuit_param!(circ_tmp, thetas)
+    state_tmp = copy(state0)
+    update_quantum_state!(circ_tmp, state_tmp)
+
+    update_circuit_param!(circ_tmp, thetas_delta)
+    state_tmp_delta = copy(state0)
+    update_quantum_state!(circ_tmp, state_tmp_delta)
+    #diff
+    res = (get_vector(state_tmp_delta) - get_vector(state_tmp))
+    res
+end
+
+function compute_B2x(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
+    num_thetas = num_theta(vc)
+    thetas = get_thetas(vc)
+    upper_triangle_size = (num_thetas^2 + num_thetas) ÷ 2 
+
+    B = zeros(Complex{Float64}, num_thetas, num_thetas)
+    local_start, local_size = distribute(upper_triangle_size, mpisize(comm), mpirank(comm))
+    idx = 1
+    for i in 1:num_thetas
+        thetas_i = copy(thetas)
+        thetas_i2 = copy(thetas)
+        thetas_i[i] += delta_theta
+        thetas_i2[i] -= delta_theta
+        for j in i:num_thetas
+            if local_start <= idx < local_start + local_size
+                thetas_j = copy(thetas)
+                thetas_j[j] += delta_theta
+                thetas_j2 = copy(thetas)
+                thetas_j2[j] -= delta_theta
+                #computeδ|φ>/δθ
+                B_right_dif = diff_state(vc, state0, thetas, thetas_i)/delta_theta
+                #B_right = inner_product(state, B_right_dif)
+                println("B_right_dif_$i$j=",B_right_dif)
+                B_left_dif = B_right_dif'
+                println("B_left_dif_$i$j=", B_left_dif)
+                B[i,j] += real(i*j)
+                #println("B[$i $j]=", B[i,j])
+            B[j, i] = B[i, j]
+            end
+            idx += 1
+        end
+    end
+    if comm === nothing
+      return B
+    else
+      return Allreduce(B, MPI.SUM, comm)
+    end
+end
+
+
+function compute_B2(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
+    num_thetas = num_theta(vc)
+    thetas = get_thetas(vc)
+    upper_triangle_size = (num_thetas^2 + num_thetas) ÷ 2 
+
+    B = zeros(Complex{Float64}, num_thetas, num_thetas)
+    local_start, local_size = distribute(upper_triangle_size, mpisize(comm), mpirank(comm))
+    idx = 1
+    for i in 1:num_thetas
+        thetas_i = copy(thetas)
+        thetas_i2 = copy(thetas)
+        thetas_i[i] += delta_theta
+        thetas_i2[i] -= delta_theta
+        for j in i:num_thetas
+            if local_start <= idx < local_start + local_size
+                thetas_j = copy(thetas)
+                thetas_j[j] += delta_theta
+                thetas_j2 = copy(thetas)
+                thetas_j2[j] -= delta_theta
+
+                B_right = ((overlap(vc, state0, thetas, thetas_j)
+                - overlap(vc, state0, thetas, thetas))/delta_theta)
+                println("B_right_$i$j=",B_right)
+                B_left = B_right'
+                println("B_left_$i$j=", B_left)
+                B[i,j] += real(B_left*B_right)
+                println("B[$i $j]=", B[i,j])
+            B[j, i] = B[i, j]
+            end
+            idx += 1
+        end
+    end
+    if comm === nothing
+      return B
+    else
+      return Allreduce(B, MPI.SUM, comm)
+    end
+end
+
+
+
+function compute_F(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
+    num_thetas = num_theta(vc)
+    thetas = get_thetas(vc)
+    upper_triangle_size = (num_thetas^2 + num_thetas) ÷ 2 
+
+    F = zeros(Complex{Float64}, num_thetas, num_thetas)
+    local_start, local_size = distribute(upper_triangle_size, mpisize(comm), mpirank(comm))
+    idx = 1
+    for i in 1:num_thetas
+        thetas_i = copy(thetas)
+        thetas_i2 = copy(thetas)
+        thetas_i[i] += delta_theta
+        thetas_i2[i] -= delta_theta
+        for j in i:num_thetas
+            if local_start <= idx < local_start + local_size
+                thetas_j = copy(thetas)
+                thetas_j[j] += delta_theta
+                thetas_j2 = copy(thetas)
+                thetas_j2[j] -= delta_theta
+                F[i, j] = real(
+                          overlap(vc, state0, thetas_i, thetas_j)
+                        - overlap(vc, state0, thetas_i, thetas, )
+                        - overlap(vc, state0, thetas,   thetas_j)
+                        + overlap(vc, state0, thetas,   thetas, )
+                    )/delta_theta^2
+                F[i,j] -= real(
+                 ((overlap(vc, state0, thetas_i, thetas)
+                - overlap(vc, state0, thetas_i2, thetas))/2*delta_theta)
+                *((overlap(vc, state0, thetas, thetas_j)
+                - overlap(vc, state0, thetas, thetas_j2))/2*delta_theta)
+            )
+            #    F[i,j] -= real(
+            #     ((overlap(vc, state0, thetas_i, thetas)
+            #    - overlap(vc, state0, thetas, thetas))/delta_theta)
+            #    *((overlap(vc, state0, thetas, thetas_j)
+            #    - overlap(vc, state0, thetas, thetas))/delta_theta)
+            #    )
+            #    F[i,j] -= real(
+            #        overlap(vc, state0, thetas_i, thetas) * overlap(vc, state0, thetas, thetas_j)
+            #       -overlap(vc, state0, thetas_i, thetas) * overlap(vc, state0, thetas, thetas)
+            #       -overlap(vc, state0, thetas, thetas) * overlap(vc, state0, thetas, thetas_j)
+            #       +overlap(vc, state0, thetas, thetas) * overlap(vc, state0, thetas, thetas) 
+            #       )/delta_theta^2
+            F[j, i] = F[i, j]
+            end
+            idx += 1
+            #if MPI_rank == 0
+                #println("timing in compute_A: $(1e-9*(t2-t1))")
+            #end
+        end
+    end
+    if comm === nothing
+      return F
+    else
+      return Allreduce(F, MPI.SUM, comm)
+    end
+end
+
+function compute_B3(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
+    num_thetas = num_theta(vc)
+    thetas = get_thetas(vc)
+    upper_triangle_size = (num_thetas^2 + num_thetas) ÷ 2
+
+    B = zeros(Complex{Float64}, num_thetas, num_thetas)
+    local_start, local_size = distribute(upper_triangle_size, mpisize(comm), mpirank(comm))
+    idx = 1
+    for i in 1:num_thetas
+        thetas_i = copy(thetas)
+        thetas_i[i] += delta_theta
+        for j in i:num_thetas
+            if local_start <= idx < local_start + local_size
+                thetas_j = copy(thetas)
+                thetas_j[j] += delta_theta
+                B[i, j] =( 
+                  (overlap(vc, state0, thetas_i, thetas)
+                  - overlap(vc, state0, thetas, thetas)) *
+                  (overlap(vc, state0, thetas, thetas_j)
+                  - overlap(vc, state0, thetas, thetas))
+              /delta_theta^2)
+            B[j, i] = B[i, j] 
+            end
+            idx += 1
+        end
+    end
+    if comm === nothing
+      return B
+    else
+      return Allreduce(B, MPI.SUM, comm)
+    end
+end
+
+
+
+>>>>>>> master
 function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
     comm=MPI_COMM_WORLD)
     if is_mpi_on && comm === nothing
@@ -258,8 +525,13 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     end
 
     #thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
+<<<<<<< HEAD
     #thetadot = fit_svd(C, A, 1e-5)
     thetadot = tikhonov(C, A, 1e-3)
+=======
+    thetadot = fit_svd(C, A, 1e-5)
+    #thetadot = tikhonov(C, A, 1e-3)
+>>>>>>> master
     thetadot
 end
 

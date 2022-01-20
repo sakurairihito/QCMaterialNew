@@ -1,6 +1,11 @@
 using PyCall
 using LinearAlgebra
 
+<<<<<<< HEAD
+=======
+#using SciPy: SciPy
+
+>>>>>>> master
 """
 Compute ground state
 """
@@ -14,8 +19,14 @@ function solve_gs(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, 
     else
         rank = MPI.Comm_rank(comm)
     end
+<<<<<<< HEAD
     scipy_opt = pyimport("scipy.optimize")
 
+=======
+    # これを使わずに SciPy.optimize でよい
+    scipy_opt = pyimport("scipy.optimize")
+    
+>>>>>>> master
     # Define a cost function
     function cost(theta_list)
         update_circuit_param!(circuit, theta_list)
@@ -43,6 +54,10 @@ function solve_gs(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, 
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
+<<<<<<< HEAD
+=======
+    # opt = SciPy.optimize.minimize(...)
+>>>>>>> master
     opt = scipy_opt.minimize(cost, init_theta_list, method=method,
         callback=callback, jac=generate_numerical_grad(cost),
         options=options)

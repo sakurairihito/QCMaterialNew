@@ -2,6 +2,7 @@ module QCMaterial
 
 import PyCall: pyimport, PyNULL, PyVector
 using Requires
+using Yao
 
 # Refer to https://discourse.julialang.org/t/pyimport-works-from-repl-defined-module-but-not-in-my-package/43539.
 const ofermion = PyNULL()
@@ -33,5 +34,6 @@ include("hartree_fock.jl")
 include("no_mpi.jl")
 include("vqe.jl")
 include("vqs.jl")
+include("yao.jl")
 
 end
