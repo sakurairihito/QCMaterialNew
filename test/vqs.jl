@@ -6,8 +6,6 @@ using QCMaterial
 import Random
 import PyCall: pyimport
 
-<<<<<<< HEAD
-=======
 #<1|2> = <2|1>^{\dagger}
 @testset "overlap" begin
     n_qubit = 1
@@ -235,7 +233,6 @@ end
 
 
 
->>>>>>> master
 @testset "vqs.A" begin
     n_qubit = 2
     n_electron = 1
@@ -388,10 +385,6 @@ end
     #i is tau and num of parameter is 1
     thetas_res = [thetas_tau[i][1] for i in eachindex(taus)]
     @test isapprox(thetas_ref, thetas_res, rtol=0.01)
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 end
 
 
@@ -645,8 +638,6 @@ end
     #println("Gfunc_ij_list=", Gfunc_ij_list)
     Gfunc_ij_list *= -1
     @test isapprox(Gfunc_ij_list_ref, Gfunc_ij_list, rtol=0.01)
-<<<<<<< HEAD
-=======
 end
 
 
@@ -802,5 +793,4 @@ end
     @test (A-B)[1,1] ≈ F_exact[1,1] atol=0.001    
     #@test (A-B) ≈ complex(F_exact) atol=0.001 
     @test isapprox((A-B), F_exact, atol=0.01)    
->>>>>>> master
 end

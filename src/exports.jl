@@ -17,11 +17,7 @@ export get_thetas
 export VariationalQuantumCircuit
 export QulacsVariationalQuantumCircuit
 
-<<<<<<< HEAD
-export Gate, QulacsGate, RX, RY, RZ, get_matrix
-=======
 export Gate, QulacsGate, RX, RY, RZ, get_matrix, add_U1_gate!
->>>>>>> master
 
 export QuantumState, QulacsQuantumState
 export set_computational_basis!, create_hf_state
@@ -46,11 +42,7 @@ export compute_thetadot
 export taus_list
 export read_taus_list
 export compute_next_thetas_direct
-<<<<<<< HEAD
-export compute_next_thetas_vqs
-=======
 export compute_next_thetas_vqs
 export compute_fubini
 export compute_F
 export overlap, compute_B, compute_B2, compute_B2x, compute_B3 #vqs.jl
->>>>>>> master

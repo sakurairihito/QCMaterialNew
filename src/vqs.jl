@@ -12,27 +12,15 @@ function overlap(vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
     # Compute state_left
     update_circuit_param!(circ_tmp, thetas_left)
     state_left = copy(state0)
-<<<<<<< HEAD
-    update_quantum_state!(circ_tmp, state_left)
-
-=======
 
     update_quantum_state!(circ_tmp, state_left)
 
     #println("state_left_overlap=", state_left)
 
->>>>>>> master
     # Compute state_right
     update_circuit_param!(circ_tmp, thetas_right)
     state_right = copy(state0)
     update_quantum_state!(circ_tmp, state_right)
-<<<<<<< HEAD
-
-    res = inner_product(state_left, state_right)
-    res
-end
-
-=======
     #println("state_right_overlap=", state_right)
 
     res = inner_product(state_left, state_right)
@@ -289,7 +277,6 @@ end
 
 
 
->>>>>>> master
 function compute_A(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, delta_theta=1e-8;
     comm=MPI_COMM_WORLD)
     if is_mpi_on && comm === nothing
@@ -525,13 +512,8 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     end
 
     #thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
-<<<<<<< HEAD
-    #thetadot = fit_svd(C, A, 1e-5)
-    thetadot = tikhonov(C, A, 1e-3)
-=======
     thetadot = fit_svd(C, A, 1e-5)
     #thetadot = tikhonov(C, A, 1e-3)
->>>>>>> master
     thetadot
 end
 
