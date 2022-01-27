@@ -12,6 +12,7 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Yao = "5872b779-8223-5990-8dd0-5abbb0748c8c"
 
 [compat]
+HDF5 = "0.16"
 julia = "1"
 
 [extras]
