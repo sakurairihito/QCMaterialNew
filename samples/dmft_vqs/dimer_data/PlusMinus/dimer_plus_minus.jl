@@ -66,7 +66,7 @@ nsite = 2
 n_qubit = 2 * nsite
 U = 1.0
 V = 1.0
-μ = -U/2
+μ = U/2
 ε = 1.0
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
@@ -80,33 +80,33 @@ n_electron_gs = 2
 @assert mod(n_electron_gs, 2) == 0
 sparse_mat = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_gs);
 enes_ed = eigvals(sparse_mat.toarray());
-
+println("Ground_enegry_ED=", minimum(enes_ed))
 #N+1系のground energy
-n_electron_ex = 3
-sparse_mat_ex = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_ex);
-enes_ex_ed = eigvals(sparse_mat_ex.toarray());
+#n_electron_ex = 3
+#sparse_mat_ex = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_ex);
+#enes_ex_ed = eigvals(sparse_mat_ex.toarray());
 
 #debug
 #N = particle number
-println("Ground energy_2_ED=",minimum(enes_ed))
-println("Ground_enegry_3_ED=", minimum(enes_ex_ed))
+#println("Ground energy_2_ED=",minimum(enes_ed))
+#println("Ground_enegry_3_ED=", minimum(enes_ex_ed))
 
 
 #1 system
-n_electron_1 = 1
-sparse_mat_enum_1 = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_1);
-enes_ed_enum_1 = eigvals(sparse_mat_enum_1.toarray());
+#n_electron_1 = 1
+#sparse_mat_enum_1 = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_1);
+#enes_ed_enum_1 = eigvals(sparse_mat_enum_1.toarray());
 #debug
 #println("Ground energy_ED=",minimum(enes_ed_enum_1))
-println("Ground energy_1_ED=",minimum(enes_ed_enum_1))
+#println("Ground energy_1_ED=",minimum(enes_ed_enum_1))
 
 #1 system
-n_electron_4 = 4
-sparse_mat_enum_4 = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_4);
-enes_ed_enum_4 = eigvals(sparse_mat_enum_4.toarray());
+#n_electron_4 = 4
+#sparse_mat_enum_4 = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron_4);
+#enes_ed_enum_4 = eigvals(sparse_mat_enum_4.toarray());
 #debug
 #println("Ground energy_ED=",minimum(enes_ed_enum_1))
-println("Ground energy_4_ED=",minimum(enes_ed_enum_4))
+#println("Ground energy_4_ED=",minimum(enes_ed_enum_4))
 
 
 
@@ -213,7 +213,7 @@ function write_to_txt_(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_minus_recurisive_vqs_truncated_svd_2.txt", taus, Gfunc_ij_list)
-write_to_txt("dimer_minus_vqs_norm4.txt", taus, norm)
+write_to_txt("gf_dimer_plus.txt", taus, Gfunc_ij_list)
+write_to_txt("dimer_plus_vqs_norm.txt", taus, norm)
 #write_to_txt_("gf_dimer_recurisive_direct_minus3_freq.txt", taus, Gfunc_ij_list)
 println("done!!")
