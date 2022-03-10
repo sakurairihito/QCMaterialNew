@@ -1,3 +1,8 @@
-!!! note こういう表示もできますね．
+!!! note "An optional title"
+    Here is something you should pay attention to.
 
-!!! warning こういうの書けると思うと楽しくなりますよね.
+
+```@docs
+DocumenterShowcase.foo(::Integer)
+```
+
