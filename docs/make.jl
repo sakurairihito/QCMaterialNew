@@ -13,6 +13,11 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Chapter1"=>[
+            "Introduction" => "chapter1/intro.md",
+            "About Goma-chan" => "chapter1/goma.md",
+        ],
+        "Chapter2"=>"chapter2/azarashi.md",
     ],
 )
 
