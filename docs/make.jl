@@ -3,12 +3,12 @@ using Documenter
 
 makedocs(;
     modules=[QCMaterial],
-    authors="Hiroshi Shinaoka <h.shinaoka@gmail.com> and contributors",
-    repo="https://github.com/shinaoka/QCMaterial.jl/blob/{commit}{path}#L{line}",
-    sitename="QCMaterial.jl",
+    authors="Rihito Sakurai <sakurairihito@gmail.com> and contributors",
+    repo="https://github.com/sakurairihito/QCMaterialNew/blob/{commit}{path}#L{line}",
+    sitename="QCMaterialNew",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://shinaoka.github.io/QCMaterial.jl",
+        canonical="https://github.com/sakurairihito/QCMaterialNew",
         assets=String[],
     ),
     pages=[
@@ -17,5 +17,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/shinaoka/QCMaterial.jl",
+    repo="https://github.com/sakurairihito/QCMaterialNew",
 )
