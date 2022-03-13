@@ -1,5 +1,6 @@
 using LinearAlgebra
 using HDF5
+using Random
 #Aの計算
 """
 Compute <phi (theta_bra) | phi(theta_ket)>
@@ -373,6 +374,8 @@ function compute_C(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     end
 end
 
+
+
 function compute_next_thetas_vqs(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState, dtau; delta_theta=1e-8, comm=MPI_COMM_WORLD, verbose=false)
     thetas_dot = compute_thetadot(op, vc, state0, delta_theta, comm=comm, verbose=verbose)
@@ -497,20 +500,45 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
+    num_thetas = num_theta(vc)
     t1 = time_ns()
     A = compute_A(vc, state0, delta_theta; comm=comm)
-    t2 = time_ns()
     C = compute_C(op, vc, state0, delta_theta)
+    t2 = time_ns()
+    
+    println("A =", A)
+    println("C =", C)
+    #gausiann noise
+    for j in 1:num_thetas
+        for i in 1:num_thetas
+            #println("A[i,j] =", A[i,j])
+            A[i,j] = A[i,j] + A[i,j] * randn(Float64) 
+            #println("A[i,j]+noise =", A[i,j])
+        end
+    end
+
+    #gausiann noise
+    for i in 1:num_thetas
+        #println("C[i]=", C[i])
+        C[i] = C[i] + C[i] * randn(Float64) 
+        #println("C[i]+shotnoise", C[i]) 
+    end
+
     t3 = time_ns()
     if verbose && mpirank(comm) == 0
         println("timing in compute_thetadot: $(1e-9*(t2-t1)) sec for A $(1e-9*(t3-t2)) sec for C")
         println("condition number of A =", LinearAlgebra.cond(A))
         U, s, Vt = LinearAlgebra.svd(A)
+        println("maximum of singular value of A=", findmax(s)[1])
+        println("minimum of singular value of A=", findmin(s)[1])
         for i in eachindex(s)
             println("singular values of A = ", s[i])
         end
     end
+    
 
+    println("A + noise =", A)
+    println("C + noise=", C)
     #thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
     thetadot = fit_svd(C, A, 1e-5)
     #thetadot = tikhonov(C, A, 1e-3)
