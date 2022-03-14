@@ -22,5 +22,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="https://github.com/sakurairihito/QCMaterialNew",
+    repo="github.com/sakurairihito/QCMaterialNew",
 )

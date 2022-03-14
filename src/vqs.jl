@@ -505,7 +505,7 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     A = compute_A(vc, state0, delta_theta; comm=comm)
     C = compute_C(op, vc, state0, delta_theta)
     t2 = time_ns()
-    
+     
     println("A =", A)
     println("C =", C)
     #gausiann noise
@@ -522,6 +522,12 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
         #println("C[i]=", C[i])
         C[i] = C[i] + C[i] * randn(Float64) 
         #println("C[i]+shotnoise", C[i]) 
+    end
+    
+    # 今並列計算を実行している。各プロセスで違う乱数がよばれている可能性や変なバグなどがあるかもしれないのでroot=0の値を書くプロセスにブロードキャストして合わせる必要がある。
+    if comm !== nothing
+        MPI.Bcast!(A, 0, comm)
+        MPI.Bcast!(C, 0, comm)
     end
 
     t3 = time_ns()
