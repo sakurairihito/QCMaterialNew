@@ -19,10 +19,22 @@ function taus_list(file_name)
     close(fid)	
 end
 
+function taus_list(file_name2)
+    x = Float64[]
+    for i in 1:10
+        tau = 0.005*(i-1) + exp((0.1*(i-1))) -1
+        push!(x,tau)
+    end
+    fid = h5open(file_name,"w")
+    fid["/test/data2"] = x
+    close(fid)	
+end
+
 #read taus list file.h5
 function read_taus_list(file_name)
     fid = h5open(file_name,"r")
     x = fid["/test/data"][:]
+    y = fid["/test/data2"][:]
     close(fid)
     return x
 end
@@ -213,7 +225,7 @@ function write_to_txt_(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_plus.txt", taus, Gfunc_ij_list)
-write_to_txt("dimer_plus_vqs_norm.txt", taus, norm)
+write_to_txt("gf_dimer_plus_shotnoise1000_proc1_relative_thetadot.txt", taus, Gfunc_ij_list)
+write_to_txt("dimer_plus_vqs_norm__relativeerr_1000_thetadot.txt", taus, norm)
 #write_to_txt_("gf_dimer_recurisive_direct_minus3_freq.txt", taus, Gfunc_ij_list)
 println("done!!")

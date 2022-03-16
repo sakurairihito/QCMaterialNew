@@ -509,20 +509,20 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     println("A =", A)
     println("C =", C)
     #gausiann noise
-    for j in 1:num_thetas
-        for i in 1:num_thetas
-            #println("A[i,j] =", A[i,j])
-            A[i,j] = A[i,j] + A[i,j] * randn(Float64) 
+    #for j in 1:num_thetas
+    #    for i in 1:num_thetas
+    #        #println("A[i,j] =", A[i,j])
+    #        A[i,j] = A[i,j] + A[i,j] * randn(Float64) 
             #println("A[i,j]+noise =", A[i,j])
-        end
-    end
+    #    end
+    #end
 
     #gausiann noise
-    for i in 1:num_thetas
+    #for i in 1:num_thetas
         #println("C[i]=", C[i])
-        C[i] = C[i] + C[i] * randn(Float64) 
+    #    C[i] = C[i] + C[i] * randn(Float64) * 100000
         #println("C[i]+shotnoise", C[i]) 
-    end
+    #end
     
     # 今並列計算を実行している。各プロセスで違う乱数がよばれている可能性や変なバグなどがあるかもしれないのでroot=0の値を書くプロセスにブロードキャストして合わせる必要がある。
     if comm !== nothing
@@ -546,9 +546,10 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     println("A + noise =", A)
     println("C + noise=", C)
     #thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
-    thetadot = fit_svd(C, A, 1e-5)
+    thetadot = fit_svd(C, A, 1e-5) 
     #thetadot = tikhonov(C, A, 1e-3)
-    thetadot
+    #thetadot
+    thetadot = thetadot * randn(Float64) * 1000
 end
 
 
