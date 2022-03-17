@@ -548,8 +548,8 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     #thetadot, r = LinearAlgebra.LAPACK.gelsy!(A, C, 1e-5)
     thetadot = fit_svd(C, A, 1e-5) 
     #thetadot = tikhonov(C, A, 1e-3)
-    #thetadot
-    thetadot = thetadot * randn(Float64) * 1000
+    thetadot
+    #thetadot = thetadot * randn(Float64) * 1000
 end
 
 
