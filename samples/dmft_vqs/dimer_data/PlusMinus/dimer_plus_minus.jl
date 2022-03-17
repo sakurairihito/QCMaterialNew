@@ -199,7 +199,7 @@ Gfunc_ij_list, norm =  compute_gtau(
     d_theta,
     verbose = verbose,
     algorithm = "vqs",
-    recursive = true
+    recursive = false
 )
 
 Gfunc_ij_list *= sign
@@ -225,7 +225,7 @@ function write_to_txt_(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_plus_shotnoise1000_proc1_relative_thetadot.txt", taus, Gfunc_ij_list)
-write_to_txt("dimer_plus_vqs_norm__relativeerr_1000_thetadot.txt", taus, norm)
+write_to_txt("gf_dimer_plus_shotnoise10_proc1_relative__.txt", taus, Gfunc_ij_list)
+write_to_txt("dimer_plus_vqs_norm__relativeerr_10_.txt", taus, norm)
 #write_to_txt_("gf_dimer_recurisive_direct_minus3_freq.txt", taus, Gfunc_ij_list)
 println("done!!")

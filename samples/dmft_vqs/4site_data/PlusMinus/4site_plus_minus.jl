@@ -223,7 +223,7 @@ Gfunc_ij_list, norm =  compute_gtau(
     d_theta,
     verbose = verbose,
     algorithm = "vqs",
-    recursive= true
+    recursive= false
 )
 
 Gfunc_ij_list *= sign
@@ -246,7 +246,7 @@ function write_to_txt_(file_name, x, y)
         end
     end
 end
-write_to_txt("gf_4site_plus_relative_noise_100000.txt", taus, Gfunc_ij_list)
-write_to_txt("norm_4site_plus_relative_noise_100000", taus, norm)
+write_to_txt("gf_4site_plus_relative_noise_1e-5.txt", taus, Gfunc_ij_list)
+write_to_txt("norm_4site_plus_relative_noise_1e-5", taus, norm)
 #write_to_txt_("gf_4site_minus_recursive_direct_doubles_.txt", taus, Gfunc_ij_list)
 println("done!")
