@@ -1,7 +1,15 @@
 name: CI
+
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - vqs  # Set a branch name to trigger deployment
+  pull_request:
+
+#on:
+#  - push
+#  - pull_request
+
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -12,6 +20,7 @@ jobs:
         version:
           #- '1.0'
           - '1.4'
+          - '1.6'
           #- 'nightly'
         os:
           - ubuntu-latest
