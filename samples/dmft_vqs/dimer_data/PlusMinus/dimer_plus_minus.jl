@@ -138,6 +138,12 @@ QCMaterial.solve_gs(jordan_wigner(ham_op), vc, state0, theta_init=theta_init, ve
 #debug
 println("Ground energy_VQE=",cost_history[end])
 
+#shot_noise_in_vqe
+noise = [1e-5,1e-3,1e-1,0,1,10,100]
+for i in noise
+    println("Ground energy_VQE_with_shotnoise_$(i)=",cost_history[end] + cost_history[end] * i * randn(Float64))
+end
+
 #c^{dag},c
 up1 = up_index(1)
 down1 = down_index(1)
@@ -225,7 +231,7 @@ function write_to_txt_(file_name, x, y)
     end
 end
 
-write_to_txt("gf_dimer_plus_shotnoise10_proc1_relative__.txt", taus, Gfunc_ij_list)
-write_to_txt("dimer_plus_vqs_norm__relativeerr_10_.txt", taus, norm)
+write_to_txt("gf_dimer_plus_shotnoise10_proc1_relative_energy.txt", taus, Gfunc_ij_list)
+write_to_txt("dimer_plus_vqs_norm__relativeerr_energy.txt", taus, norm)
 #write_to_txt_("gf_dimer_recurisive_direct_minus3_freq.txt", taus, Gfunc_ij_list)
 println("done!!")

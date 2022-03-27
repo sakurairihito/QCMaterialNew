@@ -509,13 +509,13 @@ function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
     #gausiann noise
     for j in 1:num_thetas
         for i in 1:num_thetas
-            A[i,j] = A[i,j] + A[i,j] * randn(Float64) * 1e-5
+            A[i,j] = A[i,j] + A[i,j] * randn(Float64) * 1e-8 
         end
     end
 
     #gausiann noise
     for i in 1:num_thetas
-        C[i] = C[i] + C[i] * randn(Float64) * 1e-5
+        C[i] = C[i] + C[i] * randn(Float64) * 1e-8
     end
     
     # 今並列計算を実行している。各プロセスで違う乱数がよばれている可能性や変なバグなどがあるかもしれないのでroot=0の値を書くプロセスにブロードキャストして合わせる必要がある。

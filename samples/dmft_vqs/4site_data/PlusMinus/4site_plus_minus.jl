@@ -164,6 +164,11 @@ QCMaterial.solve_gs(jordan_wigner(ham_op1), vc, state0, theta_init=theta_init, v
 #debug
 println("Ground energy_VQE=",cost_history[end])
 
+noise = [1e-5,1e-3,1e-1,0,1,10,100]
+for i in noise
+    println("Ground energy_VQE_with_shotnoise_$(i)=",cost_history[end] + cost_history[end] * i * randn(Float64))
+end
+
 #c^{dag},c
 up1 = up_index(1)
 down1 = down_index(1)
@@ -246,7 +251,7 @@ function write_to_txt_(file_name, x, y)
         end
     end
 end
-write_to_txt("gf_4site_plus_relative_noise_1e-5.txt", taus, Gfunc_ij_list)
-write_to_txt("norm_4site_plus_relative_noise_1e-5", taus, norm)
+write_to_txt("gf_4site_plus_relative_noise_energy.txt", taus, Gfunc_ij_list)
+write_to_txt("norm_4site_plus_relative_noise_energy", taus, norm)
 #write_to_txt_("gf_4site_minus_recursive_direct_doubles_.txt", taus, Gfunc_ij_list)
 println("done!")

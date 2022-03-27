@@ -23,4 +23,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/sakurairihito/QCMaterialNew",
+    versions=nothing
 )
