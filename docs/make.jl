@@ -22,5 +22,8 @@ makedocs(;
 )
 
 deploydocs(;
+    devbranch="vqs",
+    target="build",
     repo="github.com/sakurairihito/QCMaterialNew",
+    versions=nothing
 )
