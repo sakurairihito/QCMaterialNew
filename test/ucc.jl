@@ -5,6 +5,17 @@ using QCMaterial
 import PyCall: pyimport
 import Random
 
+#@testset "ucc.num_theta" begin
+#    n_qubit = 1
+#    theta = 1.0
+#    c = UCCQuantumCircuit(n_qubit)
+#    add_parametric_multi_Pauli_rotation_gate!(
+#            c.circuit, [1], [pauli_Y], theta)
+#    println(c.thetas)
+#    @test num_theta(c) == 1
+#end
+
+
 @testset "ucc.uccgsd" begin
     #Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
@@ -66,7 +77,7 @@ import Random
     println("Eigval_vqe=", cost_history[end])
     EigVal_min = minimum(enes_ed)
     println("EigVal_min=", EigVal_min)
-    @test abs(EigVal_min-cost_history[end]) < 1e-6 
+    @test abs(EigVal_min-cost_history[end]) < 1e-3
 end
 
 
