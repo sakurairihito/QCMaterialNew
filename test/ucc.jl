@@ -5,15 +5,125 @@ using QCMaterial
 import PyCall: pyimport
 import Random
 
-#@testset "ucc.num_theta" begin
-#    n_qubit = 1
-#    theta = 1.0
-#    c = UCCQuantumCircuit(n_qubit)
-#    add_parametric_multi_Pauli_rotation_gate!(
-#            c.circuit, [1], [pauli_Y], theta)
-#    println(c.thetas)
-#    @test num_theta(c) == 1
-#end
+
+@testset "ucc.UCCQuantumCircuit" begin
+    n_qubit = 2
+    n_electron = 1
+    c = UCCQuantumCircuit(n_qubit)
+    #@test c == UCCQuantumCircuit(QulacsParametricQuantumCircuit(n_qubit), [], [])
+end
+
+@testset "ucc.num_theta" begin
+    n_qubit = 2
+    n_electron = 1
+
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    @test num_theta(c) == 1
+end
+
+@testset "ucc.get_thetas" begin
+    n_qubit = 2
+    n_electron = 1
+
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    @test get_thetas(c) == [1.0]
+end
+
+@testset "ucc.num_pauli" begin
+    n_qubit = 2
+    n_electron = 1
+
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    @test num_pauli(c, 1) == 2 #１番目のパラメータに関するパウリ行列の個数
+end
+
+
+@testset "ucc.pauli_coeff" begin
+    n_qubit = 2
+    n_electron = 1
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    @test pauli_coeff(c, 1, 1) == -0.5 # X2 Y1
+    @test pauli_coeff(c, 1, 2) == 0.5 # X1 Y2 
+end
+
+
+@testset "ucc.theta_offset" begin
+    n_qubit = 4
+    n_electron = 2
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    generator2 = gen_t1(3, 4) 
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    add_parametric_circuit_using_generator!(c, generator2, 1.0)
+    @test theta_offset(c, 1) == 0 #先頭から数えた場合の項の数　０、１
+    @test theta_offset(c, 2) == 2 #２、３
+end
+
+
+@testset "ucc.Base.copy" begin
+    n_qubit = 2
+    n_electron = 1
+
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    c_ = copy(c)
+    @test get_thetas(c_) == get_thetas(c)
+    @test num_pauli(c_, 1) == num_pauli(c, 1)
+    @test theta_offset(c_, 1) == theta_offset(c, 1)
+end
+
+
+@testset "ucc.add_parametric_circuit_using_generator!" begin
+    n_qubit = 2
+    n_electron = 1
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    println(" get_term_count(generator)=", get_term_count(generator)) #2
+    println(" terms_dict(generator)=", terms_dict(generator))  #Dict{Any, Any}(((1, "Y"), (2, "X")) => 0.0 - 0.5im, ((1, "X"), (2, "Y")) => 0.0 + 0.5im)
+    println("theta_offset(c, num_theta(c))= ", theta_offset(c, num_theta(c))) #0
+    println(" num_pauli(circuit, num_thetas)=",  num_pauli(c, num_theta(c))) #2
+    println("ioff=", theta_offset(c, num_theta(c)) + num_pauli(c, num_theta(c))) #2
+end
+
+@testset "ucc.update_circuit_param!" begin
+    n_qubit = 2
+    n_electron = 1
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t1(1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    update_circuit_param!(c, [2.0])
+    @test get_thetas(c) == [2.0]
+end
+
+@testset "ucc.update_quantum_state!" begin
+    n_qubit = 1
+    theta = 1e-5
+    c = UCCQuantumCircuit(n_qubit)
+    add_parametric_multi_Pauli_rotation_gate!(
+            c.circuit, [1], [pauli_Y], theta)
+    state = QulacsQuantumState(n_qubit, 0b1)
+    update_quantum_state!(c, state)
+    vec = get_vector(state)
+    @test vec ≈ [0.5*theta, 1.0]
+end
 
 
 @testset "ucc.uccgsd" begin
