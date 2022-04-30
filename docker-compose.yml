@@ -1,0 +1,45 @@
+version: '3'
+services:
+  jupyter:
+    image: yourpkgjl
+    container_name: yourpkgjl-jupyter
+    volumes:
+      - ./:/workspace/YourPkg.jl
+    working_dir: /workspace/YourPkg.jl
+    ports:
+      - "8888:8888"
+    command: jupyter notebook --notebook-dir /workspace/YourPkg.jl --ip=0.0.0.0 --allow-root
+  lab:
+    image: yourpkgjl
+    container_name: yourpkgjl-lab
+    volumes:
+      - ./:/workspace/YourPkg.jl
+    working_dir: /workspace/YourPkg.jl
+    ports:
+      - "8888:8888"
+    command: jupyter lab --notebook-dir /workspace/YourPkg.jl --ip=0.0.0.0 --allow-root
+  julia:
+    image: yourpkgjl
+    container_name: yourpkgjl-julia
+    volumes:
+      - ./:/workspace/YourPkg.jl
+    working_dir: /workspace/YourPkg.jl
+    command: julia --project=/workspace/YourPkg.jl
+  web:
+    image: yourpkgjl
+    container_name: yourpkgjl-packagedocs
+    volumes:
+      - ./:/workspace/YourPkg.jl
+    working_dir: /workspace/YourPkg.jl
+    ports:
+      - "8000:8000"
+    command: make web
+  pluto:
+    image: yourpkgjl
+    container_name: yourpkgjl-pluto
+    volumes:
+      - ./:/workspace/YourPkg.jl
+    working_dir: /workspace/YourPkg.jl
+    ports:
+      - "1234:1234"
+    command: julia -e 'import Pluto; Pluto.run(host="0.0.0.0", port=1234)'
