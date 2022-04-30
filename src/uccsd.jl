@@ -1,6 +1,7 @@
 export num_theta, num_pauli, pauli_coeff, theta_offset, UCCQuantumCircuit, add_parametric_circuit_using_generator!
 export update_circuit_param!, update_quantum_state!, gen_t1, gen_p_t2
 export uccgsd
+export gen_t2_kucj, kucj
 
 ################################################################################
 ############################# QUANTUM  CIRCUIT #################################
@@ -70,8 +71,6 @@ function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit,
     push!(circuit.theta_offsets, (get_term_count(generator), ioff, pauli_coeffs))
 end
 
-
-
 """
 Update circuit parameters
 
@@ -131,6 +130,25 @@ function gen_p_t2(aa, ia, ab, ib)
     jordan_wigner(generator)
 end
 
+"""
+Generate pair double excitations for kucj
+"""
+
+function gen_t2_kucj(aa, ab)
+    generator = FermionOperator([
+        (aa, 1),
+        (ab, 1),
+        (ab, 0),
+        (aa, 0)],
+        1.0)
+    generator += FermionOperator([
+        (ab, 1),
+        (aa, 1),
+        (aa, 0),
+        (ab, 0)],
+        1.0)
+    jordan_wigner(generator)
+end
 
 """
 Returns UCCGSD circuit.
@@ -182,11 +200,9 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
                     bb = so_idx(b, spin_b)
                     jb = so_idx(j, spin_j)
                     #perform loop only if ia>jb && aa>bb               
-                　
                     if aa<=bb || ia <= jb
                         continue
-                    end
-                         
+                    end   
                     #t2 operator
                     generator = gen_p_t2(aa, ia, bb, jb)
                     #Add p-t2 into the circuit
@@ -202,18 +218,86 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
                 aa = so_idx(a, spin_a)
                 ia = so_idx(i, spin_a)
                 bb = so_idx(a, spin_b)
-                jb = so_idx(i, spin_b)  
-
+                jb = so_idx(i, spin_b)
                 generator = gen_p_t2(aa, ia, bb, jb)
                 #Add p-t2 into the circuit
                 add_parametric_circuit_using_generator!(circuit, generator, 0.0)
             end
         end
     end
-
     circuit
 end 
     
 
+"""
+Returns k-ucj circuit.
+"""
+function kucj(n_qubit; conserv_Sz_singles=true, k=2)
+    if n_qubit <= 0 || n_qubit % 2 != 0
+        error("Invalid n_qubit: $(n_qubit)")
+    end
+ 
+    circuit = UCCQuantumCircuit(n_qubit)
+
+    norb = n_qubit ÷ 2
+
+    spin_index_functions = [up_index, down_index]
+    so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
+    sz = [1, -1]
+    
+    for i in 1:k
+        # exp(-K) where K is an orbital rotation operator
+        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+            for ispin1 in 1:2, ispin2 in 1:2
+                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
+                    continue
+                end
+                #Spatial Orbital Indices
+                a_spin_orbital = so_idx(a_spatial, ispin1)
+                i_spin_orbital = so_idx(i_spatial, ispin2)
+                #t1 operator
+                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+                #Add t1 into the circuit
+                add_parametric_circuit_using_generator!(circuit, generator, -0.0)
+            end
+        end
+
+        #Doubles
+        for (spin_a, spin_b) in Iterators.product(1:2, 1:2)
+            for (a, b) in Iterators.product(1:norb, 1:norb)
+
+                #Spatial Orbital Indices
+                aa = so_idx(a, spin_a)
+                jb = so_idx(b, spin_b)
+                if aa==jb
+                    continue
+                end  
+                #t2 operator
+                generator = gen_t2_kucj(aa, jb)
+                println("generator=",generator)
+                #Add p-t2 into the circuit
+                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                println("add_parametric_circuit_using_generator!")
+            end
+        end
+
+        # exp(K) where K is an orbital rotation operator
+        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+            for ispin1 in 1:2, ispin2 in 1:2
+                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
+                    continue
+                end
+                #Spatial Orbital Indices
+                a_spin_orbital = so_idx(a_spatial, ispin1)
+                i_spin_orbital = so_idx(i_spatial, ispin2)
+                #t1 operator
+                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+                #Add t1 into the circuit
+                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+            end
+        end
+    end
+    circuit
+end 
 
 

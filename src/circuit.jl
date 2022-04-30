@@ -102,6 +102,7 @@ end
 =#
 
 
+
 function get_parameter_count(circuit::QulacsParametricQuantumCircuit)::Int64
     circuit.pyobj.get_parameter_count()
 end
