@@ -35,6 +35,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     tig \
     tree \
     libopenblas-base libopenblas-dev libhdf5-103 libhdf5-dev \
+    build-essential gfortran \
+    libopenmpi-dev openmpi-bin \
     && \
     apt-get clean && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/* # clean up
 
