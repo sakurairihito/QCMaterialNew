@@ -66,7 +66,7 @@ end
     c = UCCQuantumCircuit(n_qubit)
     # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
     generator = gen_t1(1, 2)
-    generator2 = gen_t1(3, 4) 
+    generator2 = gen_t1(3, 4)
     add_parametric_circuit_using_generator!(c, generator, 1.0)
     add_parametric_circuit_using_generator!(c, generator2, 1.0)
     @test theta_offset(c, 1) == 0 #先頭から数えた場合の項の数　０、１
@@ -96,7 +96,7 @@ end
     println(" get_term_count(generator)=", get_term_count(generator)) #2
     println(" terms_dict(generator)=", terms_dict(generator))  #Dict{Any, Any}(((1, "Y"), (2, "X")) => 0.0 - 0.5im, ((1, "X"), (2, "Y")) => 0.0 + 0.5im)
     println("theta_offset(c, num_theta(c))= ", theta_offset(c, num_theta(c))) #0
-    println(" num_pauli(circuit, num_thetas)=",  num_pauli(c, num_theta(c))) #2
+    println(" num_pauli(circuit, num_thetas)=", num_pauli(c, num_theta(c))) #2
     println("ioff=", theta_offset(c, num_theta(c)) + num_pauli(c, num_theta(c))) #2
 end
 
@@ -117,18 +117,18 @@ end
     theta = 1e-5
     c = UCCQuantumCircuit(n_qubit)
     add_parametric_multi_Pauli_rotation_gate!(
-            c.circuit, [1], [pauli_Y], theta)
+        c.circuit, [1], [pauli_Y], theta)
     state = QulacsQuantumState(n_qubit, 0b1)
     update_quantum_state!(c, state)
     vec = get_vector(state)
-    @test vec ≈ [0.5*theta, 1.0]
+    @test vec ≈ [0.5 * theta, 1.0]
 end
 
 @testset "ucc.uccgsd" begin
     #Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
-    nsite = 2 
-    n_qubit = 2*nsite 
+    nsite = 2
+    n_qubit = 2 * nsite
     U = 1.0
     t = -0.01
     μ = 0
@@ -137,42 +137,42 @@ end
     for i in 1:nsite
         up = up_index(i)
         down = down_index(i)
-        ham += FermionOperator("$(up)^ $(down)^ $(up) $(down)", -U) 
+        ham += FermionOperator("$(up)^ $(down)^ $(up) $(down)", -U)
     end
 
     for i in 1:nsite-1
-        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t) 
-        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t) 
-        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t) 
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t) 
+        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t)
+        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t)
+        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t)
+        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t)
     end
 
     for i in 1:nsite
         up = up_index(i)
         down = down_index(i)
-        ham += FermionOperator("$(up)^  $(up) ", -μ) 
+        ham += FermionOperator("$(up)^  $(up) ", -μ)
         ham += FermionOperator("$(down)^ $(down)", -μ)
     end
 
     n_electron = 2
     @assert mod(n_electron, 2) == 0
-    sparse_mat = get_number_preserving_sparse_operator(ham, n_qubit, n_electron);　
+    sparse_mat = get_number_preserving_sparse_operator(ham, n_qubit, n_electron)
 
-    enes_ed = eigvals(sparse_mat.toarray());
+    enes_ed = eigvals(sparse_mat.toarray())
 
     ham_jw = jordan_wigner(ham)
 
     circuit = uccgsd(n_qubit, orbital_rot=true)
-
+    #circuit = kucj2(n_qubit)
     function cost(theta_list)
         state = create_hf_state(n_qubit, n_electron)
-        update_circuit_param!(circuit, theta_list) 
-        update_quantum_state!(circuit, state) 
-        get_expectation_value(ham_jw, state) 
+        update_circuit_param!(circuit, theta_list)
+        update_quantum_state!(circuit, state)
+        get_expectation_value(ham_jw, state)
     end
 
     theta_init = rand(num_theta(circuit))
-    cost_history = Float64[] 
+    cost_history = Float64[]
     init_theta_list = theta_init
     push!(cost_history, cost(init_theta_list))
     method = "BFGS"
@@ -182,7 +182,7 @@ end
     println("Eigval_vqe=", cost_history[end])
     EigVal_min = minimum(enes_ed)
     println("EigVal_min=", EigVal_min)
-    @test abs(EigVal_min-cost_history[end]) < 1e-3
+    @test abs(EigVal_min - cost_history[end]) < 1e-3
 end
 
 
@@ -200,28 +200,36 @@ end
     theta = 1e-5
     c = UCCQuantumCircuit(n_qubit)
     add_parametric_multi_Pauli_rotation_gate!(
-            c.circuit, [1], [pauli_Y], theta)
+        c.circuit, [1], [pauli_Y], theta)
     state = QulacsQuantumState(n_qubit, 0b1)
     update_quantum_state!(c, state)
     vec = get_vector(state)
-    vec ≈ [0.5*theta, 1.0]
+    vec ≈ [0.5 * theta, 1.0]
 end
 
 
-@testset "ucc.gen_t2_kucj" begin
+#@testset "ucc.gen_t2_kucj" begin
+#Random.seed!(1)
+#    println("gen_t2_kucj(1,1)=", gen_t2_kucj(1, 1).pyobj.terms)
+#@test gen_t2_kucj(1, 1).pyobj.terms == Dict{Any,Any}()
+#    println("gen_t2_kucj(2,1)=", gen_t2_kucj(2, 1).pyobj.terms)
+#@test gen_t2_kucj(2, 1).pyobj.terms == Dict{Any,Any}(() => 0.5 + 0.0im, ((0, "Z"),) => -0.5 + 0.0im, ((0, "Z"), (1, "Z")) => 0.5 + 0.0im, ((1, "Z"),) => -0.5 + 0.0im)
+#end
+
+@testset "ucc.gen_t2_kucj_2" begin
     #Random.seed!(1)
-    #println("gen_t2_kucj(1,1)=",gen_t2_kucj(1,1).pyobj.terms)
-    @test gen_t2_kucj(1,1).pyobj.terms == Dict{Any, Any}()
-    #println("gen_t2_kucj(2,1)=",gen_t2_kucj(2,1).pyobj.terms)
-    @test gen_t2_kucj(2,1).pyobj.terms == Dict{Any, Any}(() => 0.5 + 0.0im, ((0, "Z"),) => -0.5 + 0.0im, ((0, "Z"), (1, "Z")) => 0.5 + 0.0im, ((1, "Z"),) => -0.5 + 0.0im)
+    println("gen_t2_kucj_2(1,1,1,1)=", gen_t2_kucj_2(1, 1, 1, 1).pyobj.terms)
+    #@test gen_t2_kucj_2(1, 1).pyobj.terms == Dict{Any,Any}()
+    println("gen_t2_kucj_2(2,2,1,1)=", gen_t2_kucj_2(2, 2, 1, 1).pyobj.terms)
+    #@test gen_t2_kucj_2(2, 1).pyobj.terms == Dict{Any,Any}(() => 0.5 + 0.0im, ((0, "Z"),) => -0.5 + 0.0im, ((0, "Z"), (1, "Z")) => 0.5 + 0.0im, ((1, "Z"),) => -0.5 + 0.0im)
 end
 
 
 @testset "ucc.kucj" begin
     #Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
-    nsite = 2 
-    n_qubit = 2*nsite 
+    nsite = 2
+    n_qubit = 2 * nsite
     U = 1.0
     t = -0.01
     μ = 0
@@ -230,43 +238,43 @@ end
     for i in 1:nsite
         up = up_index(i)
         down = down_index(i)
-        ham += FermionOperator("$(up)^ $(down)^ $(up) $(down)", -U) 
+        ham += FermionOperator("$(up)^ $(down)^ $(up) $(down)", -U)
     end
 
     for i in 1:nsite-1
-        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t) 
-        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t) 
-        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t) 
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t) 
+        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t)
+        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t)
+        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t)
+        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t)
     end
 
     for i in 1:nsite
         up = up_index(i)
         down = down_index(i)
-        ham += FermionOperator("$(up)^  $(up) ", -μ) 
+        ham += FermionOperator("$(up)^  $(up) ", -μ)
         ham += FermionOperator("$(down)^ $(down)", -μ)
     end
 
     n_electron = 2
     @assert mod(n_electron, 2) == 0
-    sparse_mat = get_number_preserving_sparse_operator(ham, n_qubit, n_electron);　
+    sparse_mat = get_number_preserving_sparse_operator(ham, n_qubit, n_electron)
 
-    enes_ed = eigvals(sparse_mat.toarray());　
+    enes_ed = eigvals(sparse_mat.toarray())
 
     ham_jw = jordan_wigner(ham)
 
     circuit = kucj(n_qubit)
-    println("num_theta(circuit)=",num_theta(circuit))
+    println("num_theta(circuit)=", num_theta(circuit))
 
     function cost(theta_list)
         state = create_hf_state(n_qubit, n_electron)
-        update_circuit_param!(circuit, theta_list) 
-        update_quantum_state!(circuit, state) 
-        get_expectation_value(ham_jw, state) 
+        update_circuit_param!(circuit, theta_list)
+        update_quantum_state!(circuit, state)
+        get_expectation_value(ham_jw, state)
     end
 
     theta_init = rand(num_theta(circuit))
-    cost_history = Float64[] 
+    cost_history = Float64[]
     init_theta_list = theta_init
     push!(cost_history, cost(init_theta_list))
     method = "BFGS"
@@ -276,5 +284,5 @@ end
     println("Eigval_vqe=", cost_history[end])
     EigVal_min = minimum(enes_ed)
     println("EigVal_min=", EigVal_min)
-    @test abs(EigVal_min-cost_history[end]) < 1e-3
+    @test abs(EigVal_min - cost_history[end]) < 1e-3
 end
