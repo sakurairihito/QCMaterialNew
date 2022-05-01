@@ -150,7 +150,7 @@ end
 Generate pair dobule excitations
 """
 function gen_t2_kucj_2(aa, ia, ab, ib)
-    generator = FermionOperator([(aa, 1), (ab, 1), (ib, 0), (ia, 0)], 1.0 * im)
+    generator = FermionOperator([(aa, 1), (ab, 1), (ib, 0), (ia, 0)], 1.0im)
     jordan_wigner(generator)
 end
 
@@ -371,8 +371,9 @@ function kucj(n_qubit; conserv_Sz_singles = true, conserv_Sz_doubles = true, k =
                 end
                 #t2 operator
                 generator = gen_t2_kucj_2(aa, ia, bb, jb)
+                println("generator=",generator)
                 #Add p-t2 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, 1.0)
+                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
             end
         end
         # exp(K) where K is an orbital rotation operator
