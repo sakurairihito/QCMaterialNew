@@ -3,7 +3,9 @@ name: CI
 on:
   push:
     branches:
-      - vqs  # Set a branch name to trigger deployment
+      - vqs
+      - master
+      - debug_kucj  # Set a branch name to trigger deployment
   pull_request:
 
 #on:
