@@ -107,17 +107,28 @@ function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float6
     if num_theta(circuit) != length(thetas)
         error("Invalid length of thetas!")
     end
+    #println("before update_circuit_param!")
+    println("num_theta()=", num_theta(circuit))
+    println("enumerate(thetas)=", enumerate(thetas)) # OK 初期パラメータ
     for (idx, theta) in enumerate(thetas)
+        println("idx=", idx)
+        println("theta=", theta)
+        #println("a")
         for ioff = 1:num_pauli(circuit, idx)
             pauli_coef = pauli_coeff(circuit, idx, ioff)
+            #println("before set_parameter")
             set_parameter!(
                 circuit.circuit,
                 theta_offset(circuit, idx) + ioff,
                 theta * pauli_coef,
             )
+            #println("after set_parameter") #OK
         end
+        #println("end of the for ioff") #OK
     end
+    #println("before circuit.thetas") # NG
     circuit.thetas .= thetas
+    #println("circuit.thetas", circuit.thetas)
 end
 
 
@@ -345,65 +356,65 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=2)
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     sz = [1, -1]
 
-    for i = 1:k
-        # exp(-K) where K is an orbital rotation operator
-        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-            for ispin1 = 1:2, ispin2 = 1:2
-                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
-                    continue
-                end
-                #Spatial Orbital Indices
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                i_spin_orbital = so_idx(i_spatial, ispin2)
-                #t1 operator
-                generator = gen_t1(a_spin_orbital, i_spin_orbital)
-                #Add t1 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, -0.0)
-            end
-        end
+    #    for i = 1:k
+    # exp(-K) where K is an orbital rotation operator
+    #        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+    #            for ispin1 = 1:2, ispin2 = 1:2
+    #                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
+    #                    continue
+    #                end
+    #Spatial Orbital Indices
+    #                a_spin_orbital = so_idx(a_spatial, ispin1)
+    #                i_spin_orbital = so_idx(i_spatial, ispin2)
+    #t1 operator
+    #                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+    #Add t1 into the circuit
+    #                add_parametric_circuit_using_generator!(circuit, generator, -0.0)
+    #            end
+    #        end
 
-        #Doubles
-        for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
-            for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
-                if conserv_Sz_doubles &&
-                   mod(sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j], 2) != 0
-                    continue
-                end
-                #Spatial Orbital Indices
-                aa = so_idx(a, spin_a)
-                ia = so_idx(i, spin_i)
-                bb = so_idx(b, spin_b)
-                jb = so_idx(j, spin_j)
-                #perform loop only if ia>jb && aa>bb
-                if aa <= bb || ia <= jb
-                    continue
-                end
-                #perform loop only if aa=ia && bb=jb
-                if aa != ia || bb != jb
-                    continue
-                end
-                #t2 operator
-                generator = gen_t2_kucj_2(aa, ia, bb, jb)
-                #println("generator=", generator)
-                #Add p-t2 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+    #Doubles
+    for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
+        for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
+            if conserv_Sz_doubles &&
+               mod(sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j], 2) != 0
+                continue
             end
-        end
-        # exp(K) where K is an orbital rotation operator
-        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-            for ispin1 = 1:2, ispin2 = 1:2
-                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
-                    continue
-                end
-                #Spatial Orbital Indices
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                i_spin_orbital = so_idx(i_spatial, ispin2)
-                #t1 operator
-                generator = gen_t1(a_spin_orbital, i_spin_orbital)
-                #Add t1 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+            #Spatial Orbital Indices
+            aa = so_idx(a, spin_a)
+            ia = so_idx(i, spin_i)
+            bb = so_idx(b, spin_b)
+            jb = so_idx(j, spin_j)
+            #perform loop only if ia>jb && aa>bb
+            if aa <= bb || ia <= jb
+                continue
             end
+            #perform loop only if aa=ia && bb=jb
+            if aa != ia || bb != jb
+                continue
+            end
+            #t2 operator
+            generator = gen_t2_kucj_2(aa, ia, bb, jb)
+            #println("generator=", generator)
+            #Add p-t2 into the circuit
+            add_parametric_circuit_using_generator!(circuit, generator, 0.0)
         end
     end
+    # exp(K) where K is an orbital rotation operator
+    #        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+    #            for ispin1 = 1:2, ispin2 = 1:2
+    #                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
+    #                    continue
+    #                end
+    #Spatial Orbital Indices
+    #                a_spin_orbital = so_idx(a_spatial, ispin1)
+    #                i_spin_orbital = so_idx(i_spatial, ispin2)
+    #t1 operator
+    #                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+    #Add t1 into the circuit
+    #                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+    #            end
+    #        end
+    #    end
     circuit
 end

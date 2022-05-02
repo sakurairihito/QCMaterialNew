@@ -278,7 +278,9 @@ end
 
     function cost(theta_list)
         state = create_hf_state(n_qubit, n_electron)
+        println("state=", state)
         update_circuit_param!(circuit, theta_list)
+        println("update_circuit_param!(circuit, theta_list)=", update_circuit_param!(circuit, theta_list))
         update_quantum_state!(circuit, state)
         get_expectation_value(ham_jw, state)
     end
@@ -286,7 +288,9 @@ end
     theta_init = rand(num_theta(circuit))
     cost_history = Float64[]
     init_theta_list = theta_init
+    #println("init_theta_list=", init_theta_list)
     push!(cost_history, cost(init_theta_list))
+    println("init_theta_list_after_cost=", init_theta_list)
     method = "BFGS"
     options = Dict("disp" => true, "maxiter" => 200, "gtol" => 1e-5)
     callback(x) = push!(cost_history, cost(x))
