@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - vqs
-      - master
-      - debug_kucj  # Set a branch name to trigger deployment
+      - master  # Set a branch name to trigger deployment
   pull_request:
 
 #on:
