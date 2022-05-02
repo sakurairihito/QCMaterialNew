@@ -1,6 +1,6 @@
 name = "QCMaterial"
 uuid = "a9cd9503-f9e9-42c1-955f-178e1ea1d76e"
-authors = ["Hiroshi Shinaoka <h.shinaoka@gmail.com> and contributors"]
+authors = ["Rihito Sakurai <sakurairihito@gmail.com> and contributors"]
 version = "0.1.0"
 
 [deps]
