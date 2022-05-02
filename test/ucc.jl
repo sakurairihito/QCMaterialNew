@@ -224,6 +224,16 @@ end
     #@test gen_t2_kucj_2(2, 1).pyobj.terms == Dict{Any,Any}(() => 0.5 + 0.0im, ((0, "Z"),) => -0.5 + 0.0im, ((0, "Z"), (1, "Z")) => 0.5 + 0.0im, ((1, "Z"),) => -0.5 + 0.0im)
 end
 
+@testset "ucc.gen_t2_kucj_2" begin
+    n_qubit = 2
+    n_electron = 1
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t2_kucj_2(2, 1, 1, 2)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    println("num_pauli(c, 1)=", num_pauli(c, 1))
+    #@test num_pauli(c, 1) == 2 #１番目のパラメータに関するパウリ行列の個数
+end
 
 @testset "ucc.kucj" begin
     #Random.seed!(1)

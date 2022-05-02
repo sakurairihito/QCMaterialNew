@@ -8,6 +8,7 @@ export update_circuit_param!, update_quantum_state!, gen_t1, gen_p_t2
 export uccgsd
 export gen_t2_kucj, kucj, kucj2, gen_t2_kucj_2
 
+
 ################################################################################
 ############################# QUANTUM  CIRCUIT #################################
 ################################################################################
@@ -56,8 +57,11 @@ function add_parametric_circuit_using_generator!(
     theta::Float64,
 )
     pauli_coeffs = Float64[]
+    #println("terms_dict(generator)=", terms_dict(generator))
     for (pauli_str, pauli_coef) in terms_dict(generator)
         pauli_index_list, pauli_id_list = parse_pauli_str(pauli_str)
+        #println("pauli_index_list=", pauli_index_list)
+        #println("pauli_id_list=", pauli_id_list)
         if !all(1 .<= pauli_index_list)
             error("Pauli indies are out of range!")
         end
@@ -66,6 +70,7 @@ function add_parametric_circuit_using_generator!(
         end
         #println(pauli_str, pauli_coef)
         pauli_coef = imag(pauli_coef) #coef should be pure imaginary
+        #println("pauli_coeff=", pauli_coeff)
         push!(pauli_coeffs, pauli_coef)
         add_parametric_multi_Pauli_rotation_gate!(
             circuit.circuit,
@@ -73,6 +78,14 @@ function add_parametric_circuit_using_generator!(
             pauli_id_list,
             pauli_coef * theta,
         )
+        #println("add_parametric_multi_Pauli_rotation_gate!",
+        #    add_parametric_multi_Pauli_rotation_gate!(
+        #        circuit.circuit,
+        #        pauli_index_list,
+        #        pauli_id_list,
+        #        pauli_coef * theta,
+        #    )
+        #)
     end
     if length(pauli_coeffs) == 0
         return
@@ -159,13 +172,13 @@ Returns UCCGSD circuit.
 """
 function uccgsd(
     n_qubit;
-    nocc = -1,
-    orbital_rot = false,
-    conserv_Sz_doubles = true,
-    conserv_Sz_singles = true,
-    Doubles = true,
-    uccgsd = true,
-    p_uccgsd = false,
+    nocc=-1,
+    orbital_rot=false,
+    conserv_Sz_doubles=true,
+    conserv_Sz_singles=true,
+    Doubles=true,
+    uccgsd=true,
+    p_uccgsd=false
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -319,7 +332,7 @@ Returns k-ucj circuit.
 """
 Returns k-ucj circuit.
 """
-function kucj(n_qubit; conserv_Sz_singles = true, conserv_Sz_doubles = true, k = 2)
+function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=2)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -371,7 +384,7 @@ function kucj(n_qubit; conserv_Sz_singles = true, conserv_Sz_doubles = true, k =
                 end
                 #t2 operator
                 generator = gen_t2_kucj_2(aa, ia, bb, jb)
-                println("generator=",generator)
+                #println("generator=", generator)
                 #Add p-t2 into the circuit
                 add_parametric_circuit_using_generator!(circuit, generator, 0.0)
             end
