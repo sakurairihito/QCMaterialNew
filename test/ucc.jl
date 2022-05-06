@@ -238,7 +238,7 @@ end
 @testset "ucc.kucj" begin
     #Random.seed!(1)
     scipy_opt = pyimport("scipy.optimize")
-    nsite = 2
+    nsite = 1
     n_qubit = 2 * nsite
     U = 1.0
     t = -0.01
@@ -251,12 +251,12 @@ end
         ham += FermionOperator("$(up)^ $(down)^ $(up) $(down)", -U)
     end
 
-    for i in 1:nsite-1
-        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t)
-        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t)
-        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t)
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t)
-    end
+    #for i in 1:nsite-1
+    #    ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t)
+    #    ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t)
+    #    ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t)
+    #    ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t)
+    #end
 
     for i in 1:nsite
         up = up_index(i)

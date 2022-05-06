@@ -1,12 +1,13 @@
 using PyCall
-
+export terms_dict
+export terms_dect_without_identity
 
 # i = 1, 2, ...
-up_index(i) = 2*(i-1) + 1
-down_index(i) = 2*i
+up_index(i) = 2 * (i - 1) + 1
+down_index(i) = 2 * i
 
-@enum PauliID pauli_I=0 pauli_X=1 pauli_Y=2 pauli_Z=3
-pauli_id_lookup = Dict("I"=>pauli_I, "X"=>pauli_X, "Y"=>pauli_Y, "Z"=>pauli_Z)
+@enum PauliID pauli_I = 0 pauli_X = 1 pauli_Y = 2 pauli_Z = 3
+pauli_id_lookup = Dict("I" => pauli_I, "X" => pauli_X, "Y" => pauli_Y, "Z" => pauli_Z)
 pauli_id_str = ["I", "X", "Y", "Z"]
 
 ################################################################################
@@ -47,7 +48,7 @@ function Base.:-(op1::SecondQuantOperator, op2::SecondQuantOperator)
 end
 
 function Base.:/(op::SecondQuantOperator, x::Number)
-    typeof(op)(op.pyobj/x)
+    typeof(op)(op.pyobj / x)
 end
 
 ################################################################################
@@ -71,13 +72,13 @@ function _parse_fermion_operator_str(str::String)
     res
 end
 
-function FermionOperator(ops::Vector{Tuple{Int,Int}}, coeff::Number=1.0) 
+function FermionOperator(ops::Vector{Tuple{Int,Int}}, coeff::Number=1.0)
     for (idx, _) in ops
         if idx <= 0
             error("idx for fermion operator must be positive.")
         end
     end
-    ops_py = [(idx-1, op_type) for (idx, op_type) in ops]
+    ops_py = [(idx - 1, op_type) for (idx, op_type) in ops]
     FermionOperator(ofermion.ops.operators.FermionOperator(Tuple(ops_py), coeff))
 end
 
@@ -122,6 +123,11 @@ function _convert_qubitop_str_from_py_to_jl(str::String)
     res
 end
 
+#function OFQubitOperator(str::String, coeff::Number=1.0)
+#    return OFQubitOperator(ofermion.ops.operators.qubit_operator.QubitOperator(
+#        _convert_qubitop_str_from_py_to_jl(str), coeff))
+#end
+
 function OFQubitOperator(str::String, coeff::Number=1.0)
     return OFQubitOperator(ofermion.ops.operators.qubit_operator.QubitOperator(
         _convert_qubitop_str_from_py_to_jl(str), coeff))
@@ -143,11 +149,31 @@ function terms_dict(op::OFQubitOperator)::Dict{Any,Any}
     # Change index convention
     dict_jl = Dict()
     for (k, v) in op.pyobj.terms
-        k_new = Tuple(( (k_[1]+1, k_[2]) for k_ in k))
+        #println("k=", k)
+        #println("v=", v)
+        k_new = Tuple(((k_[1] + 1, k_[2]) for k_ in k))
+        #println("k_new=", k_new)
         dict_jl[k_new] = v
     end
     dict_jl
 end
+
+function terms_dect_without_identity(op::OFQubitOperator)::Dict{Any,Any}
+    # cut identity operator because it is just a phase which does not affect physical quantity.
+    dict_jl = Dict()
+    for (k, v) in op.pyobj.terms
+        #println("k=", k)
+        #println("v=", v)
+        k_new = Tuple(((k_[1] + 1, k_[2]) for k_ in k))
+        #println("k_new=", k_new)
+        if k_new == ()
+            continue
+        end
+        dict_jl[k_new] = v
+    end
+    dict_jl
+end
+
 
 function is_hermitian(op::OFQubitOperator)
     ofermion.utils.operator_utils.is_hermitian(op.pyobj)
@@ -161,7 +187,7 @@ function get_expectation_value(op::OFQubitOperator, state::QulacsQuantumState)
     if !is_hermitian(op)
         error("op must be hermite for get_expectation_value!")
     end
-    convert_to_qulacs_op(op, get_n_qubit(state)).get_expectation_value(state.pyobj) 
+    convert_to_qulacs_op(op, get_n_qubit(state)).get_expectation_value(state.pyobj)
 end
 
 function get_transition_amplitude(op::OFQubitOperator, state_bra::QulacsQuantumState, state_ket::QulacsQuantumState)
@@ -177,7 +203,7 @@ end
 Parse a tuple representing a Pauli string
   When x is ((1, "X"), (5, "Y")), returns [1, 5], [PauliID.X, PauliID.Y]
 """
-function parse_pauli_str(x)::Tuple{Vector{Int64}, Vector{PauliID}}
+function parse_pauli_str(x)::Tuple{Vector{Int64},Vector{PauliID}}
     collect(e[1] for e in x), collect(pauli_id_lookup[e[2]] for e in x)
 end
 

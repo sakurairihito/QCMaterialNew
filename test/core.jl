@@ -16,8 +16,8 @@ end
     op = OFQubitOperator("X1 X6", 1.0) + OFQubitOperator("Y2 Y3", 2.0)
     @test get_n_qubit(op) == 6
     @test get_term_count(op) == 2
-    @test terms_dict(op)[((1,"X"), (6,"X"))] == 1.0
-    @test terms_dict(op)[((2,"Y"), (3,"Y"))] == 2.0
+    @test terms_dict(op)[((1, "X"), (6, "X"))] == 1.0
+    @test terms_dict(op)[((2, "Y"), (3, "Y"))] == 2.0
 end
 
 
@@ -35,7 +35,7 @@ end
     add_X_gate!(circuit, 1)
     update_quantum_state!(circuit, state)
 
-    @test get_vector(state) ≈ [0, 1, 1, 0]/sqrt(2)
+    @test get_vector(state) ≈ [0, 1, 1, 0] / sqrt(2)
 end
 
 
@@ -62,7 +62,7 @@ end
     n_qubit = 4
     a, i = 1, 1
     crr, ann = 1, 0
-    @assert 1 <= 2*a <= n_qubit && 1 <= 2*i <= n_qubit
+    @assert 1 <= 2 * a <= n_qubit && 1 <= 2 * i <= n_qubit
     generator = jordan_wigner(FermionOperator([(a, crr), (i, ann)], 1.0))
 
     circuit = UCCQuantumCircuit(n_qubit)
@@ -89,4 +89,41 @@ end
 
     @test OFQubitOperator("X1") * OFQubitOperator("Y1") == OFQubitOperator("Z1", 1.0im)
     @test OFQubitOperator("X1 Y2") * OFQubitOperator("Y1 Z2") == OFQubitOperator("Z1 X2", -1.0)
+end
+
+
+@testset "core.term_dict" begin
+    op1 = OFQubitOperator("Z1", 1.0)
+    op2 = OFQubitOperator("Z2", 1.0)
+    op3 = op1 * op2
+    op4 = op1 + op3
+    println(terms_dict(op3))
+    #println(terms_dict(op4))
+    op5 = OFQubitOperator("", 0.25 * im)
+    op6 = op4 + op5
+    #println(terms_dict(op6))
+    res = terms_dict(op6)
+    @test res[()] == 0.0 + 0.25im
+    @test res[((1, "Z"), (2, "Z"))] == 1.0
+    #println(haskey(dic, ""))
+    #op2 = OFQubitOperator("", 1.0)
+end
+
+
+@testset "core.term_dict_without_identity" begin
+    op1 = OFQubitOperator("Z1", 1.0)
+    op2 = OFQubitOperator("Z2", 1.0)
+    op3 = op1 * op2
+    op4 = op1 + op3
+    println(terms_dict(op3))
+    #println(terms_dict(op4))
+    op5 = OFQubitOperator("", 0.25 * im)
+    op6 = op4 + op5
+    #println(terms_dict(op6))
+    res = terms_dect_without_identity(op6)
+    println(res)
+    #@test res[()] == 0.0 + 0.25im
+    @test res[((1, "Z"), (2, "Z"))] == 1.0
+    #println(haskey(dic, ""))
+    #op2 = OFQubitOperator("", 1.0)
 end

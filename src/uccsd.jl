@@ -51,14 +51,15 @@ function Base.copy(uc::UCCQuantumCircuit)
     UCCQuantumCircuit(copy(uc.circuit), copy(uc.thetas), copy(uc.theta_offsets))
 end
 
+
 function add_parametric_circuit_using_generator!(
     circuit::UCCQuantumCircuit,
     generator::QubitOperator,
     theta::Float64,
 )
     pauli_coeffs = Float64[]
-    #println("terms_dict(generator)=", terms_dict(generator))
-    for (pauli_str, pauli_coef) in terms_dict(generator)
+    println("terms_dict(generator)=", terms_dict(generator))
+    for (pauli_str, pauli_coef) in terms_dect_without_identity(generator)
         pauli_index_list, pauli_id_list = parse_pauli_str(pauli_str)
         #println("pauli_index_list=", pauli_index_list)
         #println("pauli_id_list=", pauli_id_list)
@@ -68,9 +69,9 @@ function add_parametric_circuit_using_generator!(
         if length(pauli_index_list) == 0
             continue
         end
-        #println(pauli_str, pauli_coef)
+        println(pauli_str, pauli_coef)
         pauli_coef = imag(pauli_coef) #coef should be pure imaginary
-        #println("pauli_coeff=", pauli_coeff)
+        println("pauli_coeff=", pauli_coeff)
         push!(pauli_coeffs, pauli_coef)
         add_parametric_multi_Pauli_rotation_gate!(
             circuit.circuit,
@@ -103,6 +104,7 @@ Update circuit parameters
 
 thetas wil be copied.
 """
+
 function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float64})
     if num_theta(circuit) != length(thetas)
         error("Invalid length of thetas!")
@@ -111,20 +113,26 @@ function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float6
     println("num_theta()=", num_theta(circuit))
     println("enumerate(thetas)=", enumerate(thetas)) # OK 初期パラメータ
     for (idx, theta) in enumerate(thetas)
-        println("idx=", idx)
-        println("theta=", theta)
+        #println("idx=", idx)
+        #println("theta=", theta)
         #println("a")
         for ioff = 1:num_pauli(circuit, idx)
+            println("theta_offset=", theta_offset(circuit, idx))
+            println("idx=", idx)
+            println("num_pauli(circuit, idx)=", num_pauli(circuit, idx))
             pauli_coef = pauli_coeff(circuit, idx, ioff)
+            #pauli_coef_4 = pauli_coeff(circuit, idx, 4)
+            println("pauli_coef=", pauli_coef)
+            #println("pauli_coef_4=", pauli_coef_4)
             #println("before set_parameter")
             set_parameter!(
                 circuit.circuit,
                 theta_offset(circuit, idx) + ioff,
                 theta * pauli_coef,
             )
-            #println("after set_parameter") #OK
+            println("after set_parameter") #OK
         end
-        #println("end of the for ioff") #OK
+        println("end of the for ioff") #OK
     end
     #println("before circuit.thetas") # NG
     circuit.thetas .= thetas
@@ -339,7 +347,6 @@ Returns k-ucj circuit.
 #end
 
 
-
 """
 Returns k-ucj circuit.
 """
@@ -347,11 +354,8 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=2)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
-
     circuit = UCCQuantumCircuit(n_qubit)
-
     norb = n_qubit ÷ 2
-
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     sz = [1, -1]
@@ -393,11 +397,16 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=2)
             if aa != ia || bb != jb
                 continue
             end
+            println("aa=", aa)
+            println("ia=", ia)
+            println("bb=", bb)
+            println("jb=", jb)
             #t2 operator
             generator = gen_t2_kucj_2(aa, ia, bb, jb)
-            #println("generator=", generator)
+            println("generator=", generator)
             #Add p-t2 into the circuit
             add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+            
         end
     end
     # exp(K) where K is an orbital rotation operator
