@@ -7,7 +7,6 @@ import Random
 
 @testset "vqe.solve_gs" begin
     Random.seed!(100)
-
     nsite = 2 
     n_qubit = 2*nsite 
     U = 1.0
