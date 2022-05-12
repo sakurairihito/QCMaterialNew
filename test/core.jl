@@ -12,14 +12,42 @@ using QCMaterial
     @test FermionOperator("", 0.0) == FermionOperator()
 end
 
+@testset "core.fermionopertor" begin
+    op1 = FermionOperator("I1", 1.0)
+    op2 = FermionOperator("Z2", 1.0)
+    println("op1=", op1.pyobj)
+    println("op2=", op2)
+
+    #@test op1 == op1
+    @test op1 != op2
+    #@test op1 * op2 == FermionOperator("1^ 1")
+
+    #@test FermionOperator("", 0.0) == FermionOperator()
+end
+
 @testset "core.of_qubit_operator" begin
     op = OFQubitOperator("X1 X6", 1.0) + OFQubitOperator("Y2 Y3", 2.0)
     @test get_n_qubit(op) == 6
     @test get_term_count(op) == 2
-    @test terms_dict(op)[((1,"X"), (6,"X"))] == 1.0
-    @test terms_dict(op)[((2,"Y"), (3,"Y"))] == 2.0
+    @test terms_dict(op)[((1, "X"), (6, "X"))] == 1.0
+    @test terms_dict(op)[((2, "Y"), (3, "Y"))] == 2.0
 end
 
+#@testset "core.of_qubit_operator2" begin
+#    op = OFQubitOperator("I1", 1.0)
+#    @test get_n_qubit(op) == 1
+#    @test get_term_count(op) == 1
+#    @test terms_dict(op)[((1, "I"))] == 1.0
+#end
+
+
+#_convert_qubitop_str_from_py_to_jlでテストを作る
+@testset "core._convert_qubitop_str_from_py_to_jl" begin
+    a = _convert_qubitop_str_from_py_to_jl("I1")
+    b = _convert_qubitop_str_from_py_to_jl("I2")
+    println("a=", a)
+    println("b=", b)
+end
 
 @testset "core.qulacs_quantum_circuit" begin
     n_qubit = 2
@@ -35,7 +63,7 @@ end
     add_X_gate!(circuit, 1)
     update_quantum_state!(circuit, state)
 
-    @test get_vector(state) ≈ [0, 1, 1, 0]/sqrt(2)
+    @test get_vector(state) ≈ [0, 1, 1, 0] / sqrt(2)
 end
 
 
@@ -62,7 +90,7 @@ end
     n_qubit = 4
     a, i = 1, 1
     crr, ann = 1, 0
-    @assert 1 <= 2*a <= n_qubit && 1 <= 2*i <= n_qubit
+    @assert 1 <= 2 * a <= n_qubit && 1 <= 2 * i <= n_qubit
     generator = jordan_wigner(FermionOperator([(a, crr), (i, ann)], 1.0))
 
     circuit = UCCQuantumCircuit(n_qubit)
@@ -78,6 +106,8 @@ end
     op1 = OFQubitOperator("Z1", 1.0)
     op2 = OFQubitOperator("Z1", 1.0im)
     op3 = OFQubitOperator("X1", 1.0)
+    #op4 = OFQubitOperator("I1", 1.0)
+    #println("op4", op4)
 
     state0 = create_hf_state(1, 0) # Create |0>
     state1 = create_hf_state(1, 1) # Create |1>
@@ -89,4 +119,27 @@ end
 
     @test OFQubitOperator("X1") * OFQubitOperator("Y1") == OFQubitOperator("Z1", 1.0im)
     @test OFQubitOperator("X1 Y2") * OFQubitOperator("Y1 Z2") == OFQubitOperator("Z1 X2", -1.0)
+
+    tmpop = OFQubitOperator("", 0.0)
+    myop = OFQubitOperator("Z2", 1.0)
+
+end
+
+
+@testset "FermionOperator" begin
+    generator = FermionOperator([(2, 1), (1, 1), (1, 0), (2, 0)], 1.0im)
+    println("generator=", generator)
+end
+
+
+@testset "rm_Identity" begin
+    generator = FermionOperator([(2, 1), (1, 1), (1, 0), (2, 0)], 1.0im)
+    generator = jordan_wigner(generator)
+    #println("generator=", generator)
+    #println("rm_identity=", rm_identity(generator))
+    #@test rm_identity(generator) == OFQubitOperator(PyObject -0.25j [Z0] +
+    #0.25j [Z0 Z1] +-0.25j [Z1])
+    res = rm_identity(generator)
+    println("dect=", res.pyobj.terms)
+    #println("dect[1]=", res.pyobj.terms)
 end

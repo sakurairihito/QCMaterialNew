@@ -98,8 +98,35 @@ end
     println("theta_offset(c, num_theta(c))= ", theta_offset(c, num_theta(c))) #0
     println(" num_pauli(circuit, num_thetas)=", num_pauli(c, num_theta(c))) #2
     println("ioff=", theta_offset(c, num_theta(c)) + num_pauli(c, num_theta(c))) #2
+    println("generator.pyobj=", generator.pyobj)
+    println("generator.pyobj.terms=", generator.pyobj.terms)
 end
 
+@testset "ucc.add_parametric_circuit_using_generator_gen_t2_kucj_2!" begin
+    n_qubit = 2
+    n_electron = 1
+    c = UCCQuantumCircuit(n_qubit)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_t2_kucj_2(2, 2, 1, 1)
+    generator_rm = rm_identity(generator)
+    println("terms_dict(generator_rm)=", terms_dict(generator_rm))
+    println("generator_rm.pyobj=", generator_rm.pyobj)
+    println("generator_rm.pyobj.terms=", generator_rm.pyobj.terms)
+
+    add_parametric_circuit_using_generator!(c, generator_rm, 1.0)
+    println(" get_term_count(generator_rm)=", get_term_count(generator_rm)) #2
+    #println(" terms_dict(generator)=", terms_dict(generator))  
+    #terms_dict(generator)=Dict{Any, Any}(() => 0.0 + 0.25im, ((2, "Z"),) => 0.0 - 0.25im, 
+    #((1, "Z"), (2, "Z")) => 0.0 + 0.25im, ((1, "Z"),) => 0.0 - 0.25im)
+    println("theta_offset(c, num_theta(c))= ", theta_offset(c, num_theta(c))) #0
+    println(" num_pauli(circuit, num_thetas)=", num_pauli(c, num_theta(c))) #4
+    println("ioff=", theta_offset(c, num_theta(c)) + num_pauli(c, num_theta(c))) #4
+    @test num_pauli(c, num_theta(c)) == 3
+    #println("circuit.theta_offsets[1][3][1]=", c.theta_offsets[1][3][1])
+    #println("circuit.theta_offsets[1][3][1]=", c.theta_offsets[1][3][2])
+    #println("circuit.theta_offsets[1][3][1]=", c.theta_offsets[1][3][3])
+    #println("circuit.theta_offsets[1][3][4]=", c.theta_offsets[1][3][4])
+end
 
 @testset "ucc.update_circuit_param!" begin
     n_qubit = 2
@@ -221,19 +248,56 @@ end
     println("gen_t2_kucj_2(1,1,1,1)=", gen_t2_kucj_2(1, 1, 1, 1).pyobj.terms)
     #@test gen_t2_kucj_2(1, 1).pyobj.terms == Dict{Any,Any}()
     println("gen_t2_kucj_2(2,2,1,1)=", gen_t2_kucj_2(2, 2, 1, 1).pyobj.terms)
+    #gen_t2_kucj_2(2,2,1,1)=Dict{Any, Any}(() => 0.0 + 0.25im, ((0, "Z"),) => 0.0 - 0.25im, 
+    #((0, "Z"), (1, "Z")) => 0.0 + 0.25im, ((1, "Z"),) => 0.0 - 0.25im)
     #@test gen_t2_kucj_2(2, 1).pyobj.terms == Dict{Any,Any}(() => 0.5 + 0.0im, ((0, "Z"),) => -0.5 + 0.0im, ((0, "Z"), (1, "Z")) => 0.5 + 0.0im, ((1, "Z"),) => -0.5 + 0.0im)
 end
 
 @testset "ucc.gen_t2_kucj_2" begin
-    n_qubit = 2
+    n_qubit = 4
     n_electron = 1
     c = UCCQuantumCircuit(n_qubit)
     # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
     generator = gen_t2_kucj_2(2, 1, 1, 2)
+    generator += gen_t2_kucj_2(4, 2, 2, 4)
     add_parametric_circuit_using_generator!(c, generator, 1.0)
     println("num_pauli(c, 1)=", num_pauli(c, 1))
     #@test num_pauli(c, 1) == 2 #１番目のパラメータに関するパウリ行列の個数
 end
+
+@testset "ucc.num_theta" begin
+    n_qubit = 4
+    n_qubit_ = 2
+
+    c = UCCQuantumCircuit(n_qubit)
+    c_ = UCCQuantumCircuit(n_qubit_)
+    c_test = UCCQuantumCircuit(n_qubit_)
+    # a_1^dagger a_2 - a^2 a_1 -> 0.5i (X1 Y2 - X2 Y1)
+    generator = gen_p_t2(1, 2, 3, 4)
+    #generator = rm_identity(generator), c.theta_offsets
+    println("rm_identity=", generator)
+    add_parametric_circuit_using_generator!(c, generator, 1.0)
+    println("num_pauli(c, 1)=", num_pauli(c, 1))
+    println("thetaoffset=", c.theta_offsets)
+    @test num_pauli(c, 1) == 8 #１番目のパラメータに関するパウリ行列の個数
+
+    generator_test = OFQubitOperator("Z1", 1.0)
+    generator_test += OFQubitOperator("Z2", 1.0)
+    println("generator_test=", generator_test)
+    add_parametric_circuit_using_generator!(c_test, generator_test, 1.0)
+    println("num_pauli(c_test, 1)=", num_pauli(c_test, 1))
+    println("thetaoffset_c_test=", c_test.theta_offsets)
+
+    generator_ = gen_t2_kucj_2(2, 1, 1, 2)
+    generator_ = rm_identity(generator_)
+    #generator = rm_identity(generator), c.theta_offsets
+    println("rm_identity_=", generator_)
+    add_parametric_circuit_using_generator!(c_, generator_, 1.0)
+    println("num_pauli(c_, 1)=", num_pauli(c_, 1))
+    println("thetaoffset=", c_.theta_offsets)
+    @test num_pauli(c_, 1) == 3 #１番目のパラメータに関するパウリ行列の個数
+end
+
 
 @testset "ucc.kucj" begin
     #Random.seed!(1)

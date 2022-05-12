@@ -2,9 +2,10 @@
 ############################# QUANTUM  CIRCUIT #################################
 ################################################################################
 abstract type QuantumCircuit end
+# sub abstract type
 abstract type ParametricQuantumCircuit <: QuantumCircuit end
 
-#  QuantumCircuit
+# QuantumCircuit
 struct QulacsQuantumCircuit <: QuantumCircuit
     pyobj::PyObject
 end
@@ -18,50 +19,53 @@ function Base.copy(circuit::QulacsQuantumCircuit)
 end
 
 function add_X_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_X_gate(idx_qubit-1)
+    circuit.pyobj.add_X_gate(idx_qubit - 1)
 end
 
 function add_H_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_H_gate(idx_qubit-1)
+    circuit.pyobj.add_H_gate(idx_qubit - 1)
 end
 
 function add_S_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_S_gate(idx_qubit-1)
+    circuit.pyobj.add_S_gate(idx_qubit - 1)
 end
 
 function add_Sdag_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_Sdag_gate(idx_qubit-1)
+    circuit.pyobj.add_Sdag_gate(idx_qubit - 1)
 end
 
 
 function add_CNOT_gate!(circuit::QulacsQuantumCircuit, control::Int, target::Int)
-    circuit.pyobj.add_CNOT_gate(control-1, target-1)
+    circuit.pyobj.add_CNOT_gate(control - 1, target - 1)
 end
 
 function add_RY_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int, angle::Float64)
-    circuit.pyobj.add_RY_gate(idx_qubit-1, angle)
+    circuit.pyobj.add_RY_gate(idx_qubit - 1, angle)
 end
 
 function add_RZ_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int, angle::Float64)
-    circuit.pyobj.add_RZ_gate(idx_qubit-1, angle)
+    circuit.pyobj.add_RZ_gate(idx_qubit - 1, angle)
 end
 
 function add_SWAP_gate!(circuit::QulacsQuantumCircuit, idx_qubit_1::Int, idx_qubit_2::Int)
-    circuit.pyobj.add_SWAP_gate(idx_qubit_1-1, idx_qubit_2-1)
+    circuit.pyobj.add_SWAP_gate(idx_qubit_1 - 1, idx_qubit_2 - 1)
 end
 
-function add_U1_gate!(circuit::QulacsQuantumCircuit,idx_qubit::Int,angle::Float64)
-    circuit.pyobj.add_U1_gate(idx_qubit-1, angle)
+function add_U1_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int, angle::Float64)
+    circuit.pyobj.add_U1_gate(idx_qubit - 1, angle)
 end
-
 
 ################################################################################
 ############################# Quantum Parametric CIRCUIT #######################
 ################################################################################
-struct QulacsParametricQuantumCircuit <: ParametricQuantumCircuit　#QulacsParametricQuantumCircuitはjulia
+
+# ここのデータ構造は、PyObjectになる。
+
+struct QulacsParametricQuantumCircuit <: ParametricQuantumCircuit #QulacsParametricQuantumCircuitはjulia
     pyobj::PyObject
 end
 
+# QulacsParametricQuantumCircuitのインターフェイスを定義する。引数と返り値を定義する。
 function QulacsParametricQuantumCircuit(n_qubit::Int)
     QulacsParametricQuantumCircuit(qulacs.ParametricQuantumCircuit(n_qubit))
 end
@@ -83,7 +87,7 @@ function set_parameter!(circuit::QulacsParametricQuantumCircuit, index, theta)
     if index <= 0 || index > get_parameter_count(circuit)
         error("index is out of range!")
     end
-    circuit.pyobj.set_parameter(index-1, theta)
+    circuit.pyobj.set_parameter(index - 1, theta)
 end
 
 #=
@@ -109,51 +113,51 @@ end
 
 function get_parameter(circuit::QulacsParametricQuantumCircuit, idx::Int)
     @assert idx >= 1
-    circuit.pyobj.get_parameter(idx-1)
+    circuit.pyobj.get_parameter(idx - 1)
 end
 
 function add_parametric_RX_gate!(circuit::QulacsParametricQuantumCircuit, i::Int, angle::Float64)
-    circuit.pyobj.add_parametric_RX_gate(i-1, angle)
+    circuit.pyobj.add_parametric_RX_gate(i - 1, angle)
 end
 
 function add_parametric_RY_gate!(circuit::QulacsParametricQuantumCircuit, i::Int, angle::Float64)
-    circuit.pyobj.add_parametric_RY_gate(i-1, angle)
+    circuit.pyobj.add_parametric_RY_gate(i - 1, angle)
 end
 
 function add_parametric_RZ_gate!(circuit::QulacsParametricQuantumCircuit, i::Int, angle::Float64)
-    circuit.pyobj.add_parametric_RZ_gate(i-1, angle)
+    circuit.pyobj.add_parametric_RZ_gate(i - 1, angle)
 end
 
 function add_S_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_S_gate(idx_qubit-1)
+    circuit.pyobj.add_S_gate(idx_qubit - 1)
 end
 
 function add_Sdag_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_Sdag_gate(idx_qubit-1)
+    circuit.pyobj.add_Sdag_gate(idx_qubit - 1)
 end
 
 function add_Z_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_Z_gate(idx_qubit-1)
+    circuit.pyobj.add_Z_gate(idx_qubit - 1)
 end
 
 function add_X_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
-    circuit.pyobj.add_X_gate(idx_qubit-1)
+    circuit.pyobj.add_X_gate(idx_qubit - 1)
 end
 
 function add_CNOT_gate!(circuit::QulacsParametricQuantumCircuit, control::Int, target::Int)
-    circuit.pyobj.add_CNOT_gate(control-1, target-1)
+    circuit.pyobj.add_CNOT_gate(control - 1, target - 1)
 end
 
 function add_RY_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int, angle::Float64)
-    circuit.pyobj.add_RY_gate(idx_qubit-1, angle)
+    circuit.pyobj.add_RY_gate(idx_qubit - 1, angle)
 end
 
 function add_RZ_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int, angle::Float64)
-    circuit.pyobj.add_RZ_gate(idx_qubit-1, angle)
+    circuit.pyobj.add_RZ_gate(idx_qubit - 1, angle)
 end
 
-function add_U1_gate!(circuit::QulacsParametricQuantumCircuit,idx_qubit::Int,angle::Float64)
-    circuit.pyobj.add_U1_gate(idx_qubit-1, angle)
+function add_U1_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int, angle::Float64)
+    circuit.pyobj.add_U1_gate(idx_qubit - 1, angle)
 end
 
 
@@ -205,9 +209,6 @@ function update_quantum_state!(ucccirc::VariationalQuantumCircuit, state::Quantu
     # do something
 end
 
-
-
-
 """
 Wrap a QulacsParametricQuantumCircuit object, which will not be copied.
 """
@@ -224,8 +225,6 @@ end
 struct MyFamily
     members::Vector{Goma}
 end
-
-
 =#
 
 """
@@ -242,7 +241,7 @@ end
 
 function get_thetas(circuit::QulacsVariationalQuantumCircuit)::Vector{Float64}
     return Float64[get_parameter(circuit.qcircuit, i)
-        for i in 1:get_parameter_count(circuit.qcircuit)]
+                   for i in 1:get_parameter_count(circuit.qcircuit)]
 end
 
 function update_circuit_param!(circuit::QulacsVariationalQuantumCircuit, thetas::Vector{Float64})
@@ -257,7 +256,7 @@ end
 
 
 function add_parametric_RY_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, angle::Float64)
-    circuit.qcircuit.add_parametric_RY_gate(i-1, angle)
+    circuit.qcircuit.add_parametric_RY_gate(i - 1, angle)
 end
 
 #function add_parametric_RZ_gate!(circuit::QulacsParametricQuantumCircuit, i::Int, angle::Float64)
