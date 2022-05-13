@@ -7,7 +7,6 @@
 
 module load openmpi/3.1.5/gcc-9.3.0
 
-export OMP_NUM_THREADS=1
 echo $OMP_NUM_THREADS > output-np$SLURM_NTASKS
 echo $SLURM_NTASKS >> output-np$SLURM_NTAsSKS
 julia --version >> output-np$SLURM_NTASKS
