@@ -173,7 +173,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
             #Doubles
             for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
                 for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
-                    if conserv_Sz_doubles && sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
+                    if conserv_Sz_doubles && sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
                         continue
                     end
                     #Spatial Orbital Indices
