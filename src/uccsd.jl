@@ -238,7 +238,7 @@ function uccgsd(
             for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
                 for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
                     if conserv_Sz_doubles &&
-                       sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
+                       sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
                         continue
                     end
                     #Spatial Orbital Indices
@@ -283,7 +283,7 @@ end
 """
 Returns k-ucj circuit.
 """
-function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=4, sparse=true)
+function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=3, sparse=true)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -316,7 +316,7 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=4, sp
         #Doubles
         for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
             for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
-                if conserv_Sz_doubles && mod(sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j], 2) != 0
+                if conserv_Sz_doubles && sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
                     continue
                 end
 
@@ -432,7 +432,7 @@ function sparse_ansatz(
                     #    continue
                     #end
                     if conserv_Sz_doubles &&
-                        sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
+                       sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
                         continue
                     end
                     #Spatial Orbital Indices
@@ -448,7 +448,7 @@ function sparse_ansatz(
                     #if in(1, A) == false && in(2, A) == false
                     #    continue
                     #end
-                    if count(i -> (1 <= i <= 2), A) <= 2 #in(1, A) == false && in(2, A) == false
+                    if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
                         #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
                         continue
                     end

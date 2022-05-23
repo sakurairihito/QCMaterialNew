@@ -46,7 +46,7 @@ U = 4.0
 μ = U / 2
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
-Random.seed!(100)
+Random.seed!(90)
 
 
 #Hamiltonian
