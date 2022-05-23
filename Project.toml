@@ -1,7 +1,7 @@
 name = "QCMaterial"
 uuid = "a9cd9503-f9e9-42c1-955f-178e1ea1d76e"
-authors = ["Hiroshi Shinaoka <h.shinaoka@gmail.com> and contributors"]
-version = "0.1.0"
+authors = ["Rihito Sakurai <sakurairihito@gmail.com> and contributors"]
+version = "0.2.0"
 
 [deps]
 ANSIColoredPrinters = "a4c015fc-c6ff-483c-b24f-f7ea428134e9"

@@ -222,8 +222,8 @@ Gfunc_ij_list, norm =  compute_gtau(
     taus,
     d_theta,
     verbose = verbose,
-    algorithm = "vqs",
-    recursive= true
+    algorithm = "direct",
+    recursive= false
 )
 
 Gfunc_ij_list *= sign
