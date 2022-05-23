@@ -9,11 +9,11 @@ struct UCCQuantumCircuit <: VariationalQuantumCircuit
     circuit::ParametricQuantumCircuit
     thetas::Vector{Float64}
     # Vector of (num_term_count::Int64, ioff::Int64, pauli_coeffs::Float64)
-    theta_offsets::Vector{Tuple{Int64, Int64, Vector{Float64}}}
+    theta_offsets::Vector{Tuple{Int64,Int64,Vector{Float64}}}
 end
 
 #function get_n_qubit(circuit::UCCQuantumCircuit)
-    #get_n_qubit(circuit.circuit)
+#get_n_qubit(circuit.circuit)
 #end
 
 function num_theta(circuit::UCCQuantumCircuit)
@@ -45,7 +45,7 @@ function Base.copy(uc::UCCQuantumCircuit)
 end
 
 function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit,
-    generator::QubitOperator, theta::Float64) 
+    generator::QubitOperator, theta::Float64)
     pauli_coeffs = Float64[]
     for (pauli_str, pauli_coef) in terms_dict(generator)
         pauli_index_list, pauli_id_list = parse_pauli_str(pauli_str)
@@ -59,7 +59,7 @@ function add_parametric_circuit_using_generator!(circuit::UCCQuantumCircuit,
         pauli_coef = imag(pauli_coef) #coef should be pure imaginary
         push!(pauli_coeffs, pauli_coef)
         add_parametric_multi_Pauli_rotation_gate!(
-            circuit.circuit, pauli_index_list, pauli_id_list, pauli_coef*theta)
+            circuit.circuit, pauli_index_list, pauli_id_list, pauli_coef * theta)
     end
     if length(pauli_coeffs) == 0
         return
@@ -85,7 +85,7 @@ function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float6
         for ioff in 1:num_pauli(circuit, idx)
             pauli_coef = pauli_coeff(circuit, idx, ioff)
             set_parameter!(circuit.circuit,
-                theta_offset(circuit, idx)+ioff, theta*pauli_coef) 
+                theta_offset(circuit, idx) + ioff, theta * pauli_coef)
         end
     end
     circuit.thetas .= thetas
@@ -117,16 +117,16 @@ Generate pair dobule excitations
 """
 function gen_p_t2(aa, ia, ab, ib)
     generator = FermionOperator([
-        (aa, 1),
-        (ab, 1),
-        (ib, 0),
-        (ia, 0)],
+            (aa, 1),
+            (ab, 1),
+            (ib, 0),
+            (ia, 0)],
         1.0)
     generator += FermionOperator([
-        (ia, 1),
-        (ib, 1),
-        (ab, 0),
-        (aa, 0)],
+            (ia, 1),
+            (ib, 1),
+            (ab, 0),
+            (aa, 0)],
         -1.0)
     jordan_wigner(generator)
 end
@@ -135,7 +135,7 @@ end
 """
 Returns UCCGSD circuit.
 """
-function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true, Doubles=true, uccgsd = true, p_uccgsd=false)
+function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, conserv_Sz_singles=true, Doubles=true, uccgsd=true, p_uccgsd=false)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -169,7 +169,7 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
     end
 
     if Doubles
-        if uccgsd  
+        if uccgsd
             #Doubles
             for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
                 for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
@@ -182,11 +182,11 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
                     bb = so_idx(b, spin_b)
                     jb = so_idx(j, spin_j)
                     #perform loop only if ia>jb && aa>bb               
-                　
-                    if aa<=bb || ia <= jb
+
+                    if aa <= bb || ia <= jb
                         continue
                     end
-                         
+
                     #t2 operator
                     generator = gen_p_t2(aa, ia, bb, jb)
                     #Add p-t2 into the circuit
@@ -198,11 +198,11 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
         if p_uccgsd
             spin_a = 1
             spin_b = 2
-            for (a,i) in Iterators.product(1:norb, 1:norb)
+            for (a, i) in Iterators.product(1:norb, 1:norb)
                 aa = so_idx(a, spin_a)
                 ia = so_idx(i, spin_a)
                 bb = so_idx(a, spin_b)
-                jb = so_idx(i, spin_b)  
+                jb = so_idx(i, spin_b)
 
                 generator = gen_p_t2(aa, ia, bb, jb)
                 #Add p-t2 into the circuit
@@ -212,8 +212,8 @@ function uccgsd(n_qubit; nocc=-1, orbital_rot=false, conserv_Sz_doubles=true, co
     end
 
     circuit
-end 
-    
+end
+
 
 
 

@@ -61,6 +61,7 @@ function compute_B(
                 thetas_j2 = copy(thetas)
                 thetas_j2[j] -= delta_theta
                 B[i, j] -= real(
+<<<<<<< HEAD
                     (
                         (
                             overlap(vc, state0, thetas_i, thetas) -
@@ -72,6 +73,15 @@ function compute_B(
                             overlap(vc, state0, thetas, thetas_j2)
                         ) / 2 * delta_theta
                     ),
+=======
+                    ((overlap(vc, state0, thetas_i, thetas)
+                      -
+                      overlap(vc, state0, thetas_i2, thetas)) / 2 * delta_theta)
+                    *
+                    ((overlap(vc, state0, thetas, thetas_j)
+                      -
+                      overlap(vc, state0, thetas, thetas_j2)) / 2 * delta_theta)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
                 )
                 B[j, i] = B[i, j]
             end
@@ -85,12 +95,16 @@ function compute_B(
     end
 end
 
+<<<<<<< HEAD
 function diff_state(
     vc::VariationalQuantumCircuit,
     state0::QulacsQuantumState,
     thetas,
     thetas_delta,
 )
+=======
+function diff_state(vc::VariationalQuantumCircuit, state0::QulacsQuantumState, thetas, thetas_delta)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     circ_tmp = copy(vc)
     update_circuit_param!(circ_tmp, thetas)
     state_tmp = copy(state0)
@@ -182,12 +196,18 @@ function compute_B2(
                 thetas_j2 = copy(thetas)
                 thetas_j2[j] -= delta_theta
 
+<<<<<<< HEAD
                 B_right = (
                     (
                         overlap(vc, state0, thetas, thetas_j) -
                         overlap(vc, state0, thetas, thetas)
                     ) / delta_theta
                 )
+=======
+                B_right = ((overlap(vc, state0, thetas, thetas_j)
+                            -
+                            overlap(vc, state0, thetas, thetas)) / delta_theta)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
                 println("B_right_$i$j=", B_right)
                 B_left = B_right'
                 println("B_left_$i$j=", B_left)
@@ -235,6 +255,7 @@ function compute_F(
                 thetas_j[j] += delta_theta
                 thetas_j2 = copy(thetas)
                 thetas_j2[j] -= delta_theta
+<<<<<<< HEAD
                 F[i, j] =
                     real(
                         overlap(vc, state0, thetas_i, thetas_j) -
@@ -254,6 +275,25 @@ function compute_F(
                             overlap(vc, state0, thetas, thetas_j2)
                         ) / 2 * delta_theta
                     ),
+=======
+                F[i, j] = real(
+                    overlap(vc, state0, thetas_i, thetas_j)
+                    -
+                    overlap(vc, state0, thetas_i, thetas,)
+                    -
+                    overlap(vc, state0, thetas, thetas_j)
+                    +
+                    overlap(vc, state0, thetas, thetas,)
+                ) / delta_theta^2
+                F[i, j] -= real(
+                    ((overlap(vc, state0, thetas_i, thetas)
+                      -
+                      overlap(vc, state0, thetas_i2, thetas)) / 2 * delta_theta)
+                    *
+                    ((overlap(vc, state0, thetas, thetas_j)
+                      -
+                      overlap(vc, state0, thetas, thetas_j2)) / 2 * delta_theta)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
                 )
                 #    F[i,j] -= real(
                 #     ((overlap(vc, state0, thetas_i, thetas)
@@ -307,6 +347,7 @@ function compute_B3(
                 thetas_j = copy(thetas)
                 thetas_j[j] += delta_theta
                 B[i, j] = (
+<<<<<<< HEAD
                     (
                         overlap(vc, state0, thetas_i, thetas) -
                         overlap(vc, state0, thetas, thetas)
@@ -315,6 +356,16 @@ function compute_B3(
                         overlap(vc, state0, thetas, thetas)
                     ) / delta_theta^2
                 )
+=======
+                    (overlap(vc, state0, thetas_i, thetas)
+                     -
+                     overlap(vc, state0, thetas, thetas)) *
+                    (overlap(vc, state0, thetas, thetas_j)
+                     -
+                     overlap(vc, state0, thetas, thetas))
+                    /
+                    delta_theta^2)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
                 B[j, i] = B[i, j]
             end
             idx += 1
@@ -353,6 +404,7 @@ function compute_A(
             if local_start <= idx < local_start + local_size
                 thetas_j = copy(thetas)
                 thetas_j[j] += delta_theta
+<<<<<<< HEAD
                 A[i, j] =
                     real(
                         overlap(vc, state0, thetas_i, thetas_j) -
@@ -360,6 +412,17 @@ function compute_A(
                         overlap(vc, state0, thetas, thetas_j) +
                         overlap(vc, state0, thetas, thetas),
                     ) / delta_theta^2
+=======
+                A[i, j] = real(
+                    overlap(vc, state0, thetas_i, thetas_j)
+                    -
+                    overlap(vc, state0, thetas_i, thetas,)
+                    -
+                    overlap(vc, state0, thetas, thetas_j)
+                    +
+                    overlap(vc, state0, thetas, thetas,)
+                ) / delta_theta^2
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
                 A[j, i] = A[i, j]
             end
             idx += 1
@@ -406,6 +469,7 @@ function transition(
 end
 
 
+<<<<<<< HEAD
 function compute_C(
     op::OFQubitOperator,
     vc::VariationalQuantumCircuit,
@@ -413,6 +477,10 @@ function compute_C(
     delta_theta = 1e-8;
     comm = MPI_COMM_WORLD,
 )
+=======
+function compute_C(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, delta_theta=1e-8; comm=MPI_COMM_WORLD)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     if is_mpi_on && comm === nothing
         error("comm must be given whn mpi is one!")
     end
@@ -428,11 +496,19 @@ function compute_C(
         thetas_i2 = copy(thetas)
         thetas_i2[i] -= delta_theta
 
+<<<<<<< HEAD
         C[i] =
             -real(
                 transition(op, vc, state0, thetas, thetas_i) -
                 transition(op, vc, state0, thetas, thetas_i2),
             ) / (2 * delta_theta)
+=======
+        C[i] = -real(
+            transition(op, vc, state0, thetas, thetas_i)
+            -
+            transition(op, vc, state0, thetas, thetas_i2)
+        ) / (2 * delta_theta)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     end
     if comm === nothing
         return C
@@ -460,6 +536,7 @@ end
 
 "Improved VQS"
 
+<<<<<<< HEAD
 function compute_next_thetas_direct(
     op::OFQubitOperator,
     vc::VariationalQuantumCircuit,
@@ -469,6 +546,11 @@ function compute_next_thetas_direct(
     maxiter = 100,
     gtol = 1e-5,
     verbose = true,
+=======
+function compute_next_thetas_direct(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau;
+    comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5, verbose=true
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
 )
 
     state_tau = copy(state0)
@@ -522,6 +604,7 @@ function _expval(vc, state0, thetas, op)
     return get_expectation_value(op, state)
 end
 
+<<<<<<< HEAD
 function compute_next_thetas_safe(
     op::OFQubitOperator,
     vc::VariationalQuantumCircuit,
@@ -549,6 +632,17 @@ function compute_next_thetas_safe(
             gtol = gtol,
             verbose = verbose,
         )
+=======
+function compute_next_thetas_safe(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau, tau::Float64;
+    algorithm="direct", comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5, delta_theta=1e-8,
+    verbose=true, max_recursion=10)
+
+    Etau = _expval(vc, state0, get_thetas(vc), op)
+    if algorithm == "direct"
+        thetas_next = compute_next_thetas_direct(op, vc, state0, dtau,
+            comm=comm, maxiter=maxiter, gtol=gtol, verbose=verbose)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     else
         thetas_next = compute_next_thetas_vqs(
             op,
@@ -578,6 +672,7 @@ function compute_next_thetas_safe(
     if verbose
         println("Falling back to recursive model with max_recursion = $(max_recursion)")
     end
+<<<<<<< HEAD
     thetas_next1 = compute_next_thetas_safe(
         op,
         vc,
@@ -629,6 +724,24 @@ function compute_next_thetas_unsafe(
             gtol = gtol,
             verbose = verbose,
         )
+=======
+    thetas_next1 = compute_next_thetas_safe(op, vc, state0, 0.5 * dtau, tau,
+        comm=comm, maxiter=maxiter, gtol=gtol, verbose=verbose, max_recursion=max_recursion - 1)
+    vc_ = copy(vc)
+    update_circuit_param!(vc_, thetas_next1)
+    return compute_next_thetas_safe(op, vc_, state0, 0.5 * dtau, tau + 0.5 * dtau,
+        comm=comm, maxiter=maxiter, gtol=gtol, verbose=verbose, max_recursion=max_recursion - 1)
+end
+
+function compute_next_thetas_unsafe(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, dtau;
+    algorithm="direct", comm=MPI_COMM_WORLD, maxiter=100, gtol=1e-5, delta_theta=1e-8,
+    verbose=true
+)
+    if algorithm == "direct"
+        thetas_next = compute_next_thetas_direct(op, vc, state0, dtau,
+            comm=comm, maxiter=maxiter, gtol=gtol, verbose=verbose)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     else
         thetas_next = compute_next_thetas_vqs(
             op,
@@ -648,6 +761,7 @@ end
 Compute thetadot = A^(-1) C
 """
 
+<<<<<<< HEAD
 function compute_thetadot(
     op::OFQubitOperator,
     vc::VariationalQuantumCircuit,
@@ -656,6 +770,10 @@ function compute_thetadot(
     comm = MPI_COMM_WORLD,
     verbose = false,
 )
+=======
+function compute_thetadot(op::OFQubitOperator, vc::VariationalQuantumCircuit,
+    state0::QulacsQuantumState, delta_theta=1e-8; comm=MPI_COMM_WORLD, verbose=false)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
@@ -666,15 +784,26 @@ function compute_thetadot(
     t2 = time_ns()
 
     #gausiann noise
+<<<<<<< HEAD
     for j = 1:num_thetas
         for i = 1:num_thetas
             A[i, j] = A[i, j] + A[i, j] * randn(Float64) * 100
+=======
+    for j in 1:num_thetas
+        for i in 1:num_thetas
+            A[i, j] = A[i, j] + A[i, j] * randn(Float64) * 1e-1
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
         end
     end
 
     #gausiann noise
+<<<<<<< HEAD
     for i = 1:num_thetas
         C[i] = C[i] + C[i] * randn(Float64) * 100
+=======
+    for i in 1:num_thetas
+        C[i] = C[i] + C[i] * randn(Float64) * 1e-1
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     end
 
     # 今並列計算を実行している。各プロセスで違う乱数がよばれている可能性や変なバグなどがあるかもしれないのでroot=0の値を書くプロセスにブロードキャストして合わせる必要がある。
@@ -719,6 +848,7 @@ taus:
 return:
     list of variational parameters at the given imaginary times.
 """
+<<<<<<< HEAD
 function imag_time_evolve(
     ham_op::OFQubitOperator,
     vc::VariationalQuantumCircuit,
@@ -730,6 +860,11 @@ function imag_time_evolve(
     algorithm::String = "direct",
     tol_dE_dtau = 1e-5,
     recursive = true,
+=======
+function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit, state0::QulacsQuantumState,
+    taus::Vector{Float64}, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct", tol_dE_dtau=1e-5, recursive=true
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
 )::Tuple{Vector{Vector{Float64}},Vector{Float64}}
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -794,6 +929,7 @@ function imag_time_evolve(
         else
             vc_ = copy(vc)
             update_circuit_param!(vc_, thetas_tau[i])
+<<<<<<< HEAD
             thetas_next_ = compute_next_thetas_unsafe(
                 ham_op,
                 vc_,
@@ -804,6 +940,10 @@ function imag_time_evolve(
                 delta_theta = delta_theta,
                 verbose = verbose,
             )
+=======
+            thetas_next_ = compute_next_thetas_unsafe(ham_op, vc_, state0, dtau,
+                algorithm=algorithm, comm=comm, delta_theta=delta_theta, verbose=verbose)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
             Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
             push!(thetas_tau, thetas_next_)
 
@@ -859,12 +999,17 @@ function compute_gtau(
     vc_ex::VariationalQuantumCircuit,
     state_gs::QulacsQuantumState,
     state0_ex::QulacsQuantumState,
+<<<<<<< HEAD
     taus::Vector{Float64},
     delta_theta = 1e-8;
     comm = MPI_COMM_WORLD,
     verbose = false,
     algorithm::String = "direct",
     recursive = true,
+=======
+    taus::Vector{Float64}, delta_theta=1e-8;
+    comm=MPI_COMM_WORLD, verbose=false, algorithm::String="direct", recursive=true
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
 )
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -882,12 +1027,20 @@ function compute_gtau(
         println("Applying to an operator to the ket...")
     end
     circuit_right_ex = copy(vc_ex)
+<<<<<<< HEAD
     right_squared_norm = apply_qubit_op!(
         right_op,
         state_gs,
         circuit_right_ex,
         state0_ex,
         minimizer = mk_scipy_minimize(options = Dict("disp" => verbose), verbose = verbose),
+=======
+    right_squared_norm = apply_qubit_op!(right_op, state_gs,
+        circuit_right_ex, state0_ex,
+        minimizer=mk_scipy_minimize(
+            options=Dict("disp" => verbose),
+            verbose=verbose)
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     )
     state_right_ex = copy(state0_ex)
     update_quantum_state!(circuit_right_ex, state_right_ex)
@@ -937,12 +1090,16 @@ function compute_gtau(
         g_im = get_transition_amplitude(op_im, state_left, state_right)
         #基底エネルギーを基準にする。
         push!(norm, exp(log_norm_tau_right[t] + E_gs * taus[t]))
+<<<<<<< HEAD
         push!(
             Gfunc_ij_list,
             -(g_re + im * g_im) *
             right_squared_norm *
             exp(log_norm_tau_right[t] + E_gs * taus[t]),
         )
+=======
+        push!(Gfunc_ij_list, -(g_re + im * g_im) * right_squared_norm * exp(log_norm_tau_right[t] + E_gs * taus[t]))
+>>>>>>> 0e3041d02a0b4cdb040c5dc64908a07de7c0e903
     end
     Gfunc_ij_list, norm
 end
