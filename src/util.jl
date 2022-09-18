@@ -102,7 +102,7 @@ end
 """
 Generates parallelized numerical grad_cost
 """
-function generate_numerical_grad(f; verbose=false, comm=MPI_COMM_WORLD)
+function generate_numerical_grad(f; verbose=true, comm=MPI_COMM_WORLD)
     function grad(x)
         t1 = time_ns()
         if comm === nothing

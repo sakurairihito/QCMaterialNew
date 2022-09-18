@@ -4,7 +4,7 @@ export num_theta,
     theta_offset,
     UCCQuantumCircuit,
     add_parametric_circuit_using_generator!
-export update_circuit_param!, update_quantum_state!, gen_t1, gen_p_t2
+export update_circuit_param!, update_quantum_state!, gen_t1, gen_p_t2, gen_t1_kucj
 export uccgsd
 export gen_t2_kucj, kucj, kucj2, gen_t2_kucj_2
 export sparse_ansatz
@@ -54,7 +54,7 @@ end
 function add_parametric_circuit_using_generator!(
     circuit::UCCQuantumCircuit,
     generator::QubitOperator,
-    theta::Float64,
+    theta::Float64;
 )
     pauli_coeffs = Float64[]
     #println("terms_dict(generator)=", terms_dict(generator))
@@ -65,13 +65,16 @@ function add_parametric_circuit_using_generator!(
         if !all(1 .<= pauli_index_list)
             error("Pauli indies are out of range!")
         end
+
         if length(pauli_index_list) == 0
             continue
         end
-        #println(pauli_str, pauli_coef)
-        pauli_coef = imag(pauli_coef) #coef should be pure imaginary
-        #println("pauli_coeff=", pauli_coeff)
+        # println(pauli_str, pauli_coef)
+        pauli_coef = imag(pauli_coef) 
+        # coef should be pure imaginary
+        # println("pauli_coeff=", pauli_coeff)
         push!(pauli_coeffs, pauli_coef)
+        
         add_parametric_multi_Pauli_rotation_gate!(
             circuit.circuit,
             pauli_index_list,
@@ -87,22 +90,44 @@ function add_parametric_circuit_using_generator!(
         #    )
         #)
     end
-    if length(pauli_coeffs) == 0
+    if length(pauli_coeffs) == 0 # isempty(pauli_coeffs) が true とな
         return
+        # return parameterinfo
     end
+    
     num_thetas = num_theta(circuit)
+    # print the position of all the parameters
+    println("position of theta=", num_thetas)
+    
+    push!(parameterinfo, ("x", num_thetas)) # この "x" どうやって決める？
+
+    #=
+    初回呼び出し Method1
+    julia> parameterinfo = Tuple{String,Int}[]
+    julia> add_parametric_circuit_using_generator!(args..., ;parameterinfo)
+    julia> @show parameterinfo # 何か入ってればOK
+
+    初回呼び出し Method2
+    julia> parameterinfo = add_parametric_circuit_using_generator!(args...,)
+    julia> push!(parametricinfo_hairetu, parametricinfo)
+    julia> @show parameterinfo_hairetu # 何か入ってればOK
+    =#
+    #dic = Dict()
+    #dic["a"] = num_thetas
+    
     ioff =
         num_thetas == 0 ? 0 :
         theta_offset(circuit, num_thetas) + num_pauli(circuit, num_thetas)
     push!(circuit.thetas, theta)
+    # push!(circuit.theta)
     push!(circuit.theta_offsets, (get_term_count(generator), ioff, pauli_coeffs))
+    #return parameterinfo #length(circuit.thetas)
 end
 
 """
 Update circuit parameters
 thetas wil be copied.
 """
-
 function update_circuit_param!(circuit::UCCQuantumCircuit, thetas::Vector{Float64})
     if num_theta(circuit) != length(thetas)
         error("Invalid length of thetas!")
@@ -153,6 +178,16 @@ function gen_t1(a, i)
     #-a^\dagger_i a_a (de-exciation)
     generator += FermionOperator([(i, 1), (a, 0)], -1.0)
     #JW-transformation of a^\dagger_a a_i - -a^\dagger_i a_a
+    jordan_wigner(generator)
+end
+
+"""
+Generate single excitations for kucj
+"""
+function gen_t1_kucj(a, i; sgn=1.0)
+    #a^\dagger_a a_i (excitation)
+    generator = FermionOperator([(a, 1), (i, 0)], sgn)
+    # JW-transformation of a^\dagger_a a_i = 
     jordan_wigner(generator)
 end
 
@@ -215,7 +250,7 @@ function uccgsd(
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     sz = [1, -1]
-
+    parameterinfo = []
     # Singles
     for (a_spatial, i_spatial) in (Iterators.product(cr_range, anh_range))
         for ispin1 = 1:2, ispin2 = 1:2
@@ -228,7 +263,14 @@ function uccgsd(
             #t1 operator
             generator = gen_t1(a_spin_orbital, i_spin_orbital)
             #Add t1 into the circuit
-            add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+            #parameterinfo = add~
+            # 
+            #add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+            #a = (a_spin_orbital, i_spin_orbital) => length(circuit.thetas) # Pair という型があるよ
+            # Dict("a"=>1)
+            #a = Dict([("a_spin_orbital+i_spin_orbital", length(circuit.thetas))])
+            #push!(parameterinfo, a)
+            
         end
     end
 
@@ -283,7 +325,7 @@ end
 """
 Returns k-ucj circuit.
 """
-function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=3, sparse=true)
+function kucj(n_qubit; conserv_Sz_doubles=true, k=1, sparse=true)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -295,23 +337,74 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=3, sp
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     sz = [1, -1]
-
+    
     for i = 1:k
+        parameterinfo = []
         # exp(-K) where K is an orbital rotation operator
         for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-            for ispin1 = 1:2, ispin2 = 1:2
-                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
-                    continue
-                end
+            for ispin1 = 1:2
+                #if conserv_Sz_singles 
+                #    continue
+                #end
                 #Spatial Orbital Indices
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                i_spin_orbital = so_idx(i_spatial, ispin2)
+                # 
+                a_spin_orbital = so_idx(a_spatial, ispin1) #a_spatial => p, #a_spatial=1, ispin1=1, res= 1
+                i_spin_orbital = so_idx(i_spatial, ispin1) #i_spatial => q, #i_spatial=2, ispin1=1, res= 3
+
+                #a_spin_orbital = 1
+                #i_spin_orbital = 3
+
+                #a_spin_orbital = 3
+                #i_spin_orbital = 1
                 #t1 operator
-                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+                generator = gen_t1_kucj(a_spin_orbital, i_spin_orbital, sgn=-1.0)
                 #Add t1 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, -0.0)
+
+                add_parametric_circuit_using_generator!(circuit, generator, 0.0) # 回転角度をマイナスをしたい！generatorにマイナス符号をつける
+                
+                #a = (a_spin_orbital, i_spin_orbital) => length(circuit.thetas) # Pair という型がある
+                a = (a_spin_orbital, i_spin_orbital) => num_theta(circuit) 
+                
+                #=
+                paraminfo = []
+                ref_orbits = []
+                for (a, i) in [(1, 2), (1, 3), (2, 3)]
+                    push!(ref_orbits, (a, i))
+                    add_parametric_circuit_using_generator!（てきとーな儀式）
+                    # circuit.thetas が作られる
+                    memo = (a, i) => num_theta(circuit)
+                    push!(paraminfo, memo)
+                end
+
+                # この時点で paraminfo は
+                # [(1, 2) => 1), (1, 3) => 2), (2, 3) => 3)]
+
+                for (a, i) in [(2, 1), (3, 1), (3, 2)]
+                    mukasi_a = i # 1 if i == 1
+                    mukasi_i = a # 2 if a == 2
+                    add_parametric_circuit_using_generator!（てきとーな儀式）
+                    # circuit.thetas が作られる
+                    push!(paraminfo, ((mukasi_a, mukasi_i) =>  num_theta(circuit))
+                end
+
+                # この時点で paraminfo は
+                # [(1, 2) => 1), (1, 3) => 2) (2, 3) => 3), (1, 2) => 4), (1, 3) => 5), (2, 3) => 6)]
+                update(paraminfo) を実行
+                # [(1, 2) => 1), (1, 3) => 2) (2, 3) => 3), (1, 2) => 1), (1, 3) => 2), (2, 3) => 3)]
+                # if possible
+                # [(1, 2) => 1), (1, 3) => 2) (2, 3) => 3), (2, 1) => 1), (3, 1) => 2), (3, 2) => 3)]
+                =#
+
+                # Dict("a"=>1)
+                #a = Dict([("a_spin_orbital+i_spin_orbital", length(circuit.thetas))])
+                push!(parameterinfo, a)
             end
         end
+        
+        #parameter_position = Dict(parameterinfo)
+        # spin2length = Dict(parameterinfo)
+        # v12 = spin2length[(1,2)]
+        # v13 = spin2length[(1,3)]
 
         #Doubles
         for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
@@ -330,15 +423,16 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=3, sp
                 if aa <= bb || ia <= jb
                     continue
                 end
+
                 #perform loop only if aa=ia && bb=jb
                 if aa != ia || bb != jb
                     continue
                 end
 
-                A = [aa ia bb jb]
-                if sparse && in(1, A) == false && in(2, A) == false
-                    continue
-                end
+                #A = [aa ia bb jb]
+                #if sparse && in(1, A) == false && in(2, A) == false
+                #    continue
+                #end
                 #if sparse && 
                 #t2 operator
                 generator = gen_t2_kucj_2(aa, ia, bb, jb)
@@ -356,26 +450,32 @@ function kucj(n_qubit; conserv_Sz_singles=true, conserv_Sz_doubles=true, k=3, sp
 
         # exp(K) where K is an orbital rotation operator
         for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-            for ispin1 = 1:2, ispin2 = 1:2
-                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
-                    continue
-                end
+            for ispin1 = 1:2
                 #Spatial Orbital Indices
                 a_spin_orbital = so_idx(a_spatial, ispin1)
-                i_spin_orbital = so_idx(i_spatial, ispin2)
+                i_spin_orbital = so_idx(i_spatial, ispin1)
                 #t1 operator
-                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+                generator = gen_t1_kucj(a_spin_orbital, i_spin_orbital)
                 #Add t1 into the circuit
+                # ((1,2), 1), ((1,3),2),,,,,, ((1,2), 100->1), ((1,3), 101->2)
                 add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                #parameter_position = parameter_position[(a_spin_orbital, i_spin_orbital)]
+                # 
+                b = (a_spin_orbital, i_spin_orbital) => num_theta(circuit) 
+                # ((1,2), 1), ((1,3), 2), ((1,2), 3), ((1,3), 4)
+                # thetas = [1.2, 1.3, -1.3, 0.2]
+                # ((1,2), 1.2),((1,3), 1.3), ()
+                # => thetas_after = [1.2, 1.3,1.2, 1.3]
+                push!(parameterinfo, b)
+                #circuit.thetas[end] = parameter_position
+                #parameter position = spin2length[(a_spin_orbital, i_spin_orbital)]
+                #v13 = spin2length[(1,3)]
             end
         end
     end
     println("num_thetas=", num_theta(circuit))
     circuit
 end
-
-
-
 
 """
 Returns sparse circuit based on impurity model.
