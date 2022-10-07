@@ -1,5 +1,5 @@
 export topylist, doublefunc, numerical_grad
-export up_index, down_index, update_circuit_param!, update_quantum_state!
+export up_index, down_index, update_circuit_param!, update_quantum_state!, ParamInfo, expand 
 using PyCall
 
 function count_qubit_in_qubit_operator(op)
@@ -24,6 +24,7 @@ Args:
 Returns:
     :class:`qulacs.Observable`
 """
+
 function convert_openfermion_op(n_qubit, openfermion_op)
     ret = qulacs.Observable(n_qubit)
     for (pauli_product, coef) in openfermion_op.terms
@@ -48,8 +49,6 @@ function topylist(array::Array{T}) where T
     end
     pylist
 end
-
-
 
 """
 Compute partial derivative of a given function at a point x
@@ -144,3 +143,37 @@ end
 
 
 
+
+
+struct ParamInfo
+    nparam::Int  # Number of unique parameters
+    nparamlong::Int # Number of all parameters
+    mapping::Vector{Int}
+
+    function ParamInfo(ukeys)
+        d = Dict()
+        mapping = Vector(undef, length(ukeys))
+        for (i, k) in enumerate(ukeys)
+            if k ∈ keys(d)
+                mapping[i] = d[k]
+                #@show i
+                #@show mapping
+            else 
+                mapping[i] = length(d) + 1
+                d[k] = length(d) + 1
+                #@show mapping
+                #@show i
+            end
+        end
+        new(length(d), length(ukeys), mapping)
+    end
+end
+
+
+function expand(p::ParamInfo, θunique)
+    θlong = Vector{Float64}(undef, p.nparamlong)
+    for i in eachindex(θlong)
+        θlong[i] = θunique[p.mapping[i]]
+    end
+    return θlong
+end

@@ -169,7 +169,7 @@ function rm_identity(op::OFQubitOperator)
     for (k, v) in op.pyobj.terms
         #println("k_before=", k)
         if k == ()
-            println("k == () is true")
+            #println("k == () is true")
             #@show k
             continue
         end

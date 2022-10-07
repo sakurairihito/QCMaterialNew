@@ -49,3 +49,27 @@ end
     x = QCMaterial.tikhonov(y, A, 1e-15)
     @test y ≈ A * x 
 end
+
+@testset "util.ParamInfo" begin
+    ukeys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
+    pinfo = ParamInfo(ukeys)
+    @test pinfo.nparam == 4
+    @test pinfo.nparamlong == 8
+    @test pinfo.mapping == [1, 2, 3, 3, 4, 4, 1, 2]
+end
+
+@testset "expand" begin
+    ukeys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
+    pinfo = ParamInfo(ukeys)
+    θunique = [-1.0, -2.0, -3.0, -4.0]
+    theta_expand = expand(pinfo, θunique)
+    @test theta_expand == [-1.0, -2.0, -3.0, -3.0, -4.0, -4.0, -1.0, -2.0]
+end
+
+@testset "expand_code" begin
+    ukeys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
+    pinfo = ParamInfo(ukeys)
+    θunique = [-1.0, -2.0, -3.0, -4.0]
+    theta_expand = expand(θunique)
+    @test theta_expand == [-1.0, -2.0, -3.0, -3.0, -4.0, -4.0, -1.0, -2.0]
+end

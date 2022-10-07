@@ -62,13 +62,13 @@ end
 nsite = 4
 n_qubit = 2 * nsite
 U = 4.0
+#U = 0.0
 μ = U / 2
 V = 0.1
 ε = [0.0, -1.0, 0.0, 1.0]
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
 Random.seed!(90)
-
 
 #Hamiltonian
 #ham_op1 = generate_impurity_ham_with_1imp_3bath_dmft(U, μ, nsite)
@@ -82,17 +82,20 @@ count_eigvalmin = count(enes_ed.==EigVal_min)
 println("Count_Ground_energy=", count_eigvalmin)
 println("Ground energy=", EigVal_min)
 
-
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
-vc = kucj(n_qubit)
-#depth = n_qubit*2
-#vc = hev(n_qubit, depth)
-theta_init = rand(num_theta(vc))
+#vc, parameterinfo = kucj(n_qubit, ucj=false)
+vc, parameterinfo = kucj(n_qubit, k=2)
+
+pinfo = QCMaterial.ParamInfo(parameterinfo)
+println("θ_unique length=", pinfo.nparam)
+println("θ_long length=", pinfo.nparamlong)
+println("θunique = rand(pinfo.nparam)", rand(pinfo.nparam))
+theta_init = rand(pinfo.nparam)
 
 #Perform VQE
 cost_history, thetas_opt =
-    QCMaterial.solve_gs(jordan_wigner(ham_op1), vc, state0, theta_init=theta_init, verbose=true,
+    QCMaterial.solve_gs_kucj(jordan_wigner(ham_op1), vc, state0, parameterinfo, theta_init=theta_init, verbose=true,
         comm=QCMaterial.MPI_COMM_WORLD
     )
 
