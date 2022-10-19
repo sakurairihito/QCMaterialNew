@@ -8,7 +8,7 @@ Compute ground state
 """
 
 function solve_gs(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, state0::QuantumState;
-    theta_init=nothing, comm=MPI_COMM_WORLD, maxiter=200, gtol=1e-5, verbose=false)
+    theta_init=nothing, comm=MPI_COMM_WORLD, maxiter=200, gtol=1e-7, verbose=false)
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
@@ -67,7 +67,7 @@ end
 
 
 function solve_gs_kucj(ham_qubit::QubitOperator, circuit::VariationalQuantumCircuit, state0::QuantumState, keys;
-    theta_init=nothing, comm=MPI_COMM_WORLD, maxiter=200, gtol=1e-5, verbose=false)
+    theta_init=nothing, comm=MPI_COMM_WORLD, maxiter=300, gtol=1e-7, verbose=false)
     # theta_init => theta_unique (compact parameters) 
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")

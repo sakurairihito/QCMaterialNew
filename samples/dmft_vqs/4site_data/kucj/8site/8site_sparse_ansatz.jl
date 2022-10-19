@@ -35,12 +35,12 @@ function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::F
 end
 
 #beta = 1000 (T=0.001)
-nsite = 4
+nsite = 8
 n_qubit = 2 * nsite
 U = 4.0
 μ = U / 2
-V = 0.5
-ε = [0.0, -1.0, 0.0, 1.0]
+V = 0.9
+ε = [0.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
 Random.seed!(90)
@@ -49,7 +49,7 @@ Random.seed!(90)
 #Hamiltonian
 #ham_op1 = generate_impurity_ham_with_1imp_3bath_dmft(U, μ, nsite)
 ham_op1 = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε, nsite)
-n_electron_gs = 4
+n_electron_gs = 8
 @assert mod(n_electron_gs, 2) == 0
 sparse_mat = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_gs);
 enes_ed = eigvals(sparse_mat.toarray());

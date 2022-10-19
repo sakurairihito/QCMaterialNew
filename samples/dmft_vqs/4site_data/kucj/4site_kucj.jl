@@ -15,10 +15,10 @@ function hev(n_qubit, depth)
             add_parametric_RZ_gate!(circuit, i, 0.0)
         end
         for i in 1:n_qubit÷2
-            add_CNOT_gate!(circuit, 2*i-1, 2*i)
+            add_CNOT_gate!(circuit, 2 * i - 1, 2 * i)
         end
         for i in 1:n_qubit÷2-1
-            add_CNOT_gate!(circuit, 2*i, 2*i+1)
+            add_CNOT_gate!(circuit, 2 * i, 2 * i + 1)
         end
     end
     for i in 1:n_qubit
@@ -64,7 +64,7 @@ n_qubit = 2 * nsite
 U = 4.0
 #U = 0.0
 μ = U / 2
-V = 0.1
+V = 0.5
 ε = [0.0, -1.0, 0.0, 1.0]
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
@@ -78,20 +78,32 @@ n_electron_gs = 4
 sparse_mat = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_gs);
 enes_ed = eigvals(sparse_mat.toarray());
 EigVal_min = minimum(enes_ed)
-count_eigvalmin = count(enes_ed.==EigVal_min)
+count_eigvalmin = count(enes_ed .== EigVal_min)
 println("Count_Ground_energy=", count_eigvalmin)
 println("Ground energy=", EigVal_min)
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
 #vc, parameterinfo = kucj(n_qubit, ucj=false)
-vc, parameterinfo = kucj(n_qubit, k=2)
+vc, parameterinfo = kucj(n_qubit, k=3, sparse=true)
 
 pinfo = QCMaterial.ParamInfo(parameterinfo)
 println("θ_unique length=", pinfo.nparam)
 println("θ_long length=", pinfo.nparamlong)
 println("θunique = rand(pinfo.nparam)", rand(pinfo.nparam))
 theta_init = rand(pinfo.nparam)
+
+# debug 
+# k=2の層の初期パラメータは0に設定する。
+# k=1の結果と一致するか？
+#for i in 65:80
+#    theta_init[i] = 0.0
+#end
+
+#for i in 65:80
+#    theta_init[i] = randn(1)[1] * 0.1
+#end
+
 
 #Perform VQE
 cost_history, thetas_opt =

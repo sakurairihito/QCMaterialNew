@@ -122,24 +122,16 @@ end
 
     tmpop = OFQubitOperator("", 0.0)
     myop = OFQubitOperator("Z2", 1.0)
-
-end
-
-
-@testset "FermionOperator" begin
-    generator = FermionOperator([(2, 1), (1, 1), (1, 0), (2, 0)], 1.0im)
-    println("generator=", generator)
 end
 
 
 @testset "rm_Identity" begin
     generator = FermionOperator([(2, 1), (1, 1), (1, 0), (2, 0)], 1.0im)
+    @test generator == FermionOperator("2^ 1^ 1 2", 1.0im)
     generator = jordan_wigner(generator)
-    #println("generator=", generator)
-    #println("rm_identity=", rm_identity(generator))
-    #@test rm_identity(generator) == OFQubitOperator(PyObject -0.25j [Z0] +
-    #0.25j [Z0 Z1] +-0.25j [Z1])
+    @test generator == OFQubitOperator("", 0.25im) + OFQubitOperator("Z1", -0.25im) + OFQubitOperator("Z1 Z2", 0.25im) + OFQubitOperator("Z2", -0.25im)
     res = rm_identity(generator)
-    println("dect=", res.pyobj.terms)
+    @test res == OFQubitOperator("Z1", -0.25im) + OFQubitOperator("Z1 Z2", 0.25im) + OFQubitOperator("Z2", -0.25im)
+    @test res.pyobj.terms == Dict{Any,Any}(((0, "Z"),) => 0.0 - 0.25im, ((0, "Z"), (1, "Z")) => 0.0 + 0.25im, ((1, "Z"),) => 0.0 - 0.25im)
     #println("dect[1]=", res.pyobj.terms)
 end

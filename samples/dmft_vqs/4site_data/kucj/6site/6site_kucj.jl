@@ -35,21 +35,21 @@ function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::F
 end
 
 #beta = 1000 (T=0.001)
-nsite = 4
+nsite = 6
 n_qubit = 2 * nsite
 U = 4.0
+#U = 0.0
 μ = U / 2
 V = 0.5
-ε = [0.0, -1.0, 0.0, 1.0]
+ε = [0.0, -2.0, -1.0, 0.0, 1.0, 2.0]
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
-Random.seed!(90)
-
+Random.seed!(150) #first(90), second(120), thritd
 
 #Hamiltonian
 #ham_op1 = generate_impurity_ham_with_1imp_3bath_dmft(U, μ, nsite)
 ham_op1 = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε, nsite)
-n_electron_gs = 4
+n_electron_gs = 6
 @assert mod(n_electron_gs, 2) == 0
 sparse_mat = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_electron_gs);
 enes_ed = eigvals(sparse_mat.toarray());
@@ -60,21 +60,22 @@ println("Ground energy=", EigVal_min)
 
 #ansatz
 state0 = create_hf_state(n_qubit, n_electron_gs)
-vc = sparse_ansatz(n_qubit, nocc=2)
-#depth = n_qubit*2
-#depth = n_qubit*2
-#vc = hev(n_qubit, depth)
-theta_init = rand(num_theta(vc))
+#vc, parameterinfo = kucj(n_qubit, ucj=false)
+vc, parameterinfo = kucj(n_qubit, k=4, sparse=true)
+
+pinfo = QCMaterial.ParamInfo(parameterinfo)
+println("θ_unique length=", pinfo.nparam)
+println("θ_long length=", pinfo.nparamlong)
+println("θunique = rand(pinfo.nparam)", rand(pinfo.nparam))
+theta_init = rand(pinfo.nparam)
 
 #Perform VQE
 cost_history, thetas_opt =
-    QCMaterial.solve_gs(jordan_wigner(ham_op1), vc, state0, theta_init=theta_init, verbose=true,
+    QCMaterial.solve_gs_kucj(jordan_wigner(ham_op1), vc, state0, parameterinfo, theta_init=theta_init, verbose=true,
         comm=QCMaterial.MPI_COMM_WORLD
     )
 
-
 #debug
-println("theta opt=", thetas_opt)
 println("Ground energy_VQE=", cost_history[end])
 println("Ground energy=", EigVal_min)
 @test abs(EigVal_min - cost_history[end]) < 1e-3

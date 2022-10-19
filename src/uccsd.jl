@@ -8,7 +8,7 @@ export update_circuit_param!, update_quantum_state!, gen_t1, gen_p_t2, gen_t1_ku
 export uccgsd
 export gen_t2_kucj, kucj, kucj2, gen_t2_kucj_2
 export sparse_ansatz
-export gen_t1_diag_kucj,  orb_rot
+export gen_t1_diag_kucj, orb_rot
 
 ################################################################################
 ############################# QUANTUM  CIRCUIT #################################
@@ -71,11 +71,11 @@ function add_parametric_circuit_using_generator!(
             continue
         end
         # println(pauli_str, pauli_coef)
-        pauli_coef = imag(pauli_coef) 
+        pauli_coef = imag(pauli_coef)
         # coef should be pure imaginary
         # println("pauli_coeff=", pauli_coeff)
         push!(pauli_coeffs, pauli_coef)
-        
+
         add_parametric_multi_Pauli_rotation_gate!(
             circuit.circuit,
             pauli_index_list,
@@ -95,11 +95,11 @@ function add_parametric_circuit_using_generator!(
         return
         # return parameterinfo
     end
-    
+
     num_thetas = num_theta(circuit)
     # print the position of all the parameters
     #println("position of theta=", num_thetas)
-    
+
     #push!(parameterinfo, ("x", num_thetas)) # この "x" どうやって決める？
 
     #=
@@ -115,7 +115,7 @@ function add_parametric_circuit_using_generator!(
     =#
     #dic = Dict()
     #dic["a"] = num_thetas
-    
+
     ioff =
         num_thetas == 0 ? 0 :
         theta_offset(circuit, num_thetas) + num_pauli(circuit, num_thetas)
@@ -192,7 +192,7 @@ sgn1 and sgn2 means sign for single particle excitation operator e^{-K}
 function gen_t1_diag_kucj(a; sgn=1.0im)
     #a^\dagger_a a_i (excitation)
     generator = FermionOperator([(a, 1), (a, 0)], sgn)
-    generator += FermionOperator([(a+1, 1), (a+1, 0)], sgn)
+    generator += FermionOperator([(a + 1, 1), (a + 1, 0)], sgn)
     # JW-transformation of a^\dagger_a a_i = 
     jordan_wigner(generator)
 end
@@ -217,6 +217,7 @@ end
 """
 Generate pair dobule excitations
 """
+
 function gen_p_t2(aa, ia, ab, ib)
     generator = FermionOperator([(aa, 1), (ab, 1), (ib, 0), (ia, 0)], 1.0)
     generator += FermionOperator([(ia, 1), (ib, 1), (ab, 0), (aa, 0)], -1.0)
@@ -236,12 +237,14 @@ Generate pair double excitations for kucj
 Generate pair dobule excitations
 """
 
+```
+Two particle excitation ops for unitary cluster jastrow
+
+c^i ci c^j cj
+```
+
 function gen_t2_kucj_2(aa, ab)
-    generator = FermionOperator([(aa, 1), (ab, 1), (ab, 0), (aa, 0)], 1.0im)
-    #generator = jordan_wigner(generator)
-    #println("jordanwigener(generator)=", jordan_wigner(generator))
-    #println("jordanwigener(generator).pyobj=", jordan_wigner(generator).pyobj)
-    #println("jordanwigener(generator).pyobj=", jordan_wigner(generator).pyobj.terms)
+    generator = FermionOperator([(aa, 1), (aa, 0), (ab, 1), (ab, 0)], 1.0im)
     return jordan_wigner(generator)
 end
 
@@ -350,7 +353,7 @@ end
 Returns k-ucj circuit.
 """
 
-function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true)
+function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, sparse=false)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -361,220 +364,223 @@ function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true)
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     parameterinfo = []
     sz = [1, -1]
-    
+
     if orbrot
-    for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-        for ispin1 = 1:2, ispin2 = 1:2
-            if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
-                continue
+        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+            for ispin1 = 1:2, ispin2 = 1:2
+                if conserv_Sz_singles && sz[ispin1] + sz[ispin2] != 0
+                    continue
+                end
+                #Spatial Orbital Indices
+                a_spin_orbital = so_idx(a_spatial, ispin1)
+                i_spin_orbital = so_idx(i_spatial, ispin2)
+                #t1 operator
+                generator = gen_t1(a_spin_orbital, i_spin_orbital)
+                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                #orbital_rotation=-1
+                orbital_rotation = (-1, num_theta(circuit)) # ここは全て独立なパラメータ
+                push!(parameterinfo, orbital_rotation)
             end
-            #Spatial Orbital Indices
-            a_spin_orbital = so_idx(a_spatial, ispin1)
-            i_spin_orbital = so_idx(i_spatial, ispin2)
-            #t1 operator
-            generator = gen_t1(a_spin_orbital, i_spin_orbital)
-            add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-            #orbital_rotation=-1
-            orbital_rotation = (-1,  num_theta(circuit)) # ここは全て独立なパラメータ
-            push!(parameterinfo, orbital_rotation)
         end
     end
-    end
-    println("num_thetas(orbrot)=", num_theta(circuit)) 
+    println("num_thetas(orbrot)=", num_theta(circuit))
     if ucj
-    for i = 1:k
-        # exp(-K) where K is an orbital rotation operator
-        # K = \sum_{pq, \sigma} K_{pq} a_{p \sigma}^{\dagger}a_{q \sigma}
-        # diagonal part of K, p=q
-        # K_{p p} is a pure imaginary number
-        # K_{p p} a_{p up}^{\dagger} a_{p up} a_{p down}^{\dagger} a_{p down} 
-        for a_spatial in 1:norb
-            for ispin1 = 1:2
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                if a_spin_orbital % 2 == 0
-                    continue
+        for i = 1:k
+            # exp(-K) where K is an orbital rotation operator
+            # K = \sum_{pq, \sigma} K_{pq} a_{p \sigma}^{\dagger}a_{q \sigma}
+            # diagonal part of K, p=q
+            # K_{p p} is a pure imaginary number
+            # K_{p p} a_{p up}^{\dagger} a_{p up} a_{p down}^{\dagger} a_{p down} 
+            for a_spatial in 1:norb
+                for ispin1 = 1:2
+                    a_spin_orbital = so_idx(a_spatial, ispin1)
+                    if a_spin_orbital % 2 == 0
+                        continue
+                    end
+                    # a_spin_orbital = 1, 3, 5,,,
+                    generator = gen_t1_diag_kucj(a_spin_orbital, sgn=-1.0im) # exp(-K)
+                    generator = rm_identity(generator)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    paraminfo_t1_diag = (a_spin_orbital, i)
+                    push!(parameterinfo, paraminfo_t1_diag)
                 end
-                # a_spin_orbital = 1, 3, 5,,,
-                generator = gen_t1_diag_kucj(a_spin_orbital, sgn=-1.0im) # exp(-K)
-                generator = rm_identity(generator)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                paraminfo_t1_diag = (a_spin_orbital, i)
-                push!(parameterinfo, paraminfo_t1_diag)
             end
-        end
-        # non-diagonal part of t1
-        # K = \sum_{p/=q, \sigma} K_{pq} a_{p \sigma}^{\dagger}a_{q \sigma}
-        # real part, K_{p q} is a real parameter
-        # K_{p q} a_{p \sigma}^{\dagger}a_{q \sigma} + a_{q \sigma}^{\dagger}a_{p \sigma}
-        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-            for ispin1 = 1:2
-                a_spin_orbital = so_idx(a_spatial, ispin1) #if ispin1 = 1, then a_spin_orbital=1, 3, 5,, #if ispin1 = 2, then a_spin_orbital=2, 4, 6,,
-                i_spin_orbital = so_idx(i_spatial, ispin1) #
-                #perform only loof if a_spin_orbital < i_spin_orbital
-                if a_spin_orbital >= i_spin_orbital
-                    continue
-                end
-                # Ex) ispin=1 => (a_spin_orbital =1, i_spin_orbital=3) or  (a_spin_orbital =1, i_spin_orbital=5) 
-                # Ex) ispin=2 => (a_spin_orbital =2, i_spin_orbital=4) or  (a_spin_orbital =2, i_spin_orbital=6) 
-                generator = gen_t1_kucj_real(a_spin_orbital, i_spin_orbital, sgn1=-1.0, sgn2=1.0)
-                #Add t1 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0) # 回転角度をマイナスをしたい！generatorにマイナス符号をつける
-                #a = (a_spin_orbital, i_spin_orbital) => length(circuit.thetas) # Pair という型がある
-                #paraminfo_t1_nondiag_real_up = ((a_spatial, ispatial, real=-2, k), num_theta(circuit)) 
-                # non-diag real
-                paraminfo_t1_nondiag_real = (a_spatial, i_spatial, -2, i) 
-                push!(parameterinfo, paraminfo_t1_nondiag_real)
-            end
-
-            # imaginary part
-            # K_{p q} is a pure imaginary parameter 
+            # non-diagonal part of t1
+            # K = \sum_{p/=q, \sigma} K_{pq} a_{p \sigma}^{\dagger}a_{q \sigma}
+            # real part, K_{p q} is a real parameter
             # K_{p q} a_{p \sigma}^{\dagger}a_{q \sigma} + a_{q \sigma}^{\dagger}a_{p \sigma}
-            for ispin1 = 1:2
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                i_spin_orbital = so_idx(i_spatial, ispin1)
-                if a_spin_orbital >= i_spin_orbital
-                    continue
+            for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+                for ispin1 = 1:2
+                    a_spin_orbital = so_idx(a_spatial, ispin1) #if ispin1 = 1, then a_spin_orbital=1, 3, 5,, #if ispin1 = 2, then a_spin_orbital=2, 4, 6,,
+                    i_spin_orbital = so_idx(i_spatial, ispin1) #
+                    #perform only loof if a_spin_orbital < i_spin_orbital
+                    if a_spin_orbital >= i_spin_orbital
+                        continue
+                    end
+                    # Ex) ispin=1 => (a_spin_orbital =1, i_spin_orbital=3) or  (a_spin_orbital =1, i_spin_orbital=5) 
+                    # Ex) ispin=2 => (a_spin_orbital =2, i_spin_orbital=4) or  (a_spin_orbital =2, i_spin_orbital=6) 
+                    generator = gen_t1_kucj_real(a_spin_orbital, i_spin_orbital, sgn1=-1.0, sgn2=1.0)
+                    #Add t1 into the circuit
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0) # 回転角度をマイナスをしたい！generatorにマイナス符号をつける
+                    #a = (a_spin_orbital, i_spin_orbital) => length(circuit.thetas) # Pair という型がある
+                    #paraminfo_t1_nondiag_real_up = ((a_spatial, ispatial, real=-2, k), num_theta(circuit)) 
+                    # non-diag real
+                    paraminfo_t1_nondiag_real = (a_spatial, i_spatial, -2, i)
+                    push!(parameterinfo, paraminfo_t1_nondiag_real)
                 end
-                generator = gen_t1_kucj_imag(a_spin_orbital, i_spin_orbital, sgn1=-1.0im, sgn2=1.0im)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                # paraminfo_t1_nondiag_imag = ((a_spatial, i_spatial, imag=-3, i), num_theta(circuit))
-                paraminfo_t1_nondiag_imag = (a_spatial, i_spatial, -3, i)
-                push!(parameterinfo, paraminfo_t1_nondiag_imag)
-            end
-        end
 
-        #Doubles
-        #diagonal with respect to spatial orbitals a, b
-        for a in 1:norb
-            aa = so_idx(a, 1) # spin_a = up
-            bb = so_idx(a, 2) # spin_b = down
-            # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
-            generator = gen_t2_kucj_2(aa, bb)
-            generator = rm_identity(generator)
-            add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-            paraminfo_t2_diag = (a, a, 1, 2, k)
-            push!(parameterinfo, paraminfo_t2_diag)
-   
-            aa = so_idx(a, 2) # spin_a = down
-            bb = so_idx(a, 1) # spin_b = up
-            # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
-            generator = gen_t2_kucj_2(aa, bb)
-            generator = rm_identity(generator)
-            add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-            paraminfo_t2_diag = (a, a, 1, 2, k)
-            push!(parameterinfo, paraminfo_t2_diag)
-    
-            #aa = so_idx(a, 1) # spin_a = up
-            #bb = so_idx(a, 1) # spin_b = up
-            # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
-            #generator = gen_t2_kucj_2(aa, bb)
-            #generator = rm_identity(generator)
-            #add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-            #paraminfo_t2_diag = (a, a, 1, 1, k)
-            #push!(parameterinfo, paraminfo_t2_diag)
-    
-            #aa = so_idx(a, 2) # spin_a = down
-            #bb = so_idx(a, 2) # spin_b = down
-            # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
-            #generator = gen_t2_kucj_2(aa, bb)
-            #generator = rm_identity(generator)
-            #add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-            #paraminfo_t2_diag = (a, a, 1, 1, k)
-            #push!(parameterinfo, paraminfo_t2_diag)
-        end
-        # non-diagonal with respect to spatial orbitals a, b
-        # diagonal with respect to spin_orbitals
-        for a in 1:norb
-            for b in 1:norb
-                # a<bのみループが回るようにしたい
-                if a >= b
-                    continue
-                end 
-                aa = so_idx(a, 1)
-                bb = so_idx(b, 1)
-                generator = gen_t2_kucj_2(aa, bb)
-                generator = rm_identity(generator)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                paraminfo_t2_nondiag_spin_diag1 = (a, b, 1, 1, k)
-                push!(parameterinfo, paraminfo_t2_nondiag_spin_diag1)
-
-                # a, b , spin_a=2, spin_b=2
-                aa = so_idx(a, 2)
-                bb = so_idx(b, 2)
-                generator = gen_t2_kucj_2(aa, bb)
-                generator = rm_identity(generator)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                paraminfo_t2_nondiag_spin_diag2 = (a, b, 1, 1, k)
-                push!(parameterinfo, paraminfo_t2_nondiag_spin_diag2)
-                # non-diagonal with respect to spin_orbitals
-                # a, b , spin_a=1, spin_b=2
-                aa = so_idx(a, 1)
-                bb = so_idx(b, 2)
-                generator = gen_t2_kucj_2(aa, bb)
-                generator = rm_identity(generator)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                paraminfo_t2_nondiag_spin_diag2 = (a, b, 1, 2, k)
-                push!(parameterinfo, paraminfo_t2_nondiag_spin_diag2)
-                # a, b , spin_a=2, spin_b=1
-                aa = so_idx(a, 2)
-                bb = so_idx(b, 2)
-                generator = gen_t2_kucj_2(aa, bb)
-                generator = rm_identity(generator)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                paraminfo_t2_nondiag_spin_diag2 = (a, b, 1, 2, k)
-                push!(parameterinfo, paraminfo_t2_nondiag_spin_diag2)                
-            end
-        end
-        
-        # exp(K) where K is an orbital rotation operator
-        # diagonal part of K
-        for a_spatial in (1:norb)
-            for ispin1 = 1:2
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                if a_spin_orbital % 2 == 0
-                    continue
+                # imaginary part
+                # K_{p q} is a pure imaginary parameter 
+                # K_{p q} a_{p \sigma}^{\dagger}a_{q \sigma} + a_{q \sigma}^{\dagger}a_{p \sigma}
+                for ispin1 = 1:2
+                    a_spin_orbital = so_idx(a_spatial, ispin1)
+                    i_spin_orbital = so_idx(i_spatial, ispin1)
+                    if a_spin_orbital >= i_spin_orbital
+                        continue
+                    end
+                    generator = gen_t1_kucj_imag(a_spin_orbital, i_spin_orbital, sgn1=-1.0im, sgn2=1.0im)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    # paraminfo_t1_nondiag_imag = ((a_spatial, i_spatial, imag=-3, i), num_theta(circuit))
+                    paraminfo_t1_nondiag_imag = (a_spatial, i_spatial, -3, i)
+                    push!(parameterinfo, paraminfo_t1_nondiag_imag)
                 end
-                generator = gen_t1_diag_kucj(a_spin_orbital)
-                generator = rm_identity(generator)
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                paraminfo_t1_diag = (a_spin_orbital, i)
-                push!(parameterinfo, paraminfo_t1_diag)
-            end
-        end
-        # non-diagonal part of K
-        for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
-            # real 
-            for ispin1 = 1:2
-                a_spin_orbital = so_idx(a_spatial, ispin1) #if ispin1 = 1, then 1, 3, 5,,
-                i_spin_orbital = so_idx(i_spatial, ispin1) #if ispin1 = 2, then 2, 4, 6,,
-                #perform only loof if a_spin_orbital < i_spin_orbital
-                if a_spin_orbital >= i_spin_orbital
-                    continue
-                end
-                generator = gen_t1_kucj_real(a_spin_orbital, i_spin_orbital)
-                #Add t1 into the circuit
-                add_parametric_circuit_using_generator!(circuit, generator, 0.0) 
-                #a = (a_spin_orbital, i_spin_orbital) => length(circuit.thetas) # Pair という型がある
-                #paraminfo_t1_nondiag_real_up = ((a_spatial, ispatial, real=-2, k), num_theta(circuit)) 
-                paraminfo_t1_nondiag_real = (a_spatial, i_spatial, -2, i)
-                push!(parameterinfo, paraminfo_t1_nondiag_real)
             end
 
-            # imaginary
-            for ispin1 = 1:2
-                a_spin_orbital = so_idx(a_spatial, ispin1)
-                i_spin_orbital = so_idx(i_spatial, ispin1)
-                if a_spin_orbital >= i_spin_orbital
-                    continue
-                end
-                generator = gen_t1_kucj_imag(a_spin_orbital, i_spin_orbital)
+            #Doubles
+            #diagonal with respect to spatial orbitals a, b
+            for a in 1:norb
+                aa = so_idx(a, 1) # spin_a = up
+                bb = so_idx(a, 2) # spin_b = down
+                # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
+                generator = gen_t2_kucj_2(aa, bb)
+                generator = rm_identity(generator)
                 add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                # paraminfo_t1_nondiag_imag = ((a_spatial, i_spatial, imag=-3, i), num_theta(circuit))
-                paraminfo_t1_nondiag_imag = (a_spatial, i_spatial, -3, i)
-                push!(parameterinfo, paraminfo_t1_nondiag_imag)
+                paraminfo_t2_diag = (a, a, 1, 2, i)
+                push!(parameterinfo, paraminfo_t2_diag)
+
+                aa = so_idx(a, 2) # spin_a = down
+                bb = so_idx(a, 1) # spin_b = up
+                # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
+                generator = gen_t2_kucj_2(aa, bb)
+                generator = rm_identity(generator)
+                add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                paraminfo_t2_diag = (a, a, 1, 2, i)
+                push!(parameterinfo, paraminfo_t2_diag)
+
+                #aa = so_idx(a, 1) # spin_a = up
+                #bb = so_idx(a, 1) # spin_b = up
+                # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
+                #generator = gen_t2_kucj_2(aa, bb)
+                #generator = rm_identity(generator)
+                #add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                #paraminfo_t2_diag = (a, a, 1, 1, k)
+                #push!(parameterinfo, paraminfo_t2_diag)
+
+                #aa = so_idx(a, 2) # spin_a = down
+                #bb = so_idx(a, 2) # spin_b = down
+                # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)
+                #generator = gen_t2_kucj_2(aa, bb)
+                #generator = rm_identity(generator)
+                #add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                #paraminfo_t2_diag = (a, a, 1, 1, k)
+                #push!(parameterinfo, paraminfo_t2_diag)
+            end
+            # non-diagonal with respect to spatial orbitals a, b
+            # diagonal with respect to spin_orbitals
+            for a in 1:norb
+                if sparse
+                    a = 1 #One impurity spatial orbitals (special case)
+                end
+                for b in 1:norb
+                    # a<bのみループが回るようにしたい
+                    if a >= b
+                        continue
+                    end
+                    aa = so_idx(a, 1)
+                    bb = so_idx(b, 1)
+                    generator = gen_t2_kucj_2(aa, bb)
+                    generator = rm_identity(generator)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    paraminfo_t2_nondiag_spin_diag1 = (a, b, 1, 1, i)
+                    push!(parameterinfo, paraminfo_t2_nondiag_spin_diag1)
+
+                    # a, b , spin_a=2, spin_b=2
+                    aa = so_idx(a, 2)
+                    bb = so_idx(b, 2)
+                    generator = gen_t2_kucj_2(aa, bb)
+                    generator = rm_identity(generator)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    paraminfo_t2_nondiag_spin_diag2 = (a, b, 1, 1, i)
+                    push!(parameterinfo, paraminfo_t2_nondiag_spin_diag2)
+                    # non-diagonal with respect to spin_orbitals
+                    # a, b , spin_a=1, spin_b=2
+                    aa = so_idx(a, 1)
+                    bb = so_idx(b, 2)
+                    generator = gen_t2_kucj_2(aa, bb)
+                    generator = rm_identity(generator)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    paraminfo_t2_nondiag_spin_diag2 = (a, b, 1, 2, i)
+                    push!(parameterinfo, paraminfo_t2_nondiag_spin_diag2)
+                    # a, b , spin_a=2, spin_b=1
+                    aa = so_idx(a, 2)
+                    bb = so_idx(b, 2)
+                    generator = gen_t2_kucj_2(aa, bb)
+                    generator = rm_identity(generator)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    paraminfo_t2_nondiag_spin_diag2 = (a, b, 1, 2, i)
+                    push!(parameterinfo, paraminfo_t2_nondiag_spin_diag2)
+                end
+            end
+
+            # exp(K) where K is an orbital rotation operator
+            # diagonal part of K
+            for a_spatial in (1:norb)
+                for ispin1 = 1:2
+                    a_spin_orbital = so_idx(a_spatial, ispin1)
+                    if a_spin_orbital % 2 == 0
+                        continue
+                    end
+                    generator = gen_t1_diag_kucj(a_spin_orbital)
+                    generator = rm_identity(generator)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    paraminfo_t1_diag = (a_spin_orbital, i)
+                    push!(parameterinfo, paraminfo_t1_diag)
+                end
+            end
+            # non-diagonal part of K
+            for (a_spatial, i_spatial) in (Iterators.product(1:norb, 1:norb))
+                # real 
+                for ispin1 = 1:2
+                    a_spin_orbital = so_idx(a_spatial, ispin1) #if ispin1 = 1, then 1, 3, 5,,
+                    i_spin_orbital = so_idx(i_spatial, ispin1) #if ispin1 = 2, then 2, 4, 6,,
+                    #perform only loof if a_spin_orbital < i_spin_orbital
+                    if a_spin_orbital >= i_spin_orbital
+                        continue
+                    end
+                    generator = gen_t1_kucj_real(a_spin_orbital, i_spin_orbital)
+                    #Add t1 into the circuit
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    #a = (a_spin_orbital, i_spin_orbital) => length(circuit.thetas) # Pair という型がある
+                    #paraminfo_t1_nondiag_real_up = ((a_spatial, ispatial, real=-2, k), num_theta(circuit)) 
+                    paraminfo_t1_nondiag_real = (a_spatial, i_spatial, -2, i)
+                    push!(parameterinfo, paraminfo_t1_nondiag_real)
+                end
+
+                # imaginary
+                for ispin1 = 1:2
+                    a_spin_orbital = so_idx(a_spatial, ispin1)
+                    i_spin_orbital = so_idx(i_spatial, ispin1)
+                    if a_spin_orbital >= i_spin_orbital
+                        continue
+                    end
+                    generator = gen_t1_kucj_imag(a_spin_orbital, i_spin_orbital)
+                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
+                    # paraminfo_t1_nondiag_imag = ((a_spatial, i_spatial, imag=-3, i), num_theta(circuit))
+                    paraminfo_t1_nondiag_imag = (a_spatial, i_spatial, -3, i)
+                    push!(parameterinfo, paraminfo_t1_nondiag_imag)
+                end
             end
         end
-    end
     end
     println("num_thetas(redundant)=", num_theta(circuit))
     return circuit, parameterinfo
@@ -589,10 +595,7 @@ function sparse_ansatz(
     nocc=-1,
     orbital_rot=true,
     conserv_Sz_doubles=true,
-    conserv_Sz_singles=true,
-    Doubles=true,
-    uccgsd=true,
-    p_uccgsd=false
+    conserv_Sz_singles=true
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -625,44 +628,40 @@ function sparse_ansatz(
             add_parametric_circuit_using_generator!(circuit, generator, 0.0)
         end
     end
-    
 
-    if Doubles
-        if uccgsd
-            #Doubles
-            for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
-                for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
-                    #if conserv_Sz_doubles &&
-                    #   sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
-                    #    continue
-                    #end
-                    if conserv_Sz_doubles &&
-                       sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
-                        continue
-                    end
-                    #Spatial Orbital Indices
-                    aa = so_idx(a, spin_a)
-                    ia = so_idx(i, spin_i)
-                    bb = so_idx(b, spin_b)
-                    jb = so_idx(j, spin_j)
-                    #perform loop only if ia>jb && aa>bb               
-                    if aa <= bb || ia <= jb
-                        continue
-                    end
-                    A = [aa ia bb jb]
-                    #if in(1, A) == false && in(2, A) == false
-                    #    continue
-                    #end
-                    if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
-                        #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
-                        continue
-                    end
-                    #t2 operator
-                    generator = gen_p_t2(aa, ia, bb, jb)
-                    #Add p-t2 into the circuit
-                    add_parametric_circuit_using_generator!(circuit, generator, 0.0)
-                end
+
+    #Doubles
+    for (spin_a, spin_i, spin_b, spin_j) in Iterators.product(1:2, 1:2, 1:2, 1:2)
+        for (a, i, b, j) in Iterators.product(1:norb, 1:norb, 1:norb, 1:norb)
+            #if conserv_Sz_doubles &&
+            #   sz[spin_a] + sz[spin_i] + sz[spin_b] + sz[spin_j] != 0
+            #    continue
+            #end
+            if conserv_Sz_doubles &&
+               sz[spin_a] - sz[spin_i] + sz[spin_b] - sz[spin_j] != 0
+                continue
             end
+            #Spatial Orbital Indices
+            aa = so_idx(a, spin_a)
+            ia = so_idx(i, spin_i)
+            bb = so_idx(b, spin_b)
+            jb = so_idx(j, spin_j)
+            #perform loop only if ia>jb && aa>bb               
+            if aa <= bb || ia <= jb
+                continue
+            end
+            A = [aa ia bb jb]
+            #if in(1, A) == false && in(2, A) == false
+            #    continue
+            #end
+            if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
+                #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
+                continue
+            end
+            #t2 operator
+            generator = gen_p_t2(aa, ia, bb, jb)
+            #Add p-t2 into the circuit
+            add_parametric_circuit_using_generator!(circuit, generator, 0.0)
         end
     end
     println("num_thetas=", num_theta(circuit))
@@ -672,12 +671,12 @@ end
 
 function orb_rot(
     n_qubit;
-    conserv_Sz_singles=true,
+    conserv_Sz_singles=true
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
-    
+
     norb = n_qubit ÷ 2
     circuit = UCCQuantumCircuit(n_qubit)
     spin_index_functions = [up_index, down_index]
