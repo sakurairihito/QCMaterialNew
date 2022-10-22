@@ -66,10 +66,29 @@ end
     @test theta_expand == [-1.0, -2.0, -3.0, -3.0, -4.0, -4.0, -1.0, -2.0]
 end
 
-@testset "expand_code" begin
-    ukeys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
-    pinfo = ParamInfo(ukeys)
-    θunique = [-1.0, -2.0, -3.0, -4.0]
-    theta_expand = expand(θunique)
-    @test theta_expand == [-1.0, -2.0, -3.0, -3.0, -4.0, -4.0, -1.0, -2.0]
+#@testset "write_to_txt_1" begin
+#    params = [1.0, 2.0]
+#    write_to_txt_1(test, params) 
+#    @test params == [1.0, 2.0]
+#end
+
+@testset "compact_paraminfo" begin
+    keys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
+    res = compact_paraminfo(keys) 
+    @test res == Dict{Any, Any}((1, 2, 1) => 5, (1, 2) => 1, (1, 3) => 2, (1, 1, 2) => 3)
+end
+
+
+@testset "make_compact_params" begin
+    thetas = [-1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0]
+    keys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
+    res = make_compact_params(thetas, keys) 
+    @test res == [-1.0, -2.0, -3.0, -5.0] 
+end
+
+@testset "make_long_param_form_compact" begin
+    keys = [(1,2), (1,3), (1,1,2), (1,1,2), (1,2,1), (1,2,1), (1,2), (1,3)]
+    thetas = [-1.0, -2.0, -3.0, -4.0, -5.0, -6.0, -7.0, -8.0]
+    res = make_long_param_from_compact(keys,thetas)
+    @test res == [-1.0, -2.0, -3.0, -3.0, -5.0, -5.0, -1.0, -2.0]
 end

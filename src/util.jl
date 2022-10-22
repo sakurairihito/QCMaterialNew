@@ -1,5 +1,6 @@
-export topylist, doublefunc, numerical_grad
+export topylist, doublefunc, numerical_grad, read_and_parse_float,write_to_txt_1,write_to_txt_2
 export up_index, down_index, update_circuit_param!, update_quantum_state!, ParamInfo, expand 
+export compact_paraminfo, make_long_param_from_compact, make_compact_params
 using PyCall
 
 function count_qubit_in_qubit_operator(op)
@@ -144,6 +145,10 @@ end
 
 
 
+"""
+Make mapping from  
+redundant parameter information
+"""
 
 struct ParamInfo
     nparam::Int  # Number of unique parameters
@@ -169,11 +174,97 @@ struct ParamInfo
     end
 end
 
-
+"""
+make redundant parameter(=θlong) from copact params(=θunique)
+"""
 function expand(p::ParamInfo, θunique)
     θlong = Vector{Float64}(undef, p.nparamlong)
     for i in eachindex(θlong)
         θlong[i] = θunique[p.mapping[i]]
     end
     return θlong
+end
+
+
+#read file.txt, and return list[Int]
+function read_and_parse_float(file_name)
+    x = Float64[]
+    open(file_name, "r") do fp
+        num_elm = parse(Int64,readline(fp))
+        for i in 1:num_elm
+            push!(x, parse(Float64, readline(fp)))
+        end
+    end
+    return x
+end
+
+"""
+読み込む変数が2つの場合
+"""
+
+function write_to_txt_2(file_name, x, y)
+    open(file_name, "w") do fp
+        for i = 1:length(x)
+            println(fp, x[i], " ", real(y[i]))
+        end
+    end
+end
+
+"""
+読み込む変数が一つの場合
+"""
+
+function write_to_txt_1(file_name, x)
+    open(file_name, "w") do fp
+        for i = 1:length(x)
+            println(fp, x[i])
+        end
+    end
+end
+
+
+"""
+make compact parameter information (Not used)
+"""
+
+function compact_paraminfo(keys)
+    d = Dict()
+    for (i, k) in enumerate(keys)
+        if haskey(d, k) # floatが入るとややこしい。
+            continue
+        end
+        #@show (i,k)
+        d[k] = i
+    end
+    return d
+end
+
+function make_long_param_from_compact(keys, thetas)
+    d = compact_paraminfo(keys)
+    θ = zeros(Float64, length(thetas))
+    for (ik, k) in enumerate(keys)
+        #println(ik, k)
+        i = d[k]
+        θ[ik] = thetas[i] # d は辞書ではなく、配列にする。
+    end
+    return θ
+end
+
+"""
+Given parameter information, make "long params" compact param sets
+long params is redundant 
+"""
+
+function make_compact_params(thetas, keys)
+    d = Dict()
+    θunique = []
+    for (i,k) in enumerate(keys)
+        if haskey(d, k) # floatが入るとややこしい。
+            continue
+        end
+        #@show (i,k)
+        d[k] = i
+        push!(θunique, thetas[d[k]]) 
+    end
+    return θunique
 end

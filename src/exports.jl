@@ -20,7 +20,7 @@ export QulacsVariationalQuantumCircuit
 export Gate, QulacsGate, RX, RY, RZ, get_matrix, add_U1_gate!
 
 export QuantumState, QulacsQuantumState
-export set_computational_basis!, create_hf_state
+export set_computational_basis!, create_hf_state,  state_load
 export FermionOperator, jordan_wigner, get_number_preserving_sparse_operator
 export get_vector, get_n_qubit
 

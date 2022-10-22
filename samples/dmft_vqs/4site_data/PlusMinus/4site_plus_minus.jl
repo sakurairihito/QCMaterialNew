@@ -98,7 +98,7 @@ end
 
 #beta = 1000 (T=0.001)
 nsite = 4
-n_qubit　= 2*nsite
+n_qubit = 2*nsite
 U = 4.0
 μ = U/2
 d_theta = 1e-5
@@ -145,7 +145,7 @@ sparse_mat_enum_3 = get_number_preserving_sparse_operator(ham_op1, n_qubit, n_el
 enes_ed_enum_3 = eigvals(sparse_mat_enum_3.toarray());
 #debug
 #println("Ground energy_ED=",minimum(enes_ed_enum_2))
-println("Ground energy_3_ED=",minimum(enes_ed_enum_3))
+println("Ground energy_3_ED=", minimum(enes_ed_enum_3))
 
 
 #ansatz
