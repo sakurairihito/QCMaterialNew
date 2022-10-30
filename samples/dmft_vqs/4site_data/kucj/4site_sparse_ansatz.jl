@@ -6,33 +6,6 @@ import Random
 import PyCall: pyimport
 using Test
 
-function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::Float64, ε::Vector{Float64}, nsite::Integer)
-    spin_index_functions = [up_index, down_index]
-    so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
-    ham = FermionOperator()
-
-    #Coulomb   
-    ham += FermionOperator("$(up_index(1))^ $(down_index(1))^ $(up_index(1)) $(down_index(1))", -U)
-
-    for ispin in [1, 2]
-        for i in 2:nsite
-            ham += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(i, ispin))", -V)
-            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(1, ispin))", -V)
-        end
-    end
-
-    #chemical potential
-    for ispin in [1, 2]
-        ham += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(1, ispin))", -μ)
-    end
-
-    for ispin in [1, 2]
-        for i in 2:nsite
-            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε[i])
-        end
-    end
-    ham
-end
 
 #beta = 1000 (T=0.001)
 nsite = 4

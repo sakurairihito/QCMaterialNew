@@ -50,6 +50,6 @@ import Random
        QCMaterial.solve_gs(jordan_wigner(ham), circuit, state0, theta_init=theta_init, verbose=true,
            comm=QCMaterial.MPI_COMM_WORLD
        )
-
+    @show abs(EigVal_min-cost_history[end]) 
     @test abs(EigVal_min-cost_history[end]) < 1e-6 
 end

@@ -102,7 +102,7 @@ end
 """
 Generates parallelized numerical grad_cost
 """
-function generate_numerical_grad(f; verbose=true, comm=MPI_COMM_WORLD)
+function generate_numerical_grad(f; comm=MPI_COMM_WORLD, verbose=true)
     function grad(x)
         t1 = time_ns()
         if comm === nothing
@@ -143,14 +143,10 @@ function tikhonov(y, A, eps = 1e-10)
     x = inv(AA(eps)) * A' * y
 end
 
-
-
-
 """
 Make mapping from  
 redundant parameter information
 """
-
 struct ParamInfo
     nparam::Int  # Number of unique parameters
     nparamlong::Int # Number of all parameters
