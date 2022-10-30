@@ -34,6 +34,7 @@ include("hartree_fock.jl")
 include("no_mpi.jl")
 include("vqe.jl")
 include("vqs.jl")
-
-
+include("obs.jl")
+include("hev.jl")
+include("opt.jl")
 end

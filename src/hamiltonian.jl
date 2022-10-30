@@ -30,56 +30,7 @@ function generate_ham_1d_hubbard(t::Float64, U::Float64, nsite::Integer, μ::Flo
 end
 
 
-function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::Float64, ε::Float64, nsite::Integer)
-    spin_index_functions = [up_index, down_index]
-    so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
-    ham = FermionOperator()
-
-    #Coulomb   
-    ham += FermionOperator("$(up_index(1))^ $(down_index(1))^ $(up_index(1)) $(down_index(1))", -U)
-
-    #hybridization
-    #for spin in [up_index, down_index]
-    #    for i in 2:nsite
-    #        ham += FermionOperator("$(spin(1))^ $(spin(i))", -V)
-    #        ham += FermionOperator("$(spin(i))^ $(spin(1))", -V)
-    #    end
-    #end
-    for ispin in [1, 2]
-        for i in 2:nsite
-            ham += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(i, ispin))", -V)
-            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(1, ispin))", -V)
-        end
-    end
-
-
-    #chemical potential
-    #for spin in [up_index, down_index]
-    #    ham += FermionOperator("$(spin(1))^ $(spin(1))", -μ)
-    #end
-
-    #chemical potential
-    for ispin in [1, 2]
-        ham += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(1, ispin))", -μ)
-    end
-
-    #bath energy level
-    #for spin in [up_index, down_index]
-    #    for i in 2:nsite
-    #        ham += FermionOperator("$(spin(i))^ $(spin(i))", ε)
-    #    end
-    #end
-
-    for ispin in [1, 2]
-        for i in 2:nsite
-            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε)
-        end
-    end
-    ham
-end
-
-
-function generate_impurity_ham_with_2imp_multibath(U::Float64, V::Float64, μ::Float64, ε::Vector{Float64}, nsite::Integer)
+function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::Float64, ε::Vector{Float64}, nsite::Integer)
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     ham = FermionOperator()
@@ -102,6 +53,50 @@ function generate_impurity_ham_with_2imp_multibath(U::Float64, V::Float64, μ::F
     for ispin in [1, 2]
         for i in 2:nsite
             ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε[i])
+        end
+    end
+    ham
+end
+
+
+function generate_impurity_ham_with_2imp_multibath(U::Float64, V::Float64, μ::Float64, ε::Vector{Float64}, t::Float64, nsite::Integer,numbath::Integer)
+    spin_index_functions = [up_index, down_index]
+    so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
+    ham = FermionOperator()
+    #Coulomb   
+    ham += FermionOperator("$(up_index(1))^ $(down_index(1))^ $(up_index(1)) $(down_index(1))", -U)
+    ham += FermionOperator("$(up_index(2))^ $(down_index(2))^ $(up_index(2)) $(down_index(2))", -U)
+    for ispin in [1, 2]
+        for i in 3:2+numbath #3:5
+            ham += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(i, ispin))", -V)
+            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(1, ispin))", -V)
+        end
+    end
+    for ispin in [1, 2]
+        for i in 2+numbath+1:nsite #bath+1=6,nsite=8
+            ham += FermionOperator("$(so_idx(2, ispin))^ $(so_idx(i, ispin))", -V)
+            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(2, ispin))", -V)
+        end
+    end
+
+    #ham += J * QubitOperator("X1 X2") + J * QubitOperator("Z1 Z2") + J * QubitOperator("X1 X2")
+    #ham += OFQubitOperator("Z1 Z2") + OFQubitOperator("X1 X2") + OFQubitOperator("Z1 Z2")
+    #chemical potential
+    for ispin in [1,2]
+        ham += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(2, ispin))", -t)
+        ham += FermionOperator("$(so_idx(2, ispin))^ $(so_idx(1, ispin))", -t)
+    end
+    for i in [1, 2]
+        for ispin in [1, 2]
+            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", -μ)
+        end
+    end
+    
+    #bath energy
+    #[-1.0, 0.0, 1.0, -1.0, 0.0, 1.0]
+    for ispin in [1, 2]
+        for i in 3:nsite
+            ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε[i-2])
         end
     end
     ham

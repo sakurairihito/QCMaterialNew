@@ -121,6 +121,7 @@ function generate_numerical_grad(f; verbose=true, comm=MPI_COMM_WORLD)
         end
         res
     end
+    
     return grad
 end
 

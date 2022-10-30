@@ -37,6 +37,6 @@ function get_vector(state::QulacsQuantumState)
     state.pyobj.get_vector()
 end
 
-function state_load(state::QulacsQuantumState, vec_load)
+function state_load!(state::QulacsQuantumState, vec_load)
     state.pyobj.load(vec_load)
 end

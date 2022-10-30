@@ -248,14 +248,6 @@ function gen_t2_kucj_2(aa, ab)
     return jordan_wigner(generator)
 end
 
-#function gen_t2_kucj_2(aa, ia, ab, ib)
-#    generator = FermionOperator([(aa, 1), (ab, 1), (ib, 0), (ia, 0)], 1.0im)
-#    #generator = jordan_wigner(generator)
-#    println("jordanwigener(generator)=", jordan_wigner(generator))
-#    println("jordanwigener(generator).pyobj=", jordan_wigner(generator).pyobj)
-#    println("jordanwigener(generator).pyobj=", jordan_wigner(generator).pyobj.terms)
-#    return jordan_wigner(generator)
-#end
 
 """
 Returns UCCGSD circuit.
@@ -353,7 +345,7 @@ end
 Returns k-ucj circuit.
 """
 
-function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, sparse=false)
+function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, sparse=false, oneimp=true, twoimp=false)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -489,7 +481,14 @@ function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, spar
             # diagonal with respect to spin_orbitals
             for a in 1:norb
                 if sparse
-                    a = 1 #One impurity spatial orbitals (special case)
+                    if oneimp
+                        a = 1 #One impurity spatial orbitals (special case)
+                    end
+                    if twoimp
+                        if a >= 3 #a=1,2
+                            continue
+                        end
+                    end
                 end
                 for b in 1:norb
                     # a<bのみループが回るようにしたい
@@ -595,7 +594,9 @@ function sparse_ansatz(
     nocc=-1,
     orbital_rot=true,
     conserv_Sz_doubles=true,
-    conserv_Sz_singles=true
+    conserv_Sz_singles=true,
+    oneimp = true,
+    twoimp = false,
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -654,10 +655,30 @@ function sparse_ansatz(
             #if in(1, A) == false && in(2, A) == false
             #    continue
             #end
-            if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
-                #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
-                continue
+            if oneimp 
+                if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
+                    #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
+                    continue
+                end
             end
+            # impurity=2
+            # ◯ \       / ◯
+            # ◯ -- ◯ ◯ -- ◯
+            # ◯ /       \ ◯
+            if twoimp 
+                if count(i -> (1 <= i <= 4), A) <= 1 #in(1, A) == false && in(2, A) == false
+                    #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
+                    continue
+                end
+            end
+            #if twoimp
+            #    if count(i -> (5 <= i <= 16), A) => 4 #bathの数が４つあったら捨てる。
+            #        continue
+            #    end
+                # if 2 & (3,4,5) の間で粒子の交換があったらサボる？
+                # if でも今のでうまくいかなかったら、UCCGSDでもうまくいくのかわからない。。
+            #end
+
             #t2 operator
             generator = gen_p_t2(aa, ia, bb, jb)
             #Add p-t2 into the circuit

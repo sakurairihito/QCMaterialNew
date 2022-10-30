@@ -27,6 +27,8 @@ end
     x = 1. .* collect(1:N)
     deriv = numerical_grad(f, x)
     grad = QCMaterial.generate_numerical_grad(f)
+    @show grad
+    @show grad(x)
     @test isapprox(grad(x), collect(1:N), rtol=1e-5)
 end
 

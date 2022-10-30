@@ -135,3 +135,26 @@ end
     @test res.pyobj.terms == Dict{Any,Any}(((0, "Z"),) => 0.0 - 0.25im, ((0, "Z"), (1, "Z")) => 0.0 + 0.25im, ((1, "Z"),) => 0.0 - 0.25im)
     #println("dect[1]=", res.pyobj.terms)
 end
+
+@testset "add_QubitOp_FerOp" begin
+    generator = FermionOperator([(2, 1), (1, 1), (1, 0), (2, 0)], 1.0im)
+  
+    @test generator == FermionOperator("2^ 1^ 1 2", 1.0im)
+    generator = jordan_wigner(generator)
+    @test generator == OFQubitOperator("", 0.25im) + OFQubitOperator("Z1", -0.25im) + OFQubitOperator("Z1 Z2", 0.25im) + OFQubitOperator("Z2", -0.25im)
+    test = OFQubitOperator("X1 X2", 1.0) + OFQubitOperator("Z1 Z2", 1.0) + OFQubitOperator("Y1 Y2", 1.0)
+    generator += test
+    #@test generator == OFQubitOperator(PyObject 0.25j [] +1.0 [X0 X1] +1.0 [Y0 Y1] -0.25j [Z0] +(1+0.25j) [Z0 Z1] -0.25j [Z1])
+    #@test res == OFQubitOperator("Z1", -0.25im) + OFQubitOperator("Z1 Z2", 0.25im) + OFQubitOperator("Z2", -0.25im)
+    #@test res.pyobj.terms == Dict{Any,Any}(((0, "Z"),) => 0.0 - 0.25im, ((0, "Z"), (1, "Z")) => 0.0 + 0.25im, ((1, "Z"),) => 0.0 - 0.25im)
+    #println("dect[1]=", res.pyobj.terms)
+end
+
+
+#@testset "load" begin
+#    n_qubit = 2
+#    state = QulacsQuantumState(n_qubit, 0b00)
+#    vec = [1.0 , 1.0, 1.0, 1.0]
+#    vec_load = load!(vec)
+#    @show vec_load
+#end

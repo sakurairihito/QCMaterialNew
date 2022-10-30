@@ -1,7 +1,8 @@
 using PyCall
 export _convert_qubitop_str_from_py_to_jl
 export FermionOperator
-export rm_identity
+export rm_identity, load!
+
 # i = 1, 2, ...
 up_index(i) = 2 * (i - 1) + 1
 down_index(i) = 2 * i
@@ -236,6 +237,15 @@ end
 function inner_product(state_bra::QulacsQuantumState, state_ket::QulacsQuantumState)
     qulacs.state.inner_product(state_bra.pyobj, state_ket.pyobj)
 end
+
+#function set_computational_basis!(state::QulacsQuantumState, int_state)
+#    state.pyobj.set_computational_basis(int_state)
+#end
+
+
+#function load!(state::QulacsQuantumState, myvec)
+#    state.pyobj.load(myvec)
+#end
 
 
 """
