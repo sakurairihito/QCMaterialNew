@@ -4,7 +4,7 @@ using Statistics
 #using ConcreteStructs
 
 export predict, mse, get_cost_gradient, update!, update_circuit_param!
-
+export solve_gs_kucj_Adam
 
 function predict(x, θ₀::Real, θ₁::Real)
     x * θ₀ + θ₁
@@ -19,7 +19,7 @@ end
 mse(X, y, θ::AbstractVector) = mse(X, y, θ[1], θ[2])
 
 
-function get_cost_gradient(mse, X, y, θ₀::Real, θ₁::Real; dx = 1e-5)
+function get_cost_gradient(mse, X, y, θ₀::Real, θ₁::Real; dx=1e-5)
     ∇ = zeros(2)
     θ = [θ₀, θ₁]
     tmpθ₁ = copy(θ)
@@ -128,7 +128,7 @@ function callback_(x)
     end
 end
 
-function update_circuit_param!(opt::Adam, cost, n_steps; verbose = true, change_rate = 500)
+function update_circuit_param!(opt::Adam, cost, n_steps; verbose=true, change_rate=500)
     for i = 1:n_steps
         #eta = opt.eta * 0.8
         if i == change_rate
@@ -156,13 +156,13 @@ function solve_gs_Adam(
     m,
     v,
     state0::QuantumState;
-    theta_init = nothing,
-    comm = MPI_COMM_WORLD,
-    eta = 0.2,
-    eps = 1e-7,
-    beta = [0.7, 0.777],
-    n_steps = 3000,
-    verbose = false,
+    theta_init=nothing,
+    comm=MPI_COMM_WORLD,
+    eta=0.2,
+    eps=1e-7,
+    beta=[0.7, 0.777],
+    n_steps=3000,
+    verbose=false
 )
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -211,14 +211,15 @@ function solve_gs_kucj_Adam(
     circuit::VariationalQuantumCircuit,
     m,
     v,
-    state0::QuantumState;
-    theta_init = nothing,
-    comm = MPI_COMM_WORLD,
-    eta = 0.2,
-    eps = 1e-7,
-    beta = [0.7, 0.777],
-    n_steps = 100,
-    verbose = false,
+    state0::QuantumState,
+    keys;
+    theta_init=nothing,
+    comm=MPI_COMM_WORLD,
+    eta=0.2,
+    eps=1e-7,
+    beta=[0.7, 0.777],
+    n_steps=100,
+    verbose=false
 )
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
@@ -237,29 +238,24 @@ function solve_gs_kucj_Adam(
         return get_expectation_value(ham_qubit, state)
     end
 
-    if theta_init === nothing
-        theta_init = rand(size(circuit.theta_offsets)[1])
-    end
+    pinfo = ParamInfo(keys)
+    cost_tmp(θunique) = cost(expand(pinfo, θunique))
+
+    #if theta_init === nothing
+    #    theta_init = rand(size(circuit.theta_offsets)[1])
+    #end
+
     if comm !== nothing
         # Make sure all processes use the same initial values
         MPI.Bcast!(theta_init, 0, comm)
     end
 
-    pinfo = ParamInfo(keys)
-    cost_tmp(θunique) = cost(expand(pinfo, θunique))
-
     cost_history = Float64[] #コスト関数の箱
-    init_theta_list = theta_init
-    push!(cost_history, cost_tmp(init_theta_list))
+    #init_theta_list = theta_init
+    push!(cost_history, cost_tmp(theta_init))
     #method = "BFGS"
     #options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol)
-    function callback(x)
-        push!(cost_history, cost_tmp(x))
-        if verbose && rank == 0
-            println("iter ", length(cost_history), " ", cost_history[end])
-        end
-    end
-
+    @show cost_tmp(theta_init)
     adam = QCMaterial.Adam(init_theta_list, m, v, eta, eps, beta)
     update_circuit_param!(adam, cost_tmp, n_steps; verbose)
     cost_opt = cost_tmp(init_theta_list)

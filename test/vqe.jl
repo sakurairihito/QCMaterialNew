@@ -35,7 +35,7 @@ import Random
     end
 
     # Compute exact ground-state energy
-    n_electron = 2　
+    n_electron = 2
     @assert mod(n_electron, 2) == 0
     sparse_mat = get_number_preserving_sparse_operator(ham, n_qubit, n_electron);　
     EigVal_min = minimum(eigvals(sparse_mat.toarray()));

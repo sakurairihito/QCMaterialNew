@@ -256,9 +256,13 @@ end
 
 
 function add_parametric_RY_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, angle::Float64)
-    circuit.qcircuit.add_parametric_RY_gate(i - 1, angle)
+    circuit.qcircuit.add_parametric_RY_gate!(i - 1, angle)
 end
 
-#function add_parametric_RZ_gate!(circuit::QulacsParametricQuantumCircuit, i::Int, angle::Float64)
-#    circuit.pyobj.add_parametric_RZ_gate(i-1, angle)
-#end
+function add_parametric_RZ_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, angle::Float64)
+    circuit.qcircuit.add_parametric_RZ_gate!(i-1, angle)
+end
+
+function add_CNOT_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, j::Int)
+    circuit.qcircuit.add_CNOT_gate!(i, j)
+end
