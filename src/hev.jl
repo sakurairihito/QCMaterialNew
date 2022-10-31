@@ -28,38 +28,91 @@ function create_A_gate(circuit, theta, phi, target_two_qubits)
     #theta1 = two_theta[1]
     #theta1 = two_theta[2]
     add_CNOT_gate!(circuit, second, first)
-    add_parametric_RY_gate!(circuit, second, theta+π/2) 
+    add_parametric_RY_gate!(circuit, second, theta+π/2) # theta, phi
     add_parametric_RZ_gate!(circuit, second, phi+π) 
     add_CNOT_gate!(circuit, first, second)
-    add_parametric_RY_gate!(circuit, second, -(theta+π/2))
+    add_parametric_RY_gate!(circuit, second, -(theta+π/2)) #same theta & phi
     add_parametric_RZ_gate!(circuit, second, -(phi+π)) 
     add_CNOT_gate!(circuit, second, first) 
     return circuit 
 end
 
 
-function hea_preserve_particle(n_qubit, n_repeat, thetas, phi, target_two_qubits)
+function hea_preserve_particle(n_qubit, n_repeat)
     #
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
-
     circuit = QulacsParametricQuantumCircuit(n_qubit)
     # X_gate?
     # Whici posiotion ?
-    # init state is all zero
-    
-    #for j in 1:n_repeat
-    for i in 1:n_qubit÷2 
-        #idx = i*2
-        create_A_gate(circuit, thetas[idx-1], thetas[idx], [2*i-1, 2*i]) #奇妙だな。。
-        create_A_gate(circuit, thetas[idx+1], thetas[idx+2], [2, 4])
-        create_A_gate(circuit, thetas[idx+3], thetas[idx+4], [2, 3])   
+    # init state is all zero |0000000>
+    for i in 1:n_qubit
+        if i % 2 == 1
+            continue
+        end
+        add_X_gate!(circuit, i) 
     end
-    #end
-    # 4量子ビットの例
-    #create_A_gate(circuit, thetas[1], thetas[2], [1, 3])
-    #create_A_gate(circuit, thetas[3], thetas[4], [2, 4]) 
-    #create_A_gate(circuit, thetas[5], thetas[6], [2, 3])  
+
+    for j in 1:n_repeat
+        for i in 1:n_qubit÷2 
+            #idx = i*2
+            create_A_gate(circuit, 0.0, 0.0, [2*i-1, 2*i]) #theta
+        end
+        for i in 1:n_qubit÷2-1
+            #idx = i*2
+            create_A_gate(circuit, 0.0, 0.0, [2*i, 2*i+1]) 
+        end
+    end
+    circuit = QulacsVariationalQuantumCircuit(circuit) 
+    return circuit
+end
+
+
+
+function create_A_gate_compact(circuit, theta, phi, target_two_qubits)
+    first = target_two_qubits[1]
+    second = target_two_qubits[2]
+    #theta1 = two_theta[1]
+    #theta1 = two_theta[2]
+    add_CNOT_gate!(circuit, second, first)
+    add_parametric_RY_gate!(circuit, second, theta+π/2) # theta, phi
+    add_parametric_RZ_gate!(circuit, second, phi+π) 
+    add_CNOT_gate!(circuit, first, second)
+    add_parametric_RY_gate!(circuit, second, -(theta+π/2)) #same theta & phi
+    add_parametric_RZ_gate!(circuit, second, -(phi+π)) 
+    add_CNOT_gate!(circuit, second, first) 
+    return circuit 
+end
+
+
+
+function hea_preserve_particle_compact(n_qubit, n_repeat)
+    #
+    if n_qubit <= 0 || n_qubit % 2 != 0
+        error("Invalid n_qubit: $(n_qubit)")
+    end
+    circuit = QulacsParametricQuantumCircuit(n_qubit)
+    # X_gate?
+    # Whici posiotion ?
+    # init state is all zero |0000000>
+    for i in 1:n_qubit
+        if i % 2 == 1
+            continue
+        end
+        add_X_gate!(circuit, i) 
+    end
+
+    for j in 1:n_repeat
+        for i in 1:n_qubit÷2 
+            #idx = i*2
+            create_A_gate(circuit, 0.0, 0.0, [2*i-1, 2*i]) #theta
+        end
+        for i in 1:n_qubit÷2-1
+            #idx = i*2
+            create_A_gate(circuit, 0.0, 0.0, [2*i, 2*i+1]) 
+        end
+    end
+    circuit = QulacsVariationalQuantumCircuit(circuit) 
     return circuit
 end
