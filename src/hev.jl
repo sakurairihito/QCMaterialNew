@@ -1,4 +1,4 @@
-export hev, create_A_gate, hea_preserve_particle
+export hev, create_A_gate, hea_preserve_particle, create_A_gate_compact,hea_preserve_particle_compact 
 
 function hev(n_qubit, depth)
     circuit = QulacsParametricQuantumCircuit(n_qubit)
@@ -68,30 +68,32 @@ function hea_preserve_particle(n_qubit, n_repeat)
     return circuit
 end
 
-
-
-function create_A_gate_compact(circuit, theta, phi, target_two_qubits)
+function create_A_gate_compact(circuit, theta, phi, target_two_qubits,parameterinfo,i, j, k)
+    # k:iteration number of A circuit
+    # (i,j) is indies for A circuit
     first = target_two_qubits[1]
     second = target_two_qubits[2]
     #theta1 = two_theta[1]
     #theta1 = two_theta[2]
     add_CNOT_gate!(circuit, second, first)
     add_parametric_RY_gate!(circuit, second, theta+π/2) # theta, phi
+    push!(parameterinfo, (k, i, j, 1))
     add_parametric_RZ_gate!(circuit, second, phi+π) 
+    push!(parameterinfo, (k, i, j, 2))
     add_CNOT_gate!(circuit, first, second)
     add_parametric_RY_gate!(circuit, second, -(theta+π/2)) #same theta & phi
-    add_parametric_RZ_gate!(circuit, second, -(phi+π)) 
+    push!(parameterinfo, (k, i, j, 1))
+    add_parametric_RZ_gate!(circuit, second, -(phi+π))
+    push!(parameterinfo, (k, i, j, 2)) 
     add_CNOT_gate!(circuit, second, first) 
-    return circuit 
+    return circuit
 end
 
-
-
 function hea_preserve_particle_compact(n_qubit, n_repeat)
-    #
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
+    parameterinfo = []
     circuit = QulacsParametricQuantumCircuit(n_qubit)
     # X_gate?
     # Whici posiotion ?
@@ -105,14 +107,12 @@ function hea_preserve_particle_compact(n_qubit, n_repeat)
 
     for j in 1:n_repeat
         for i in 1:n_qubit÷2 
-            #idx = i*2
-            create_A_gate(circuit, 0.0, 0.0, [2*i-1, 2*i]) #theta
+            create_A_gate_compact(circuit, 0.0, 0.0, [2*i-1, 2*i], parameterinfo, 2*i-1, 2*i, j) #theta
         end
         for i in 1:n_qubit÷2-1
-            #idx = i*2
-            create_A_gate(circuit, 0.0, 0.0, [2*i, 2*i+1]) 
+            create_A_gate_compact(circuit, 0.0, 0.0, [2*i, 2*i+1], parameterinfo, 2*i, 2*i+1, j) 
         end
     end
     circuit = QulacsVariationalQuantumCircuit(circuit) 
-    return circuit
+    return circuit, parameterinfo
 end
