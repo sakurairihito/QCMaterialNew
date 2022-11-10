@@ -40,6 +40,15 @@ function Base.:*(op1::SecondQuantOperator, op2::SecondQuantOperator)
     typeof(op1)(op1.pyobj * op2.pyobj)
 end
 
+function Base.:*(op1::SecondQuantOperator, x::Number)
+    typeof(op1)(op1.pyobj * x)
+end
+
+
+function Base.:^(op1::SecondQuantOperator, x::Number)
+    typeof(op1)(op1.pyobj^2)
+end
+
 function Base.:+(op1::SecondQuantOperator, op2::SecondQuantOperator)
     typeof(op1)(op1.pyobj + op2.pyobj)
 end

@@ -39,11 +39,11 @@ nsite = 8
 n_qubit = 2 * nsite
 U = 4.0
 μ = U / 2
-V = 0.1
+V = 0.0
 ε = [0.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0]
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
-Random.seed!(90)
+Random.seed!(120)
 
 
 #Hamiltonian
@@ -69,7 +69,7 @@ theta_init = rand(num_theta(vc))
 #Perform VQE
 cost_history, thetas_opt =
     QCMaterial.solve_gs(jordan_wigner(ham_op1), vc, state0, theta_init=theta_init, verbose=true,
-        comm=QCMaterial.MPI_COMM_WORLD
+        comm=QCMaterial.MPI_COMM_WORLD, maxiter = 300
     )
 
 

@@ -150,11 +150,20 @@ end
     #println("dect[1]=", res.pyobj.terms)
 end
 
+@testset "core.fermionopertor_square" begin
+    op1 = FermionOperator("4^ 3^ 2 1", 1.0+2.0*im)
+    @test op1 == op1
+    
+    my_op = op1 * op1
+    op1_square = op1^2
+    @test my_op == op1_square
+end
 
-#@testset "load" begin
-#    n_qubit = 2
-#    state = QulacsQuantumState(n_qubit, 0b00)
-#    vec = [1.0 , 1.0, 1.0, 1.0]
-#    vec_load = load!(vec)
-#    @show vec_load
-#end
+@testset "core.fermionopertor_multiply_number" begin
+    op1 = FermionOperator("4^ 3^ 2 1", 1.0+2.0*im)
+    @test op1 == op1
+    
+    my_op = op1 * 2
+    op_mul = FermionOperator("4^ 3^ 2 1", 2.0+4.0*im)
+    @test my_op == op_mul
+end

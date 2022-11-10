@@ -1,8 +1,6 @@
 using Test
 using LinearAlgebra
 using QCMaterial
-
-
 import Random
 import PyCall: pyimport
 

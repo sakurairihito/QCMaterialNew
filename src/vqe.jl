@@ -13,7 +13,7 @@ function solve_gs(
     state0::QuantumState;
     theta_init = nothing,
     comm = MPI_COMM_WORLD,
-    maxiter = 400,
+    maxiter = 300,
     gtol = 1e-7,
     verbose = false,
 )

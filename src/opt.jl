@@ -136,7 +136,9 @@ function update_circuit_param!(opt::Adam, cost, n_steps; verbose=true, change_ra
         end
         #@show opt.eta
         #@show verbose
-        if verbose
+        
+        #if verbose 
+        if verbose && MPI_rank  == 0
             println("iter ", i, " ", cost(opt.tmp_theta))
         end
         g = generate_numerical_grad(cost; verbose)
@@ -221,9 +223,10 @@ function solve_gs_kucj_Adam(
     n_steps=100,
     verbose=false
 )
-    if is_mpi_on && comm === nothing
+    if is_mpi_on && isnothing(comm) 
         error("comm must be given when mpi is one!")
     end
+    
     if comm === nothing
         rank = 0
     else
@@ -256,8 +259,8 @@ function solve_gs_kucj_Adam(
     #method = "BFGS"
     #options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol)
     @show cost_tmp(theta_init)
-    adam = QCMaterial.Adam(init_theta_list, m, v, eta, eps, beta)
+    adam = QCMaterial.Adam(theta_init, m, v, eta, eps, beta)
     update_circuit_param!(adam, cost_tmp, n_steps; verbose)
-    cost_opt = cost_tmp(init_theta_list)
+    cost_opt = cost_tmp(theta_init)
     return cost_opt, get_thetas(circuit)
 end
