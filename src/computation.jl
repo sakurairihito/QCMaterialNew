@@ -1,4 +1,4 @@
-export apply_qubit_op!, get_transition_amplitude_with_obs, apply_ham!
+export apply_qubit_op!, get_transition_amplitude_with_obs, apply_ham!, apply_qubit_ham!
 
 """
 Divide a qubit operator into the hermite and antihermite parts.
@@ -50,11 +50,52 @@ function apply_qubit_op!(
     return z
 end
 
+function apply_qubit_ham!(
+    op::QubitOperator,
+    state_ket::QuantumState,
+    circuit::VariationalQuantumCircuit, state0_bra::QuantumState;
+    minimizer=mk_scipy_minimize(),
+    verbose=true,
+    comm=MPI_COMM_WORLD
+    )
+    #her, antiher = divide_real_imag(op)
+
+    function cost(thetas::Vector{Float64})
+        update_circuit_param!(circuit, thetas)
+        re_ = get_transition_amplitude_with_obs(circuit, state0_bra, op, state_ket)
+        #im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
+        println("transition_H=", -abs(re_))
+        - abs((re_ ))
+    end
+   
+    thetas_init = get_thetas(circuit)
+    if comm !== nothing
+        MPI.Bcast!(thetas_init, 0, comm)
+    end
+    opt_thetas = minimizer(cost, thetas_init)
+    norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
+    if verbose
+       println("norm_right",norm_right)
+    end
+
+    update_circuit_param!(circuit, opt_thetas)
+    re__ = get_transition_amplitude_with_obs(circuit, state0_bra, op, state_ket)
+    #im__ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
+    #z = re__ + im__ * im
+    z = re__
+    if verbose
+        println("Match in apply_qubit_op!: ", z/norm_right)
+    end
+    return z
+end
+
+
 """
 Compute <state_bra| circuit^+ obs |state_ket>, where obs is a hermite observable.
 """
 function get_transition_amplitude_with_obs(
-    circuit::VariationalQuantumCircuit, state0_bra::QuantumState,
+    circuit::VariationalQuantumCircuit, 
+    state0_bra::QuantumState,
     op::QubitOperator,
     state_ket::QuantumState)
     state_bra = copy(state0_bra)
@@ -110,6 +151,4 @@ function apply_ham!(
     end
     return square_norm
 end
-
-
 
