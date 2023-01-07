@@ -26,12 +26,131 @@ using LinearAlgebra
         options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol),
         verbose=verbose))
     println("squared_norm=",squared_norm)
+    # Verify the result
+    # @test≈ 1.0
+    @test isapprox( abs(squared_norm), 1.0, rtol=1e-3)
+end
+
+@testset "computation.apply_qubit_ham" begin
+    n_qubit = 4
+    # Prepare |Psi> = |00>
+    state = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state, 0b0011)
+    op = jordan_wigner(FermionOperator("2^ 2"))
+    # Prepare |phi> = |01>
+    state0_bra = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state0_bra, 0b0011)
+
+    # Fit <01|U(theta)^dagger c_2^dagger |00>
+    
+    circuit_bra = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+
+    update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
+    #update_circuit_param!(circuit_bra, rand(size(circuit_bra.theta_offset)[1])) 
+    verbose = true
+    maxiter = 300
+    gtol = 1e-8
+    squared_norm = apply_qubit_ham!(op, state, circuit_bra, state0_bra, minimizer=QCMaterial.mk_scipy_minimize(
+        options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol),
+        verbose=verbose))
+    println("squared_norm=",squared_norm)
 
 
     # Verify the result
     #@test≈ 1.0
     @test isapprox( abs(squared_norm), 1.0, rtol=1e-3)
 end
+
+
+@testset "computation.apply_qubit_ham2" begin
+    n_qubit = 4
+    # Prepare |Psi> = |00>
+    state = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state, 0b1100)
+    op = jordan_wigner(FermionOperator("2^ 2"))
+    # Prepare |phi> = |01>
+    state0_bra = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state0_bra, 0b0011)
+
+    # Fit <01|U(theta)^dagger c_2^dagger |00>
+    
+    circuit_bra = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+
+    update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
+    #update_circuit_param!(circuit_bra, rand(size(circuit_bra.theta_offset)[1])) 
+    verbose = true
+    maxiter = 300
+    gtol = 1e-8
+    squared_norm = apply_qubit_ham!(op, state, circuit_bra, state0_bra, minimizer=QCMaterial.mk_scipy_minimize(
+        options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol),
+        verbose=verbose))
+    println("squared_norm=",squared_norm)
+
+
+    # Verify the result
+    #@test≈ 1.0
+    @test isapprox( abs(squared_norm), 0.0, rtol=1e-3)
+end
+
+
+@testset "computation.apply_qubit_ham2.5" begin
+    n_qubit = 4
+    # Prepare |Psi> = |00>
+    state = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state, 0b1111)
+    op = jordan_wigner(FermionOperator("2^ 2 1^ 1"))
+    # Prepare |phi> = |01>
+    state0_bra = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state0_bra, 0b1111)
+    # Fit <01|U(theta)^dagger c_2^dagger |00>
+    circuit_bra = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+    update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
+    #update_circuit_param!(circuit_bra, rand(size(circuit_bra.theta_offset)[1])) 
+    verbose = true
+    maxiter = 300
+    gtol = 1e-8
+    squared_norm = apply_qubit_ham!(op, state, circuit_bra, state0_bra, minimizer=QCMaterial.mk_scipy_minimize(
+        options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol),
+        verbose=verbose))
+    println("squared_norm=",squared_norm)
+
+
+    # Verify the result
+    #@test≈ 1.0
+    @test isapprox( abs(squared_norm), 1.0, rtol=1e-3)
+end
+
+
+@testset "computation.apply_qubit_ham3" begin
+    n_qubit = 4
+    # Prepare |Psi> = |00>
+    state = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state, 0b0011)
+    #op = jordan_wigner(FermionOperator("2^ 2"))
+    op = jordan_wigner(FermionOperator("1 3^"))
+    op += jordan_wigner(FermionOperator("3 1^"))
+    # Prepare |phi> = |01>
+    state0_bra = QulacsQuantumState(n_qubit)
+    set_computational_basis!(state0_bra, 0b0011)
+
+    # Fit <01|U(theta)^dagger c_2^dagger |00>
+    
+    circuit_bra = uccgsd(n_qubit, orbital_rot=true, conserv_Sz_singles=false)
+
+    update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
+    #update_circuit_param!(circuit_bra, rand(size(circuit_bra.theta_offset)[1])) 
+    verbose = true
+    maxiter = 300
+    gtol = 1e-8
+    squared_norm = apply_qubit_ham!(op, state, circuit_bra, state0_bra, minimizer=QCMaterial.mk_scipy_minimize(
+        options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol),
+        verbose=verbose))
+    println("squared_norm=",squared_norm)
+    # Verify the result
+    #@test≈ 1.0
+    @test isapprox( abs(squared_norm), 1.0, rtol=1e-3)
+end
+
 
 @testset "computation.apply_numop" begin
     n_qubit = 2
@@ -360,8 +479,6 @@ end
     n_electron_incremented = 3
     state1_bra = create_hf_state(n_qubit, n_electron_incremented)
     #update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
-
-
    
     #c_1に関する、基底状態とフィッティングした状態の間の遷移確率を計算する。
     divide_real_imag(op::QubitOperator) = (op+hermitian_conjugated(op))/2, (op-hermitian_conjugated(op))/2im
@@ -386,7 +503,6 @@ end
     exact_op_ = get_expectation_value(jordan_wigner(op_), state0)
     println("dif=", abs(res - exact_op_))
     @test isapprox(res, exact_op_, rtol=1e-3)
-
 end
 
 

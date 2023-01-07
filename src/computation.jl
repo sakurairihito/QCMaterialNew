@@ -35,6 +35,7 @@ function apply_qubit_op!(
         MPI.Bcast!(thetas_init, 0, comm)
     end
     opt_thetas = minimizer(cost, thetas_init)
+    println("cost_opt=", cost(opt_thetas))
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
        println("norm_right",norm_right)
@@ -42,7 +43,9 @@ function apply_qubit_op!(
 
     update_circuit_param!(circuit, opt_thetas)
     re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
+    println("re_=", re__)
     im__ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
+    println("im_=", im__)
     z = re__ + im__ * im
     if verbose
         println("Match in apply_qubit_op!: ", z/norm_right)
@@ -64,7 +67,7 @@ function apply_qubit_ham!(
         update_circuit_param!(circuit, thetas)
         re_ = get_transition_amplitude_with_obs(circuit, state0_bra, op, state_ket)
         #im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
-        println("transition_H=", -abs(re_))
+        #println("transition_amplitude_value=", -abs(re_))
         - abs((re_ ))
     end
    
@@ -73,6 +76,7 @@ function apply_qubit_ham!(
         MPI.Bcast!(thetas_init, 0, comm)
     end
     opt_thetas = minimizer(cost, thetas_init)
+    println("cost_opt=", cost(opt_thetas))
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
        println("norm_right",norm_right)

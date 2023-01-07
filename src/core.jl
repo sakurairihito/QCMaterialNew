@@ -1,7 +1,7 @@
 using PyCall
 export _convert_qubitop_str_from_py_to_jl
 export FermionOperator
-export rm_identity, load!
+export rm_identity, load!, get_sparse_operator
 
 # i = 1, 2, ...
 up_index(i) = 2 * (i - 1) + 1
@@ -46,7 +46,7 @@ end
 
 
 function Base.:^(op1::SecondQuantOperator, x::Number)
-    typeof(op1)(op1.pyobj^2)
+    typeof(op1)(op1.pyobj^x)
 end
 
 function Base.:+(op1::SecondQuantOperator, op2::SecondQuantOperator)
@@ -102,6 +102,10 @@ end
 
 function get_number_preserving_sparse_operator(ham::FermionOperator, n_qubit::Int, n_electron::Int)::PyObject
     ofermion.linalg.get_number_preserving_sparse_operator(ham.pyobj, n_qubit, n_electron)
+end
+
+function get_sparse_operator(ham::FermionOperator, n_qubit::Int)::PyObject
+    ofermion.linalg.get_sparse_operator(ham.pyobj, n_qubit)
 end
 
 function jordan_wigner(op::FermionOperator)

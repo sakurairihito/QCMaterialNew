@@ -4,7 +4,6 @@ using QCMaterial
 @testset "core.fermionopertor" begin
     op1 = FermionOperator("1^")
     op2 = FermionOperator("1")
-
     @test op1 == op1
     @test op1 != op2
     @test op1 * op2 == FermionOperator("1^ 1")
@@ -166,4 +165,109 @@ end
     my_op = op1 * 2
     op_mul = FermionOperator("4^ 3^ 2 1", 2.0+4.0*im)
     @test my_op == op_mul
+end
+
+
+@testset "core.fermionopertor_H_c^dagger" begin
+    op1 = FermionOperator("1^ 2^ 1 2", 4.0)
+    @test op1 == op1
+    
+    my_op = op1 * FermionOperator("1^", 1.0) 
+    op_mul = FermionOperator("1^ 2^ 1 2 1^", 4.0)
+    @test my_op == op_mul
+end
+
+@testset "core.fermionopertor_c_H" begin
+    op1 = FermionOperator("1", 1.0)
+    oph = FermionOperator("1^ 2^ 1 2", 4.0)
+    #@test op1 == op1
+    
+    my_op = op1 * oph
+    op_mul = FermionOperator("1 1^ 2^ 1 2", 4.0)
+    @test my_op == op_mul
+end
+
+
+@testset "core.fermionopertor_c_H_c^dag" begin
+    op1 = FermionOperator("1", 1.0)
+    oph = FermionOperator("1^ 2^ 1 2", 4.0)
+    #@test op1 == op1
+    
+    my_op = op1 * oph
+    my_op = my_op * FermionOperator("1^", 1.0) 
+    op_mul = FermionOperator("1 1^ 2^ 1 2 1^", 4.0)
+    @test my_op == op_mul
+end
+
+
+@testset "core.fermionopertor_H-E0" begin
+    oph = FermionOperator("1^ 1^", 4.0)
+    
+    #my_op = jordan_wigner(oph)
+    #println("my_op=", my_op)
+    identity = FermionOperator(" ", 2.0)
+    my_op = oph - identity
+    #my_op = my_op .- 2.0
+    #my_op = my_op * FermionOperator("1^", 1.0) 
+    #op_mul = FermionOperator("1 1^ 2^ 1 2 1^", 4.0)
+    #@test my_op == op_mul
+    println("my_op=", my_op)
+end
+
+
+@testset "core.fermionopertor_H-E0^2" begin
+    oph = FermionOperator("2^ 2", -1.0)
+    oph += FermionOperator("1^ 2^ 1 2", -4.0)
+    oph += FermionOperator("1^ 1", -1.0)
+    my_op = oph
+    my_op = my_op^2
+    op_mul = FermionOperator("2^ 2", -1.0)
+    op_mul += FermionOperator("1^ 2^ 1 2", -4.0)
+    op_mul += FermionOperator("1^ 1", -1.0)
+    op_mul = op_mul^2
+    @test my_op == op_mul
+    #println("my_op=", my_op)
+end
+
+
+
+@testset "core.fermionopertor_H-E0^2" begin
+    oph = FermionOperator("1^ 1", 1.0)
+    my_op = oph
+    my_op = my_op^2
+    op_mul = FermionOperator("1^ 1 1^ 1", 1.0)
+    @test my_op == op_mul
+    #println("my_op=", my_op)
+end
+
+
+
+
+@testset "core.fermionopertor_H-E0^2" begin
+    oph = FermionOperator("2^ 2", -1.0)
+    oph += FermionOperator("1^ 2^ 1 2", -4.0)
+    oph += FermionOperator("1^ 1", -1.0)
+    my_op = oph
+    my_op = my_op^2
+    op_mul = FermionOperator("2^ 2", -1.0)
+    op_mul += FermionOperator("1^ 2^ 1 2", -4.0)
+    op_mul += FermionOperator("1^ 1", -1.0)
+    op_mul = op_mul^2
+    @test my_op == op_mul
+    #println("my_op=", my_op)
+end
+
+
+@testset "core.fermionopertor_H-E0^3" begin
+    oph = FermionOperator("2^ 2", -1.0)
+    oph += FermionOperator("1^ 2^ 1 2", -4.0)
+    oph += FermionOperator("1^ 1", -1.0)
+    my_op = oph
+    my_op = my_op^3
+    op_mul = FermionOperator("2^ 2", -1.0)
+    op_mul += FermionOperator("1^ 2^ 1 2", -4.0)
+    op_mul += FermionOperator("1^ 1", -1.0)
+    op_mul = op_mul^3
+    @test my_op == op_mul
+    #println("my_op=", my_op)
 end
