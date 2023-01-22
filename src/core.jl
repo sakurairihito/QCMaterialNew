@@ -1,7 +1,7 @@
 using PyCall
 export _convert_qubitop_str_from_py_to_jl
 export FermionOperator
-export rm_identity, load!, get_sparse_operator
+export rm_identity, load!, get_sparse_operator,parse_pauli_str
 
 # i = 1, 2, ...
 up_index(i) = 2 * (i - 1) + 1

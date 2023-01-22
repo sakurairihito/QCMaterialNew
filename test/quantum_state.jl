@@ -11,3 +11,13 @@ using QCMaterial
     res = get_vector(state)
     @test res == vec
 end
+
+
+@testset "state_sampling" begin
+    n_qubit = 2
+    state = QulacsQuantumState(n_qubit)
+    nshots = 5
+    res = state_sampling(state, nshots)
+    @test res == [0, 0, 0, 0, 0]
+    @show res
+end

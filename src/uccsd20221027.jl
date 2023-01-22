@@ -20,17 +20,8 @@ struct UCCQuantumCircuit <: VariationalQuantumCircuit
     theta_offsets::Vector{Tuple{Int64,Int64,Vector{Float64}}}
 end
 
-"""
-julia> qpqc = QulacsParametricQuantumCircuit(適当な引数与えてね)
-julia> dosome(qpqc, idx) # qpqc.circuit.pyobj.add_H_gate!(circuit, idx) とおなじ
-"""
-
-function add_H_gate!(vqc::VariationalQuantumCircuit, idx::Int)
-    vqc.circuit.pyobj.add_H_gate(idx-1)
-end
-
 #function get_n_qubit(circuit::UCCQuantumCircuit)
-#    get_n_qubit(circuit.circuit)
+#get_n_qubit(circuit.circuit)
 #end
 
 function num_theta(circuit::UCCQuantumCircuit)
@@ -257,6 +248,14 @@ function gen_t2_kucj_2(aa, ab)
     return jordan_wigner(generator)
 end
 
+#function gen_t2_kucj_2(aa, ia, ab, ib)
+#    generator = FermionOperator([(aa, 1), (ab, 1), (ib, 0), (ia, 0)], 1.0im)
+#    #generator = jordan_wigner(generator)
+#    println("jordanwigener(generator)=", jordan_wigner(generator))
+#    println("jordanwigener(generator).pyobj=", jordan_wigner(generator).pyobj)
+#    println("jordanwigener(generator).pyobj=", jordan_wigner(generator).pyobj.terms)
+#    return jordan_wigner(generator)
+#end
 
 """
 Returns UCCGSD circuit.
@@ -354,7 +353,7 @@ end
 Returns k-ucj circuit.
 """
 
-function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, sparse=false, oneimp=true, twoimp=false)
+function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, sparse=false)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
@@ -490,14 +489,7 @@ function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, spar
             # diagonal with respect to spin_orbitals
             for a in 1:norb
                 if sparse
-                    if oneimp
-                        a = 1 #One impurity spatial orbitals (special case)
-                    end
-                    if twoimp
-                        if a >= 3 #a=1,2
-                            continue
-                        end
-                    end
+                    a = 1 #One impurity spatial orbitals (special case)
                 end
                 for b in 1:norb
                     # a<bのみループが回るようにしたい
@@ -603,10 +595,7 @@ function sparse_ansatz(
     nocc=-1,
     orbital_rot=true,
     conserv_Sz_doubles=true,
-    conserv_Sz_singles=true,
-    oneimp = true,
-    twoimp = false,
-    twoimp_bb = false,
+    conserv_Sz_singles=true
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -662,53 +651,13 @@ function sparse_ansatz(
                 continue
             end
             A = [aa ia bb jb]
-
-            #A = [
-            #    
-            #]
             #if in(1, A) == false && in(2, A) == false
             #    continue
             #end
-            if oneimp 
-                if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
-                    #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
-                    continue
-                end
+            if count(i -> (1 <= i <= 2), A) <= 1 #in(1, A) == false && in(2, A) == false
+                #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
+                continue
             end
-            # Impurity = 2
-            #    ◯(5,6)            ◯(11,12)
-            #     \               / 
-            # ◯(7,8) -- ◯(1,2) -- ◯(3,4) -- ◯(13,14)
-            #     /               \ 
-            #    ◯(9,10)            ◯(15,16)
-            #
-            if twoimp
-                if count(i -> (1 <= i <= 4), A) <= 1 #in(1, A) == false && in(2, A) == false
-                    #println("Aの中に2つ以上のimpurityのスピン軌道が含まれる（４サイトの場合）.")
-                    continue
-                elses
-                    maxcnt = 0
-                    for i in 1:4
-                        maxcnt += length(findall(a -> a == i, A))
-                    end
-                    #@show maxcnt
-                    @assert maxcnt >= 2 # assertエラーが起きたら、上の実装がおかしい。maxintが１だったらimpurityが一つなのでなんか変？
-                end
-            end
-
-            if twoimp_bb 
-                if count(i -> (5 <= i <= 10), A) == 1 && count(i -> (11 <= i <= 16), A) == 1
-                    continue
-                end
-            end
-            #if twoimp
-            #    if count(i -> (5 <= i <= 16), A) => 4 #bathの数が４つあったら捨てる。
-            #        continue
-            #    end
-                # if 2 & (3,4,5) の間で粒子の交換があったらサボる？
-                # if でも今のでうまくいかなかったら、UCCGSDでもうまくいくのかわからない。。
-            #end
-
             #t2 operator
             generator = gen_p_t2(aa, ia, bb, jb)
             #Add p-t2 into the circuit

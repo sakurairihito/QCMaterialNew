@@ -555,6 +555,7 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
+
     if taus[1] != 0.0
         error("The first element of taus must be 0!")
     end
@@ -610,7 +611,6 @@ function imag_time_evolve(ham_op::OFQubitOperator, vc::VariationalQuantumCircuit
                 algorithm=algorithm, comm=comm, delta_theta=delta_theta, verbose=verbose) 
             Etau_next = _expval(vc_, state0, thetas_next_, ham_op)
             push!(thetas_tau, thetas_next_)
-
             log_norm_tau[i+1] = log_norm_tau[i] - Etau * (taus[i+1] - taus[i])
         end
     end

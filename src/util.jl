@@ -81,9 +81,11 @@ end
 """
 Make a wrapped scipy minimizer
 """
+
 function mk_scipy_minimize(method::String="BFGS";
     callback=nothing, options=nothing, use_mpi=true, verbose=false)
     scipy_opt = pyimport("scipy.optimize")
+    
     function minimize(cost, x0)
         jac = nothing
         if use_mpi

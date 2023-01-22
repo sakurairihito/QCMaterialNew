@@ -160,6 +160,9 @@ function add_U1_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int, a
     circuit.pyobj.add_U1_gate(idx_qubit - 1, angle)
 end
 
+function add_H_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_H_gate(idx_qubit - 1)
+end
 
 #function add_SWAP_gate!(circuit::QulacsPatametricQuantumCircuit, idx_qubit_1::Int, idx_qubit_2::Int)
 #    circuit.pyobj.add_SWAP_gate(idx_qubit_1-1, idx_qubit_2-1)
@@ -264,5 +267,17 @@ function add_parametric_RZ_gate!(circuit::QulacsVariationalQuantumCircuit, i::In
 end
 
 function add_CNOT_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, j::Int)
-    circuit.qcircuit.add_CNOT_gate!(i, j)
+    circuit.qcircuit.add_CNOT_gate!(i-1, j-1)
+end
+
+function add_H_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
+    circuit.qcircuit.pyobj.add_H_gate(idx_qubit - 1)
+end
+
+function add_Sdag_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
+    circuit.qcircuit.pyobj.add_Sdag_gate(idx_qubit - 1)
+end
+
+function add_S_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
+    circuit.qcircuit.pyobj.add_S_gate(idx_qubit - 1)
 end

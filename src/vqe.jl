@@ -74,9 +74,9 @@ function solve_gs(
         jac = generate_numerical_grad(cost),
         options = options,
     )
-
     return cost_history, get_thetas(circuit)
 end
+
 
 
 function solve_gs_kucj(

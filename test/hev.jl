@@ -3,6 +3,16 @@ using QCMaterial
 using Random
 using LinearAlgebra
 
+@testset "create_H_gate" begin
+    n_qubit = 1
+    state = QulacsQuantumState(n_qubit)
+    circuit = QulacsParametricQuantumCircuit(n_qubit)
+    add_H_gate!(circuit, 1)
+    update_quantum_state!(circuit, state)
+    @show get_vector(state)
+    @test get_vector(state) == ComplexF64[0.7071067811865475 + 0.0im, 0.7071067811865475 + 0.0im]
+end
+
 @testset "create_A_gate" begin
     n_qubit = 2
     # Prepare |Psi> = |00> 
