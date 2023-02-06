@@ -21,3 +21,14 @@ end
     @test res == [0, 0, 0, 0, 0]
     @show res
 end
+
+@testset "state_sampling" begin
+    n_qubit = 2
+    state = QulacsQuantumState(n_qubit)
+    #nshots = 5
+    idex = 1
+    
+    res = update_quantum_state_gate!()
+    #@test res == [0, 0, 0, 0, 0]
+    @show res
+end

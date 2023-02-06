@@ -1,6 +1,6 @@
 export topylist, doublefunc, numerical_grad, read_and_parse_float,write_to_txt_1,write_to_txt_2
 export up_index, down_index, update_circuit_param!, update_quantum_state!, ParamInfo, expand 
-export compact_paraminfo, make_long_param_from_compact, make_compact_params
+export compact_paraminfo, make_long_param_from_compact, make_compact_params, generate_numerical_grad
 using PyCall
 
 function count_qubit_in_qubit_operator(op)
@@ -104,7 +104,7 @@ end
 """
 Generates parallelized numerical grad_cost
 """
-function generate_numerical_grad(f; comm=MPI_COMM_WORLD, verbose=true)
+function generate_numerical_grad(f; comm=MPI_COMM_WORLD, verbose=true, dx=1e-8)
     function grad(x)
         t1 = time_ns()
         if comm === nothing
@@ -113,7 +113,7 @@ function generate_numerical_grad(f; comm=MPI_COMM_WORLD, verbose=true)
             first_idx, size = distribute(length(x), MPI.Comm_size(comm), MPI.Comm_rank(comm))
         end
         last_idx = first_idx + size - 1
-        res = numerical_grad(f, x, first_idx=first_idx, last_idx=last_idx)
+        res = numerical_grad(f, x, dx=dx, first_idx=first_idx, last_idx=last_idx)
         if comm !== nothing
             res = MPI.Allreduce(res, MPI.SUM, comm)
         end

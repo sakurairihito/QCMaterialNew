@@ -281,3 +281,19 @@ function update_quantum_state!(circuit::QulacsQuantumCircuit, state::QulacsQuant
     circuit.pyobj.update_quantum_state(state.pyobj)
 end
 
+"""
+Update a state using a gate
+"""
+
+function update_quantum_state!(gate::QulacsGate, state::QulacsQuantumState)
+    gate.pyobj.update_quantum_state(state.pyobj)
+end
+
+
+"""
+Make a control rotation gate
+"""
+
+function add_control_qubit!(gate::QulacsQuantumGateMatrix, ctrl_idx::Vector{Int}, ctrl_with_value::Int)
+    gate.pyobj.add_control_qubit(ctrl_idx.-1, ctrl_with_value)
+end

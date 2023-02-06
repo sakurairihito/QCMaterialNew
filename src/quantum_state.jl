@@ -72,3 +72,4 @@ end
 function state_sampling(state::QulacsQuantumState, nshots)
     state.pyobj.sampling(nshots)
 end
+

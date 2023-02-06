@@ -29,6 +29,14 @@ function add_H_gate!(vqc::VariationalQuantumCircuit, idx::Int)
     vqc.circuit.pyobj.add_H_gate(idx-1)
 end
 
+function add_Sdag_gate!(vqc::VariationalQuantumCircuit, idx::Int)
+    vqc.circuit.pyobj.add_Sdag_gate(idx-1)
+end
+
+function add_S_gate!(vqc::VariationalQuantumCircuit, idx::Int)
+    vqc.circuit.pyobj.add_S_gate(idx-1)
+end
+
 #function get_n_qubit(circuit::UCCQuantumCircuit)
 #    get_n_qubit(circuit.circuit)
 #end

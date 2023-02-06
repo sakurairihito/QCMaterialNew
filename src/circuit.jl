@@ -22,6 +22,14 @@ function add_X_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_X_gate(idx_qubit - 1)
 end
 
+function add_Y_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_Y_gate(idx_qubit - 1)
+end
+
+function add_Z_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_Z_gate(idx_qubit - 1)
+end
+
 function add_H_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_H_gate(idx_qubit - 1)
 end
@@ -53,6 +61,20 @@ end
 
 function add_U1_gate!(circuit::QulacsQuantumCircuit, idx_qubit::Int, angle::Float64)
     circuit.pyobj.add_U1_gate(idx_qubit - 1, angle)
+end
+
+
+
+function get_gate_count(circuit::QulacsQuantumCircuit)
+    circuit.pyobj.get_gate_count()
+end
+
+function get_gate(circuit::QulacsQuantumCircuit, idx_gate::Int)
+    QulacsGate(circuit.pyobj.get_gate(idx_gate-1))
+end
+
+function add_gate!(circuit::QulacsQuantumCircuit, mat::QulacsQuantumGateMatrix)
+    circuit.pyobj.add_gate(mat.pyobj)
 end
 
 ################################################################################
@@ -140,6 +162,10 @@ function add_Z_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_Z_gate(idx_qubit - 1)
 end
 
+function add_Y_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
+    circuit.pyobj.add_Y_gate(idx_qubit - 1)
+end
+
 function add_X_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_X_gate(idx_qubit - 1)
 end
@@ -162,6 +188,18 @@ end
 
 function add_H_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_H_gate(idx_qubit - 1)
+end
+
+function get_gate_count(circuit::QulacsParametricQuantumCircuit)::Int64
+    circuit.pyobj.get_gate_count()
+end
+
+function get_gate(circuit::QulacsParametricQuantumCircuit, idx_gate::Int)
+    QulacsGate(circuit.pyobj.get_gate(idx_gate-1))
+end
+
+function add_gate!(circuit::QulacsParametricQuantumCircuit, mat::QulacsQuantumGateMatrix)
+    circuit.pyobj.add_gate(mat.pyobj)
 end
 
 #function add_SWAP_gate!(circuit::QulacsPatametricQuantumCircuit, idx_qubit_1::Int, idx_qubit_2::Int)
@@ -278,6 +316,32 @@ function add_Sdag_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int
     circuit.qcircuit.pyobj.add_Sdag_gate(idx_qubit - 1)
 end
 
+function add_X_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
+    circuit.qcircuit.pyobj.add_X_gate(idx_qubit - 1)
+end
+
+function add_Y_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
+    circuit.qcircuit.pyobj.add_Y_gate(idx_qubit - 1)
+end
+
+function add_Z_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
+    circuit.qcircuit.pyobj.add_Z_gate(idx_qubit - 1)
+end
+
 function add_S_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
     circuit.qcircuit.pyobj.add_S_gate(idx_qubit - 1)
+end
+
+function add_gate!(circuit::QulacsVariationalQuantumCircuit, mat::QulacsQuantumGateMatrix)
+    circuit.qcircuit.pyobj.add_gate(mat.pyobj)
+end
+
+function get_gate_count(circuit::QulacsVariationalQuantumCircuit)
+    circuit.qcircuit.pyobj.get_gate_count()
+end
+
+#include("gate.jl")
+
+function get_gate(circuit::QulacsVariationalQuantumCircuit, idx_gate::Int)
+    QulacsGate(circuit.pyobj.get_gate(idx_gate-1))
 end

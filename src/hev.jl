@@ -4,7 +4,7 @@ function hev(n_qubit, depth)
     circuit = QulacsParametricQuantumCircuit(n_qubit)
     for d in 1:depth
         for i in 1:n_qubit
-            add_parametric_RY_gate!(circuit, i, 0.0)
+            add_parametric_RY_gate!(circuit, i, 0.0) # to_matrix_gate!()が定義されていない？
             add_parametric_RZ_gate!(circuit, i, 0.0)
         end
         for i in 1:n_qubit÷2

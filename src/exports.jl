@@ -17,7 +17,7 @@ export get_thetas
 export VariationalQuantumCircuit
 export QulacsVariationalQuantumCircuit
 
-export Gate, QulacsGate, RX, RY, RZ, get_matrix, add_U1_gate!
+export Gate, QulacsGate, RX, RY, RZ, get_matrix, add_U1_gate!, H, Sdag, S, H_update_quantum_state!
 
 export QuantumState, QulacsQuantumState
 export set_computational_basis!, create_hf_state,  state_load!
@@ -28,6 +28,7 @@ export QubitOperator, OFQubitOperator
 export get_term_count, get_n_qubit, terms_dict, is_hermitian
 export get_expectation_value, get_transition_amplitude
 export inner_product
+
 
 export get_expectation_value, create_operator_from_openfermion
 export hermitian_conjugated
@@ -46,3 +47,12 @@ export compute_next_thetas_vqs
 export compute_fubini
 export compute_F
 export overlap, compute_B, compute_B2, compute_B2x, compute_B3 #vqs.jl
+
+export update_quantum_state_gate!
+
+export to_matrix_gate
+export add_control_qubit!
+export get_gate_count
+export get_gate
+export X, Y, Z
+export add_Y_gate!, add_Z_gate!

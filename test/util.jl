@@ -94,3 +94,15 @@ end
     res = make_long_param_from_compact(keys,thetas)
     @test res == [-1.0, -2.0, -3.0, -3.0, -5.0, -5.0, -1.0, -2.0]
 end
+
+
+@testset "update_quanutm_state_using_Gate " begin
+    n_qubit = 1
+    state = QulacsQuantumState(n_qubit)
+    index = 1
+    h_gate = H(index)
+    update_quantum_state!(h_gate, state)
+    @show state
+    @show get_vector(state)
+    @test get_vector(state) == [0.7071067811865475 + 0.0im, 0.7071067811865475 + 0.0im]
+end
