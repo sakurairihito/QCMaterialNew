@@ -8,7 +8,6 @@ abstract type QuantumGateMatrix end
 struct QulacsGate <: Gate
     pyobj::PyObject
 end
-
 struct QulacsQuantumGateMatrix <: QuantumGateMatrix
     pyobj::PyObject
 end
@@ -59,7 +58,9 @@ function Z(target::Int)
     QulacsGate(qulacs.gate.Z(target-1))
 end
 
-
+function Pauli(target_list::Vector{Int}, pauli_index::Vector{Int})
+    QulacsGate(qulacs.gate.Pauli(target_list.-1, pauli_index))
+end
 
 #function update_quantum_state!(gate::QulacsGate, state::QulacsQuantumState)
 #    gate.pyobj.update_quantum_state(state)

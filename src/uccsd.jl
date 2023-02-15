@@ -29,6 +29,11 @@ function add_H_gate!(vqc::VariationalQuantumCircuit, idx::Int)
     vqc.circuit.pyobj.add_H_gate(idx-1)
 end
 
+function add_X_gate!(vqc::VariationalQuantumCircuit, idx::Int)
+    vqc.circuit.pyobj.add_X_gate(idx-1)
+end
+
+
 function add_Sdag_gate!(vqc::VariationalQuantumCircuit, idx::Int)
     vqc.circuit.pyobj.add_Sdag_gate(idx-1)
 end
@@ -37,6 +42,13 @@ function add_S_gate!(vqc::VariationalQuantumCircuit, idx::Int)
     vqc.circuit.pyobj.add_S_gate(idx-1)
 end
 
+function get_gate_count(uc::UCCQuantumCircuit)
+    uc.circuit.pyobj.get_gate_count()
+end
+
+function get_gate(uc::UCCQuantumCircuit, idx_gate::Int)
+    QulacsGate(uc.circuit.pyobj.get_gate(idx_gate-1))
+end 
 #function get_n_qubit(circuit::UCCQuantumCircuit)
 #    get_n_qubit(circuit.circuit)
 #end
@@ -277,7 +289,8 @@ function uccgsd(
     conserv_Sz_singles=true,
     Doubles=true,
     uccgsd=true,
-    p_uccgsd=false
+    p_uccgsd=false,
+    nx=0
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -286,6 +299,10 @@ function uccgsd(
         error("nocc must be given when orbital_rot = false!")
     end
     circuit = UCCQuantumCircuit(n_qubit)
+    
+    for i in 1:nx
+        add_X_gate!(circuit, i)
+    end
 
     norb = n_qubit ÷ 2
     cr_range = orbital_rot ? (1:norb) : (1+nocc:norb)
@@ -362,12 +379,24 @@ end
 Returns k-ucj circuit.
 """
 
-function kucj(n_qubit; conserv_Sz_singles=true, k=1, ucj=true, orbrot=true, sparse=false, oneimp=true, twoimp=false)
+function kucj(n_qubit; 
+    conserv_Sz_singles=true, 
+    k=1, 
+    ucj=true, 
+    orbrot=true, 
+    sparse=false, 
+    oneimp=true, 
+    twoimp=false,
+    nx=0)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
     end
 
     circuit = UCCQuantumCircuit(n_qubit)
+    for i in 1:nx
+        add_X_gate!(circuit, i)
+    end
+    
     norb = n_qubit ÷ 2
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)

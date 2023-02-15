@@ -170,6 +170,7 @@ function add_X_gate!(circuit::QulacsParametricQuantumCircuit, idx_qubit::Int)
     circuit.pyobj.add_X_gate(idx_qubit - 1)
 end
 
+
 function add_CNOT_gate!(circuit::QulacsParametricQuantumCircuit, control::Int, target::Int)
     circuit.pyobj.add_CNOT_gate(control - 1, target - 1)
 end
@@ -253,15 +254,21 @@ end
 """
 Wrap a QulacsParametricQuantumCircuit object, which will not be copied.
 """
+
+# ストラクトを定義して、内部コンストラクタを呼び出している。
 struct QulacsVariationalQuantumCircuit <: VariationalQuantumCircuit
     qcircuit::QulacsParametricQuantumCircuit #qcircuit=>field, QulacsParametricQuantumCircuit::型(具体型で良い)
 end
+
+
 
 #=
 abstract type Animal end
 struct Goma <: Animal
       nakigoe::String
 end
+
+goma = Goma("Kyu") # Kyuという鳴き声をフィールドに入れる。
 
 struct MyFamily
     members::Vector{Goma}
@@ -297,15 +304,15 @@ end
 
 
 function add_parametric_RY_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, angle::Float64)
-    circuit.qcircuit.add_parametric_RY_gate!(i - 1, angle)
+    circuit.qcircuit.pyobj.add_parametric_RY_gate!(i - 1, angle)
 end
 
 function add_parametric_RZ_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, angle::Float64)
-    circuit.qcircuit.add_parametric_RZ_gate!(i-1, angle)
+    circuit.qcircuit.pyobj.add_parametric_RZ_gate!(i-1, angle)
 end
 
 function add_CNOT_gate!(circuit::QulacsVariationalQuantumCircuit, i::Int, j::Int)
-    circuit.qcircuit.add_CNOT_gate!(i-1, j-1)
+    circuit.qcircuit.pyobj.add_CNOT_gate!(i-1, j-1)
 end
 
 function add_H_gate!(circuit::QulacsVariationalQuantumCircuit, idx_qubit::Int)
@@ -343,5 +350,5 @@ end
 #include("gate.jl")
 
 function get_gate(circuit::QulacsVariationalQuantumCircuit, idx_gate::Int)
-    QulacsGate(circuit.pyobj.get_gate(idx_gate-1))
+    QulacsGate(circuit.qcircuit.pyobj.get_gate(idx_gate-1))
 end

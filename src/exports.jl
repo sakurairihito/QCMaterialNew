@@ -55,4 +55,5 @@ export add_control_qubit!
 export get_gate_count
 export get_gate
 export X, Y, Z
-export add_Y_gate!, add_Z_gate!
+export add_Y_gate!, add_Z_gate!,add_H_gate!
+export Pauli 

@@ -18,7 +18,7 @@
 
 # %%
 export apply_qubit_op!, get_transition_amplitude_with_obs, apply_ham!, apply_qubit_ham!
-
+export divide_real_imag
 # %%
 """
 Divide a qubit operator into the hermite and antihermite parts.
@@ -36,10 +36,12 @@ The circuit object will be updated on exit.
 The squared norm of op * |state_ket>  will be returned.
 state0_bra will not be modified.
 """
+
 function apply_qubit_op!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, state0_bra::QuantumState;
+    circuit::VariationalQuantumCircuit, 
+    state0_bra::QuantumState;
     minimizer=mk_scipy_minimize(),
     verbose=true,
     comm=MPI_COMM_WORLD

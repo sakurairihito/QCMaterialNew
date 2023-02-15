@@ -1,6 +1,7 @@
 export topylist, doublefunc, numerical_grad, read_and_parse_float,write_to_txt_1,write_to_txt_2
 export up_index, down_index, update_circuit_param!, update_quantum_state!, ParamInfo, expand 
 export compact_paraminfo, make_long_param_from_compact, make_compact_params, generate_numerical_grad
+export mk_scipy_minimize
 using PyCall
 
 function count_qubit_in_qubit_operator(op)
