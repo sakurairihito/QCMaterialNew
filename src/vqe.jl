@@ -1,8 +1,8 @@
 using PyCall
 using LinearAlgebra
-
+export get_expected_value_sampling, solve_gs_sampling
 #using SciPy: SciPy
-
+export solve_gs
 """
 Compute ground state
 """
@@ -47,7 +47,7 @@ function solve_gs(
     end
 
     if theta_init === nothing
-        theta_init = rand(size(circuit.theta_offsets)[1])
+        theta_init = rand(get_thetas(circuit))
     end
     if comm !== nothing
         # Make sure all processes use the same initial values
@@ -144,4 +144,138 @@ function solve_gs_kucj(
     )
     return cost_history, get_thetas(circuit)
     #return cost_history, get_thetas(circuit)
+end
+
+
+function get_expected_value_sampling(ham, state; nshots=2^15)
+    n_qubit = get_n_qubit(state)
+    total_energy = 0
+    for (k, v) in terms_dict(ham) 
+        #circuit_rot = QulacsParametricQuantumCircuit(n_qubit) 
+        #circuit_rot = UCCQuantumCircuit(n_qubit)  
+        
+        #update_quantum_state!(h_gate, state)
+        for (index, op_name) in k 
+            if op_name == "Y" 
+                Sdag_gate = Sdag(index)
+                update_quantum_state!(Sdag_gate, state) 
+                
+                H_gate = H(index)
+                update_quantum_state!(H_gate, state) 
+            elseif op_name == "X" 
+                H_gate = H(index)
+                update_quantum_state!(H_gate, state) 
+            end 
+        end 
+ 
+        # state に circuit_rotをかける 
+        
+
+        # 期待値の測定を行う 
+        samples = state_sampling(state, nshots) 
+        estimated_energy = 0
+        mask = UInt(sum([1*2^(x[1] - 1) for x in k]))  
+        for s in samples
+            #@show s
+            bitcount = count_ones(s & mask) #1のビット数を数える。
+            estimated_energy += (-1)^bitcount/nshots #Z|0>->1|0>, Z|1>->-1|1>
+        end
+        
+        # pauli_coeffをかける 
+        estimated_energy = estimated_energy * (v) 
+        total_energy += estimated_energy
+
+        # 上でかけた操作をもとに戻す。
+        # circuit_rot_inv = QulacsParametricQuantumCircuit(n_qubit)
+        # dx=1e-8
+        #circuit = UCCQuantumCircuit(n_qubit)
+        for (index, op_name) in k
+            if op_name == "Y"
+                H_gate = H(index)
+                update_quantum_state!(H_gate, state) 
+                Sdag_gate = S(index)
+                update_quantum_state!(Sdag_gate, state) 
+            elseif op_name == "X"
+                H_gate = H(index)
+                update_quantum_state!(H_gate, state) 
+            end
+        end
+    end
+    # Hamiltonianの定数部分を足す
+    #
+    #@show total_energy
+    if haskey(ham.pyobj.terms, ())
+        total_energy += (ham.pyobj.terms[()])   
+    end
+
+    return real(total_energy)
+end
+
+
+function solve_gs_sampling(
+    ham_qubit::QubitOperator,
+    circuit::VariationalQuantumCircuit,
+    state0::QuantumState;
+    theta_init = nothing,
+    comm = MPI_COMM_WORLD,
+    maxiter = 300,
+    gtol = 1e-7,
+    verbose = false,
+    nshots = 2^15,
+    dx=1e-1
+)
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+    if comm === nothing
+        rank = 0
+    else
+        rank = MPI.Comm_rank(comm)
+    end
+    # これを使わずに SciPy.optimize でよい
+    scipy_opt = pyimport("scipy.optimize")
+
+
+    # Define a cost function
+    function cost(theta_list)
+        # 与えられたtheta_listを変える必要がある
+        # theta_list = [1.0, 2.0,,, 100, 101,,,]
+        # ここで軌道のペアが同じパラメータの値は揃えるようにtheta_listがupdateされる。
+        update_circuit_param!(circuit, theta_list)
+        state = copy(state0)
+        update_quantum_state!(circuit, state)
+        return get_expected_value_sampling(ham_qubit, state, nshots=nshots)
+        #return get_expectation_value(ham_qubit, state)
+    end
+
+    if theta_init === nothing
+        theta_init = rand((num_theta(circuit)))
+    end
+    if comm !== nothing
+    #    # Make sure all processes use the same initial values
+        MPI.Bcast!(theta_init, 0, comm)
+    end
+    cost_history = Float64[] #コスト関数の箱
+    init_theta_list = theta_init
+    push!(cost_history, cost(init_theta_list))
+
+    method = "BFGS"
+    options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol)
+    function callback(x)
+        push!(cost_history, cost(x))
+        if verbose && rank == 0
+            println("iter ", length(cost_history), " ", cost_history[end])
+        end
+    end
+    # opt = SciPy.optimize.minimize(...)
+    
+    opt = scipy_opt.minimize(
+        cost,
+        init_theta_list,
+        method = method,
+        callback = callback,
+        jac = generate_numerical_grad(cost, dx=dx),
+        options = options,
+    )
+    return cost_history, get_thetas(circuit)
 end

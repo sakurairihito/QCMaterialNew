@@ -84,13 +84,13 @@ Make a wrapped scipy minimizer
 """
 
 function mk_scipy_minimize(method::String="BFGS";
-    callback=nothing, options=nothing, use_mpi=true, verbose=false)
+    callback=nothing, options=nothing, use_mpi=true, verbose=false, dx=1e-8)
     scipy_opt = pyimport("scipy.optimize")
     
     function minimize(cost, x0)
         jac = nothing
         if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose)
+            jac = generate_numerical_grad(cost, verbose=verbose, dx=dx)
             if verbose
                 println("Using parallelized numerical grad")
             end
