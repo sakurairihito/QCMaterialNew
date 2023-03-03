@@ -3,35 +3,13 @@ export generate_impurity_ham_with_1imp_multibath
 export generate_impurity_ham_with_2imp_multibath
 export generate_impurity_ham_with_1imp_3bath_dmft
 
-function generate_ham_1d_hubbard(t::Float64, U::Float64, nsite::Integer, μ::Float64)
-    #up_index,down_indexの定義は、QC_materialを参照。
-    #up = up_index(i)
-    #down = down_index(i)
+abstract type Hamiltonian end
 
-    ham = FermionOperator()
-
-    #斥力項
-    for i in 1:nsite
-        ham += FermionOperator("$(up_index(i))^ $(down_index(i))^ $(up_index(i)) $(down_index(i))", -U) #左側に生成演算子。右際に消滅演算子をもっていく過程で半交換関係が1回でマイナスをつける。
-    end
-    #ホッピング項
-    for i in 1:nsite-1
-        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t) 
-        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t) 
-        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t) 
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t) 
-    end
-
-    #ケミカルポテンシャルの項
-    for i in 1:nsite
-        ham += FermionOperator("$(up_index(i))^  $(up_index(i)) ", -μ) 
-        ham += FermionOperator("$(down_index(i))^ $(down_index(i))", -μ)
-    end
-    ham
+struct ImpurityHam<:Hamiltonian
+    ham::FermionOperator
 end
 
-
-function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::Float64, ε::Vector{Float64}, nsite::Integer)
+function ImpurityHam(U::Float64, V::Float64, μ::Float64, ε::Vector{Float64}, nsite::Integer)
     spin_index_functions = [up_index, down_index]
     so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
     ham = FermionOperator()
@@ -55,6 +33,33 @@ function generate_impurity_ham_with_1imp_multibath(U::Float64, V::Float64, μ::F
         for i in 2:nsite
             ham += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε[i])
         end
+    end
+    ImpurityHam(ham)
+end
+
+function generate_ham_1d_hubbard(t::Float64, U::Float64, nsite::Integer, μ::Float64)
+    #up_index,down_indexの定義は、QC_materialを参照。
+    #up = up_index(i)
+    #down = down_index(i)
+
+    ham = FermionOperator()
+
+    #斥力項
+    for i in 1:nsite
+        ham += FermionOperator("$(up_index(i))^ $(down_index(i))^ $(up_index(i)) $(down_index(i))", -U) #左側に生成演算子。右際に消滅演算子をもっていく過程で半交換関係が1回でマイナスをつける。
+    end
+    #ホッピング項
+    for i in 1:nsite-1
+        ham += FermionOperator("$(up_index(i+1))^ $(up_index(i))", t) 
+        ham += FermionOperator("$(up_index(i))^ $(up_index(i+1))", t) 
+        ham += FermionOperator("$(down_index(i+1))^ $(down_index(i))", t) 
+        ham += FermionOperator("$(down_index(i))^ $(down_index(i+1))", t) 
+    end
+
+    #ケミカルポテンシャルの項
+    for i in 1:nsite
+        ham += FermionOperator("$(up_index(i))^  $(up_index(i)) ", -μ) 
+        ham += FermionOperator("$(down_index(i))^ $(down_index(i))", -μ)
     end
     ham
 end

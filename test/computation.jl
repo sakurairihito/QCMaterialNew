@@ -785,14 +785,16 @@ end
 
 @testset "apply_qubit_op_sampling" begin
     MPI_COMM_WORLD = MPI.COMM_WORLD
-    U = 0.0
-    V = 0.0
+    U = 1.0
+    V = 1.0
     μ = 1.0
     ε = [1.0, 0.0]
     nsite = 2
     nqubits = nsite * 2
-    ham = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε, nsite) 
-    ham_q = jordan_wigner(ham)  
+    #ham = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε, nsite) 
+    #ham_q = jordan_wigner(ham)  
+    #op = FermionOperator(" 1^", 1.0) 
+    #op = jordan_wigner(op)
 
     circuit_bra = uccgsd(nqubits, nx=3)
     Random.seed!(120)
@@ -809,7 +811,7 @@ end
     op_q = jordan_wigner(op_q)
 
     #cdag = jordan_wigner(FermionOperator("1^"))
-    fitting_fop = apply_qubit_ham_sampling!(op_q, state_augmented, circuit_bra, circuit_ket, nshots=2^20, dx=1e-1)
+    fitting_fop = apply_qubit_op_sampling!(op_q, state_augmented, circuit_bra, circuit_ket, nshots=2^20, dx=1e-1)
     @show fitting_fop
 
     #exact

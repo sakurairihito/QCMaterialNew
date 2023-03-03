@@ -5,11 +5,28 @@ abstract type QuantumCircuit end
 # sub abstract type
 abstract type ParametricQuantumCircuit <: QuantumCircuit end
 
+# abstract type Number end
+# abstract type Real <: Number end
+# ここまで抽象型
+# integer も抽象型、
+# int32, in64が具体型
+# 具体型は、typeof(v) = tとなるようなtがあればそのtは具体
+# isconcretetype()
+# julia> isconcretetype(Int) -> true
 # QuantumCircuit
+
+# abstract type Azarashi end
+# struct goma <: Azarashi
+#     nakigoe::String # field 
+#     weight::Float64
+#     height::Float64
+#end
 struct QulacsQuantumCircuit <: QuantumCircuit
     pyobj::PyObject
 end
 
+# 25~26行目はデフォルト、QulacsQuantumCircuitの生成
+# Qulacs
 function QulacsQuantumCircuit(n_qubit::Int)
     QulacsQuantumCircuit(qulacs.QuantumCircuit(n_qubit))
 end

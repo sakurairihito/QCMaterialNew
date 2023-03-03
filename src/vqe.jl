@@ -3,6 +3,7 @@ using LinearAlgebra
 export get_expected_value_sampling, solve_gs_sampling
 #using SciPy: SciPy
 export solve_gs
+
 """
 Compute ground state
 """
