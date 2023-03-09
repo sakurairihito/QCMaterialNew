@@ -743,108 +743,73 @@ function apply_qubit_op_sampling!(
     gtol = 1e-7,
     disp = true
     )
-    #@show "improve"
+    @show "1"
+
     if comm === nothing
         rank = 0
     else
         rank = MPI.Comm_rank(comm)
     end
-
-    #@show "2"
-
+    @show "2"
     her, antiher = divide_real_imag(op) # op = jordan(c^dag) = (X + i Y)
-     
+    @show "3"
     scipy_opt = pyimport("scipy.optimize")
     function cost(thetas::Vector{Float64})
-        #=
-        circuit_braを定義する？
-        =#
         update_circuit_param!(circuit_bra, thetas)
-
-        #op_re_real = get_transition_amplitude_with_obs_sampling_re(circuit_ket, state0_bra, her, state_ket)
-        #image op_re
-
         op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-        #op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, her, circuit_ket; nshots)
-        #op_re_ = op_re_re + im * op_re_im
-        
-        #op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
         op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-        #op_im_ = op_im_re + im * op_im_im
-        #op_transioton_amp = op_re_ + im * op_im_
-        #abs2(1.0 - (op_re_ + op_im_ * im))
-        # fitting_normは常に実数
-        # 虚部は、op_im*im
-        # 合計で、op_re_re + im * 虚部
-        #abs2(1.0 - (op_re_re + op_im_im * im * im))
-        #@show op_re_re
-        #@show op_im_im
-        #@show op_re_re + op_im_im * im * im
-        
-        abs2(1.0 -  (op_re_re + op_im_im * im * im))
-        #-abs2( (op_re_re + op_im_im * im * im))
+        res = abs2(1.0 -  (op_re_re + op_im_im * im * im))
+        #@show res
+        if comm === nothing
+            res = MPI.Allreduce(res, MPI.SUM, comm)
+            res = res/MPI.Comm_size(comm)
+        end
+        #@show after res
+        #@show res
+        return res
     end
           
     cost_history = []
     function callback(x)
         push!(cost_history, cost(x))
-        #@show rank
+
         if verbose && rank == 0
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
     
+    @show "4"
     function minimize(cost, x0)
-        jac = nothing
-        #@show "3"
-        #if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose, dx=dx)
-            #@show "4"
-            if verbose
-                println("Using parallelized numerical grad")
-            end
-            #@show "5"
-        #end
+        @show "7"
+        jac = generate_numerical_grad(cost, comm=comm, verbose=verbose, dx=dx)
+        @show "8"
+        if verbose
+            println("Using parallelized numerical grad")
+        end
+        @show "9"
         options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol, "disp" => disp)
         res = scipy_opt.minimize(cost, x0, method="BFGS", 
             jac=jac, callback=callback, options=options) #optio@[^ns?
         res["x"]
     end
-        
-    #=
-    push!(cost_history, cost(x))
-    if verbose && rank == 0
-        println("iter ", length(cost_history), " ", cost_history[end])
-    end
-    =#
-
-    thetas_init = get_thetas(circuit_bra)
+    
+    @show "5"
+    theta_init = get_thetas(circuit_bra)
+    @show theta_init
+    @show "5-1"
     if comm !== nothing
-        MPI.Bcast!(thetas_init, 0, comm)
+        @show "5-2"
+        #MPI.Bcast!(thetas_init, 0, comm)
+        MPI.Bcast!(theta_init, 0, comm)
+        @show "5-3"
     end
+
+    @show "6"
     opt_thetas = minimize(cost, thetas_init)
-    #println("cost_opt=", cost(opt_thetas))
-
-    #norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
-    #if verbose
-    #   println("norm_right", norm_right)
-    #end
-
     update_circuit_param!(circuit_bra, opt_thetas)
-    #@show "end"
     op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    #op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    #re__ = op_re_re + im * op_re_im
-    #println("re__=", re__)
-    #op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
     op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-    #im__ = op_im_re + im * op_im_im
-    #println("im__=", im__)
-    #z = re__ + im__ * im
     z = op_re_re + op_im_im * im * im
-    #if verbose
-    #    println("Match in apply_qubit_op!: ", z/norm_right)
-    #end
     return z
 end
 

@@ -75,6 +75,7 @@ function solve_gs(
         jac = generate_numerical_grad(cost),
         options = options,
     )
+    
     return cost_history, get_thetas(circuit)
 end
 
@@ -239,14 +240,23 @@ function solve_gs_sampling(
 
     # Define a cost function
     function cost(theta_list)
-        # 与えられたtheta_listを変える必要がある
-        # theta_list = [1.0, 2.0,,, 100, 101,,,]
-        # ここで軌道のペアが同じパラメータの値は揃えるようにtheta_listがupdateされる。
         update_circuit_param!(circuit, theta_list)
         state = copy(state0)
         update_quantum_state!(circuit, state)
-        return get_expected_value_sampling(ham_qubit, state, nshots=nshots)
-        #return get_expectation_value(ham_qubit, state)
+        
+        # 微分を計算するためにコスト関数を計算するとき→ allreduceしない
+        res = get_expected_value_sampling(ham_qubit, state, nshots=nshots)
+        
+        #コスト関数の値のみが欲しいとき→全プロセスで同じ値が欲しいので、allreduceしてプロセス数で割る
+        # 最適化の途中で、コスト関数の値だけを計算するときがあるんですよね、1次元探索とか。
+        # その時はallreduceして全プロセスで値を一致させないと行けない。 
+        if comm === nothing
+            
+            res = MPI.Allreduce(res, MPI.SUM, comm)
+            res = res/MPI.Comm_size(comm)
+        end
+
+        return res
     end
 
     if theta_init === nothing
@@ -263,10 +273,12 @@ function solve_gs_sampling(
     method = "BFGS"
     options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol)
     function callback(x)
+        #@show "callback begin"
         push!(cost_history, cost(x))
         if verbose && rank == 0
             println("iter ", length(cost_history), " ", cost_history[end])
         end
+        #@show "callback end"
     end
     # opt = SciPy.optimize.minimize(...)
     
@@ -275,8 +287,11 @@ function solve_gs_sampling(
         init_theta_list,
         method = method,
         callback = callback,
-        jac = generate_numerical_grad(cost, dx=dx),
+        jac = generate_numerical_grad(cost,  comm=comm, verbose=true, dx=dx),
         options = options,
     )
+    #println("after opt") 
+    #println(cost_history)
+    #println(cost_history[end])
     return cost_history, get_thetas(circuit)
 end
