@@ -486,7 +486,25 @@ function kucj(n_qubit;
 
             #Doubles
             #diagonal with respect to spatial orbitals a, b
+            
             for a in 1:norb
+                if sparse 
+                    # オンサイトのバスサイトを削る。
+                    if oneimp
+                        # 一つのバスサイトに関するパラメータを削る.1は不純物
+                        if a >= 2
+                            continue
+                        end
+                    end
+
+                    if twoimp
+                        # 一つのバスサイトに関するパラメータを削る。1,2は不純物
+                        if a >=3
+                            continue
+                        end
+                    end
+                end
+                        
                 aa = so_idx(a, 1) # spin_a = up
                 bb = so_idx(a, 2) # spin_b = down
                 # それ以外は、0（スピンに関して対角) or 同じ値(spin_a=2, spin_b = 1)

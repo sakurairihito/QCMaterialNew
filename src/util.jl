@@ -106,6 +106,7 @@ end
 Generates parallelized numerical grad_cost
 """
 function generate_numerical_grad(f; comm=MPI_COMM_WORLD, verbose=true, dx=1e-8)
+    #@show f
     function grad(x)
         t1 = time_ns()
         if comm === nothing
@@ -115,9 +116,11 @@ function generate_numerical_grad(f; comm=MPI_COMM_WORLD, verbose=true, dx=1e-8)
         end
         last_idx = first_idx + size - 1
         res = numerical_grad(f, x, dx=dx, first_idx=first_idx, last_idx=last_idx)
+        
         if comm !== nothing
             res = MPI.Allreduce(res, MPI.SUM, comm)
         end
+
         t2 = time_ns()
         if verbose && MPI_rank == 0
             println("g: ", (t2-t1)*1e-9)

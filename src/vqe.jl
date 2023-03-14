@@ -26,6 +26,8 @@ function solve_gs(
     else
         rank = MPI.Comm_rank(comm)
     end
+
+    @show comm
     # これを使わずに SciPy.optimize でよい
     scipy_opt = pyimport("scipy.optimize")
 
@@ -102,6 +104,7 @@ function solve_gs_kucj(
     else
         rank = MPI.Comm_rank(comm)
     end
+    
     # これを使わずに SciPy.optimize でよい
     scipy_opt = pyimport("scipy.optimize")
     # 冗長なパラメータが代入される(θlong)
@@ -229,6 +232,8 @@ function solve_gs_sampling(
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
+
+
     if comm === nothing
         rank = 0
     else
@@ -250,22 +255,24 @@ function solve_gs_sampling(
         #コスト関数の値のみが欲しいとき→全プロセスで同じ値が欲しいので、allreduceしてプロセス数で割る
         # 最適化の途中で、コスト関数の値だけを計算するときがあるんですよね、1次元探索とか。
         # その時はallreduceして全プロセスで値を一致させないと行けない。 
-        if comm === nothing
-            
+        println("before Allreduce")
+        if comm !== nothing
             res = MPI.Allreduce(res, MPI.SUM, comm)
             res = res/MPI.Comm_size(comm)
         end
-
+        println("after Allreduce")
         return res
     end
 
     if theta_init === nothing
         theta_init = rand((num_theta(circuit)))
     end
+
     if comm !== nothing
-    #    # Make sure all processes use the same initial values
+    ## Make sure all processes use the same initial values
         MPI.Bcast!(theta_init, 0, comm)
     end
+    
     cost_history = Float64[] #コスト関数の箱
     init_theta_list = theta_init
     push!(cost_history, cost(init_theta_list))
