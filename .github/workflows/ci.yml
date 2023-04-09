@@ -19,7 +19,7 @@ jobs:
       matrix:
         version:
           #- '1.0'
-          #- '1.4'
+          - '1.8'
           - '1.6'
           #- 'nightly'
         os:
