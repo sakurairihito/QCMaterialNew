@@ -9,9 +9,9 @@ import PyCall: pyimport
 Random.seed!(100)
 nsite = 2
 n_qubit = 2 * nsite 
-U = 0.0
-#μ = U/2
-μ = 0.5
+U = 1.0
+μ = U/2
+#μ = 0.5
 ε1 = [1.0, 1.0] 
 V= 1.0
 #ham = generate_ham_1d_hubbard(t, U, nsite, μ)
@@ -20,17 +20,17 @@ ham_op = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε1, nsite)
 n_electron = 2
 sparse_mat = get_number_preserving_sparse_operator(ham_op, n_qubit, n_electron);
 EigVal_min = minimum(eigvals(sparse_mat.toarray()));
-println("sparse_mat.toarray())=", size(sparse_mat.toarray()))
+#println("sparse_mat.toarray())=", size(sparse_mat.toarray()))
 #computer ground state
-state_gs_exact = QulacsQuantumState(n_qubit)
-vec_gs_exact = eigvecs((sparse_mat.toarray()))[:, 1]
+#state_gs_exact = QulacsQuantumState(n_qubit)
+#vec_gs_exact = eigvecs((sparse_mat.toarray()))[:, 1]
 #e_gs_exact = eigvals((sparse_mat.toarray()))
 #println("e_gs_exact=", e_gs_exact)
 # @show state
 # vec = [0, 1, 2, 3]
-println(vec_gs_exact)
-state_load!(state_gs_exact, vec_gs_exact) #exact_ground_state
-println("state_load QK")
+#println(vec_gs_exact)
+#state_load!(state_gs_exact, vec_gs_exact) #exact_ground_state
+#println("state_load QK")
 ham = jordan_wigner(ham_op)
 #@show op
 # perform VQE for generating reference state (state)
@@ -60,7 +60,7 @@ op = jordan_wigner(FermionOperator("1^"))
 n_electron_incremented = 3
 state0_bra = create_hf_state(n_qubit, n_electron_incremented)
 
-# Fit <1100|U(theta)^dagger c_2^dagger |GS>
+# Fit <1100|U(theta)^dagger c_2^dagger |GS> 
 circuit_bra = uccgsd(n_qubit, orbital_rot=true)
 update_circuit_param!(circuit_bra, rand(num_theta(circuit_bra)))
 #update_circuit_param!(circuit_bra, rand(size(circuit_bra.theta_offset)[1])) 
@@ -85,6 +85,7 @@ op_im = get_transition_amplitude(op_im, state0, state0_bra)
 #res = get_transition_amplitude(op2, state0, state0_bra)
 #println("res=", res)
 res = op_re + im * op_im
+@show res
 res = res * squared_norm
 println("res*coeff=",res)
 
@@ -214,7 +215,6 @@ println("dif_mom1=", abs(mom2 - exact_mom2))
 
 
 ##  3次のモーメント ##
-
 # (H-E0)^3の定義をする。
 ham_op_mom3_exact = ham_op_mom_exact^3
 

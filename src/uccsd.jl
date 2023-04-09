@@ -387,6 +387,7 @@ function kucj(n_qubit;
     sparse=false, 
     oneimp=true, 
     twoimp=false,
+    onsite_bathsite = false,
     nx=0)
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -488,22 +489,24 @@ function kucj(n_qubit;
             #diagonal with respect to spatial orbitals a, b
             
             for a in 1:norb
-                if sparse 
-                    # オンサイトのバスサイトを削る。
-                    if oneimp
-                        # 一つのバスサイトに関するパラメータを削る.1は不純物
-                        if a >= 2
-                            continue
-                        end
-                    end
+                #if sparse 
+                    #if onsite_bathsite
+                        # オンサイトのバスサイトを削る。
+                        #if oneimp
+                            # 一つのバスサイトに関するパラメータを削る.1は不純物
+                        #    if a >= 2
+                        #        continue
+                        #    end
+                        #end
 
-                    if twoimp
-                        # 一つのバスサイトに関するパラメータを削る。1,2は不純物
-                        if a >=3
-                            continue
-                        end
-                    end
-                end
+                        #if twoimp
+                            # 一つのバスサイトに関するパラメータを削る。1,2は不純物
+                        #    if a >=3
+                        #        continue
+                        #    end
+                        #end
+                    #end
+                #end
                         
                 aa = so_idx(a, 1) # spin_a = up
                 bb = so_idx(a, 2) # spin_b = down
@@ -662,6 +665,7 @@ function sparse_ansatz(
     oneimp = true,
     twoimp = false,
     twoimp_bb = false,
+    nx = 0
 )
     if n_qubit <= 0 || n_qubit % 2 != 0
         error("Invalid n_qubit: $(n_qubit)")
@@ -670,6 +674,9 @@ function sparse_ansatz(
         error("nocc must be given when orbital_rot = false!")
     end
     circuit = UCCQuantumCircuit(n_qubit)
+    for i in 1:nx
+        add_X_gate!(circuit, i)
+    end
 
     norb = n_qubit ÷ 2
     cr_range = orbital_rot ? (1:norb) : (1+nocc:norb)

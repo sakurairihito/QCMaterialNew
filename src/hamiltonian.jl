@@ -2,7 +2,7 @@ export generate_ham_1d_hubbard
 export generate_impurity_ham_with_1imp_multibath
 export generate_impurity_ham_with_2imp_multibath
 export generate_impurity_ham_with_1imp_3bath_dmft
-
+export generate_impurity_ham_with_1imp_3bath_dmft_U8
 function generate_ham_1d_hubbard(t::Float64, U::Float64, nsite::Integer, μ::Float64)
     #up_index,down_indexの定義は、QC_materialを参照。
     #up = up_index(i)
@@ -136,5 +136,49 @@ function generate_impurity_ham_with_1imp_3bath_dmft(U::Float64, μ::Float64,  ns
     ham_op1
 end
 
+
+function generate_impurity_ham_with_1imp_3bath_dmft_U8(U::Float64, μ::Float64,  nsite::Integer)
+    # up_index = 2*(i-1) + 1
+    # down_index = 2*i 
+    # spin_index_functions = [up_index, down_index]
+    spin_index_functions = [up_index, down_index]
+    so_idx(iorb, ispin) = spin_index_functions[ispin](iorb)
+
+    ham_op1 = FermionOperator()
+    ham_op1 += FermionOperator("$(up_index(1))^ $(down_index(1))^ $(up_index(1)) $(down_index(1))", -U)
+
+    #chemical potential
+    for ispin in [1, 2]
+        ham_op1 += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(1, ispin))", -μ)
+    end
+
+    #bath energy level
+    ε = [0.0, 1.17395, -0.20238, -3.04852]
+    for ispin in [1, 2]
+        for i in 2:nsite
+            ham_op1 += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε[i])
+        end
+    end
+
+    #hybritization
+    V = [0.0, 1.16862, -0.54186, 1.24341]
+
+    for ispin in [1, 2]
+        for i in 2:nsite
+            if i == 3
+                ham_op1 += FermionOperator("$(so_idx(1, 1))^ $(so_idx(i, 1))", -0.54186)
+                ham_op1 += FermionOperator("$(so_idx(i, 1))^ $(so_idx(1, 1))", -0.54186)
+                ham_op1 += FermionOperator("$(so_idx(1, 2))^ $(so_idx(i, 2))", 0.54186)
+                ham_op1 += FermionOperator("$(so_idx(i, 2))^ $(so_idx(1, 2))", 0.54186)
+            end
+            if i != 3
+                ham_op1 += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(i, ispin))", V[i])
+                ham_op1 += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(1, ispin))", V[i])
+        
+            end
+        end
+    end
+    ham_op1
+end
 
 

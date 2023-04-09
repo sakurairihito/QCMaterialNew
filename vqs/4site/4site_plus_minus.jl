@@ -98,7 +98,7 @@ end
 
 #beta = 1000 (T=0.001)
 nsite = 4
-n_qubit　= 2*nsite
+n_qubit = 2*nsite
 U = 4.0
 μ = U/2
 d_theta = 1e-5

@@ -9,11 +9,11 @@ import PyCall: pyimport
 Random.seed!(100)
 nsite = 2
 n_qubit = 2*nsite 
-U = 0.0
-#μ = U/2
-μ = 0.5
+U = 1.0
+μ = U/2
+#μ = 0.5
 ε1 = [1.0, 1.0] 
-V= 1.0
+V = 1.0 
 #ham = generate_ham_1d_hubbard(t, U, nsite, μ)
 ham_op = generate_impurity_ham_with_1imp_multibath(U, V, μ, ε1, nsite)
 #@show ham
@@ -28,11 +28,11 @@ sparse_mat2 = get_sparse_operator(ham_op, n_qubit)
 vec_gs_exact2 = eigvecs((sparse_mat2.toarray()))[:, 1]
 #e_gs_exact = eigvals((sparse_mat.toarray()))
 #println("e_gs_exact=", eigvals(sparse_mat2.toarray()))
-println("e_gs_exact_numparticles_conserved=", eigvecs((sparse_mat.toarray()))[:, 1])
-println("e_gs_exact=", vec_gs_exact2)
+#println("e_gs_exact_numparticles_conserved=", eigvecs((sparse_mat.toarray()))[:, 1])
+#println("e_gs_exact=", vec_gs_exact2)
 state_load!(state_gs_exact, vec_gs_exact2) #exact_ground_state
-println("state_gs_exact_after_load=", get_vector(state_gs_exact))
-println("state_load QK")
+#println("state_gs_exact_after_load=", get_vector(state_gs_exact))
+#println("state_load QK")
 ham = jordan_wigner(ham_op)
 
 #@show op
@@ -42,9 +42,6 @@ circuit = uccgsd(n_qubit, orbital_rot=true)
 theta_init = rand(num_theta(circuit))
 
 
-### test_eigen ###
-F = eigen(sparse_mat2.toarray())
-println("eigen_=", reverse(F.vectors[:, 1]))
 
 ### test_c
 
@@ -89,8 +86,6 @@ println(size(vec_gs_exact2'))
 mom1_exact_2 = dot(vec_gs_exact2, c_h_cdag_gs )
 println("mom1_exact_2=", mom1_exact_2) 
 
-
-
 ### c^dag |gs> mom2###
 #ham_op_mom1 = (ham_op_mom - identity)
 sparse_mat_mom2 = get_sparse_operator(ham_op_mom^2, n_qubit)
@@ -106,10 +101,6 @@ println(size(vec_gs_exact2'))
 #mom0_exact_2 = vec_gs_exact2' * c_cdag_gs
 mom2_exact_2 = dot(vec_gs_exact2, c_h_cdag_gs )
 println("mom2_exact_2=", mom2_exact_2)
-
-
-
-
 
 
 ### c^dag |gs> mom3###

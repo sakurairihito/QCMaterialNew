@@ -12,7 +12,7 @@ nsite = 6
 n_qubit = 2 * nsite
 U = 4.0
 μ = U / 2
-V = 0.5
+V = 0.0
 ε = [0.0, -2.0, -1.0, 0.0, 1.0, 2.0]
 d_theta = 1e-5
 verbose = QCMaterial.MPI_rank == 0
