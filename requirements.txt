@@ -1,6 +1,6 @@
-scipy == 1.7.3
+scipy == 1.10.0
 openfermion == 1.0.1
 openfermionpyscf == 0.5
-qulacs == 0.2.0
-h5py == 3.2.1
+qulacs == 0.5.0
+h5py == 3.7.0
 

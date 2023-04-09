@@ -29,11 +29,12 @@ hatF = np.sqrt(beta) * basis_f.compute_unl(sp_n)
 giwn = hatF @ gl
 
 wn = (2 * sp_n + 1) * np.pi / beta
-# plt.plot(wn, np.abs(giwn.real), label='Re')
-# plt.plot(wn, np.abs(giwn.imag), label='Im')
-# plt.plot(wn, 1/wn, label="1/wn")
-plt.plot(wn, giwn.imag, label="Im")
+plt.plot(wn, np.abs(giwn.real), label="Re")
+plt.plot(wn, np.abs(giwn.imag), label="Im")
+plt.plot(wn, 1 / wn, label="1/wn")
+# plt.plot(wn, giwn.imag, label="Im")
 plt.legend()
 plt.xscale("log")
-# plt.yscale("log")
+plt.yscale("log")
+plt.savefig("matsubara.pdf")
 plt.show()
