@@ -24,7 +24,7 @@ export get_transition_amplitude_sampling_obs_real, get_transition_amplitude_samp
 export apply_qubit_ham_sampling!, apply_qubit_op_sampling! 
 export apply_qubit_op_sampling_vqelike!, apply_qubit_ham_sampling_vqelike!
 export apply_qubit_op_kucj!, apply_qubit_ham_kucj!
-export apply_qubit_op_kucj_sampling!
+export apply_qubit_op_kucj_sampling!, apply_qubit_ham_kucj_sampling!
 # %%
 """
 Divide a qubit operator into the hermite and antihermite parts.
@@ -946,6 +946,7 @@ function _generate_cost_fitting_op_sampling(circuit_bra, state_augmented, her, a
         op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
         op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
         res::Float64 = abs2(1.0 -  (op_re_re + im * op_re_im + im * (op_im_re + op_im_im *im )))
+        #res::Float64 = abs2(1.0 -  (op_re_re + im * (op_im_im *im )))
         #println("end cost") 
 
         if comm !== nothing
@@ -988,15 +989,6 @@ function apply_qubit_op_sampling_vqelike!(
         rank = MPI.Comm_rank(comm)
     end
 
-    #=
-    if comm !== nothing
-        println("comm on")
-    end
-    =#
-
-    #@show comm
-    
-    # これを使わずに SciPy.optimize でよい.
     scipy_opt = pyimport("scipy.optimize")
     her, antiher = divide_real_imag(op) # op = jordan(c^dag) = (X + i Y)
 
@@ -1273,6 +1265,94 @@ function apply_qubit_op_kucj_sampling!(
     #    z = MPI.Allreduce(res, MPI.SUM, comm)
     #    z = res/MPI.Comm_size(comm)
     #end
+
+    if comm !== nothing
+        MPI.Barrier(comm)
+        z = MPI.Allreduce(z, MPI.SUM, comm)
+        z = z/MPI.Comm_size(comm)
+    end
+    
+    #@show cost_history
+    return z
+end
+
+
+
+
+
+function apply_qubit_ham_kucj_sampling!(
+    op::QubitOperator,
+    state_augmented::QuantumState,
+    circuit_bra::VariationalQuantumCircuit, 
+    circuit_ket::VariationalQuantumCircuit,
+    keys;
+    theta_init = nothing,
+    comm = MPI_COMM_WORLD,
+    maxiter = 300,
+    gtol = 1e-7,
+    verbose = false,
+    nshots = 2^15,
+    dx=1e-1
+)   
+    if is_mpi_on && comm === nothing
+        error("comm must be given when mpi is one!")
+    end
+
+    if comm === nothing
+        rank = 0
+    else
+        rank = MPI.Comm_rank(comm)
+    end
+    
+    # これを使わずに SciPy.optimize でよい.
+    scipy_opt = pyimport("scipy.optimize")
+
+    # Define a cost function
+    #println("before cost")
+    pinfo = ParamInfo(keys)
+    
+    
+    cost = _generate_cost_fitting_ham_sampling(circuit_bra, state_augmented, op, circuit_ket, nshots, comm)
+    cost_tmp(θunique) = cost(expand(pinfo, θunique))
+    
+    #if theta_init === nothing
+    #    paraminfo = QCMaterial.ParamInfo(pinfo)
+    #    theta_init = rand(paraminfo.nparam)
+    #end
+    
+    if comm !== nothing
+        # Make sure all processes use the same initial values
+        MPI.Bcast!(expand(pinfo, theta_init), 0, comm)
+    end
+
+    cost_history = Float64[] #コスト関数の箱
+    init_theta_list = theta_init
+    push!(cost_history, cost_tmp(init_theta_list))
+
+    method = "BFGS"
+    options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol)
+    function callback(x)
+        #@show "callback begin"
+        push!(cost_history, cost_tmp(x))
+        if verbose && rank == 0
+            println("iter ", length(cost_history), " ", cost_history[end])
+        end
+        #@show "callback end"
+    end
+    # opt = SciPy.optimize.minimize(...)
+    
+    opt = scipy_opt.minimize(
+        cost_tmp,
+        init_theta_list,
+        method = method,
+        callback = callback,
+        jac = generate_numerical_grad(cost_tmp,  comm=nothing, verbose=true, dx=dx),
+        options = options,
+    )
+
+    op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, op, circuit_ket; nshots)
+    op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, op, circuit_ket; nshots)
+    z = (op_re_re + op_re_im * im) 
 
     if comm !== nothing
         MPI.Barrier(comm)
