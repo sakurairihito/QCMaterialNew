@@ -2,7 +2,7 @@ export generate_ham_1d_hubbard
 export generate_impurity_ham_with_1imp_multibath
 export generate_impurity_ham_with_2imp_multibath
 export generate_impurity_ham_with_1imp_3bath_dmft
-export generate_impurity_ham_with_1imp_3bath_dmft_U8
+export generate_impurity_ham_with_1imp_3bath_dmft_U9
 function generate_ham_1d_hubbard(t::Float64, U::Float64, nsite::Integer, μ::Float64)
     #up_index,down_indexの定義は、QC_materialを参照。
     #up = up_index(i)
@@ -137,7 +137,7 @@ function generate_impurity_ham_with_1imp_3bath_dmft(U::Float64, μ::Float64,  ns
 end
 
 
-function generate_impurity_ham_with_1imp_3bath_dmft_U8(U::Float64, μ::Float64,  nsite::Integer)
+function generate_impurity_ham_with_1imp_3bath_dmft_U9(U::Float64, μ::Float64,  nsite::Integer)
     # up_index = 2*(i-1) + 1
     # down_index = 2*i 
     # spin_index_functions = [up_index, down_index]
@@ -153,7 +153,7 @@ function generate_impurity_ham_with_1imp_3bath_dmft_U8(U::Float64, μ::Float64, 
     end
 
     #bath energy level
-    ε = [0.0, 1.17395, -0.20238, -3.04852]
+    ε = [0.0,  3.26141, 0.00000, -3.26141 ]
     for ispin in [1, 2]
         for i in 2:nsite
             ham_op1 += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(i, ispin))", ε[i])
@@ -161,7 +161,7 @@ function generate_impurity_ham_with_1imp_3bath_dmft_U8(U::Float64, μ::Float64, 
     end
 
     #hybritization
-    V = [0.0, 1.16862, -0.54186, 1.24341]
+    V = [0.0, 1.31098, -0.07658, -1.38519]
 
     for ispin in [1, 2]
         for i in 2:nsite
