@@ -15,13 +15,14 @@
 #     language: python
 #     name: python3
 # ---
-
 # %%
+
 export apply_qubit_op!, get_transition_amplitude_with_obs, apply_ham!, apply_qubit_ham!
 export divide_real_imag
 export add_control_qubit_for_circuit, make_cotrolled_pauli_gate
-export get_transition_amplitude_sampling_obs_real, get_transition_amplitude_sampling_obs_imag
-export apply_qubit_ham_sampling!, apply_qubit_op_sampling! 
+export get_transition_amplitude_sampling_obs_real,
+    get_transition_amplitude_sampling_obs_imag
+export apply_qubit_ham_sampling!, apply_qubit_op_sampling!
 export apply_qubit_op_sampling_vqelike!, apply_qubit_ham_sampling_vqelike!
 export apply_qubit_op_kucj!, apply_qubit_ham_kucj!
 export apply_qubit_op_kucj_sampling!, apply_qubit_ham_kucj_sampling!
@@ -31,8 +32,8 @@ Divide a qubit operator into the hermite and antihermite parts.
 """
 
 # %%
-divide_real_imag(op::QubitOperator) = 
-    (op+hermitian_conjugated(op))/2, (op-hermitian_conjugated(op))/2im
+divide_real_imag(op::QubitOperator) =
+    (op + hermitian_conjugated(op)) / 2, (op - hermitian_conjugated(op)) / 2im
 
 # %%
 """
@@ -46,12 +47,12 @@ state0_bra will not be modified.
 function apply_qubit_op!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, 
+    circuit::VariationalQuantumCircuit,
     state0_bra::QuantumState;
-    minimizer=mk_scipy_minimize(),
-    verbose=true,
-    comm=MPI_COMM_WORLD
-    )
+    minimizer = mk_scipy_minimize(),
+    verbose = true,
+    comm = MPI_COMM_WORLD,
+)
 
     if comm === nothing
         rank = 0
@@ -71,8 +72,11 @@ function apply_qubit_op!(
         #@show  abs2(1.0 - (re_ + im_ * im))
         abs2(1.0 - (re_ + im_ * im))
     end
-          
-    cost_history = []
+
+    cost_history = Float64[]
+    # 深層学習だと32ビットのFloatを使うことがよくあるので、64ビットだと制限される。
+    # GPUだと、Float32を使うことが多い。
+    # cost_histroy = Float64[]
     function callback(x)
         push!(cost_history, cost(x))
         #@show rank
@@ -80,20 +84,26 @@ function apply_qubit_op!(
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    
+
     function minimize(cost, x0)
-    jac = nothing
+        jac = nothing
         #if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose)
-            if verbose
-                println("Using parallelized numerical grad")
-            end
+        jac = generate_numerical_grad(cost, verbose = verbose)
+        if verbose
+            println("Using parallelized numerical grad")
+        end
         #end
-        res = scipy_opt.minimize(cost, x0, method="BFGS",
-            jac=jac, callback=callback, options=nothing) #options?
+        res = scipy_opt.minimize(
+            cost,
+            x0,
+            method = "BFGS",
+            jac = jac,
+            callback = callback,
+            options = nothing,
+        ) #options?
         res["x"]
     end
-        
+
     #=
     push!(cost_history, cost(x))
     if verbose && rank == 0
@@ -109,9 +119,9 @@ function apply_qubit_op!(
     println("cost_opt=", cost(opt_thetas))
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
-       println("norm_right",norm_right)
+        println("norm_right", norm_right)
     end
-    
+
 
     update_circuit_param!(circuit, opt_thetas)
     re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
@@ -120,7 +130,7 @@ function apply_qubit_op!(
     println("im_=", im__)
     z = re__ + im__ * im
     if verbose
-        println("Match in apply_qubit_op!: ", z/norm_right)
+        println("Match in apply_qubit_op!: ", z / norm_right)
     end
     # temporaly
     #return z, opt_thetas
@@ -132,11 +142,12 @@ end
 function apply_qubit_ham!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, state0_bra::QuantumState;
-    minimizer=mk_scipy_minimize(),
-    verbose=true,
-    comm=MPI_COMM_WORLD
-    )
+    circuit::VariationalQuantumCircuit,
+    state0_bra::QuantumState;
+    minimizer = mk_scipy_minimize(),
+    verbose = true,
+    comm = MPI_COMM_WORLD,
+)
 
     if comm === nothing
         rank = 0
@@ -150,10 +161,10 @@ function apply_qubit_ham!(
         update_circuit_param!(circuit, thetas)
         re_ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
         im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
-        - abs((re_ ))
+        -abs((re_))
     end
-          
-    cost_history = []
+
+    cost_history = Float64[]
     function callback(x)
         push!(cost_history, cost(x))
         #@show rank
@@ -161,20 +172,26 @@ function apply_qubit_ham!(
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    
+
     function minimize(cost, x0)
-    jac = nothing
+        jac = nothing
         #if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose)
-            if verbose
-                println("Using parallelized numerical grad")
-            end
+        jac = generate_numerical_grad(cost, verbose = verbose)
+        if verbose
+            println("Using parallelized numerical grad")
+        end
         #end
-        res = scipy_opt.minimize(cost, x0, method="BFGS",
-            jac=jac, callback=callback, options=nothing) #options?
+        res = scipy_opt.minimize(
+            cost,
+            x0,
+            method = "BFGS",
+            jac = jac,
+            callback = callback,
+            options = nothing,
+        ) #options?
         res["x"]
     end
-        
+
     #=
     push!(cost_history, cost(x))
     if verbose && rank == 0
@@ -190,7 +207,7 @@ function apply_qubit_ham!(
     println("cost_opt=", cost(opt_thetas))
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
-       println("norm_right",norm_right)
+        println("norm_right", norm_right)
     end
 
     update_circuit_param!(circuit, opt_thetas)
@@ -200,7 +217,7 @@ function apply_qubit_ham!(
     println("im_=", im__)
     z = re__ + im__ * im
     if verbose
-        println("Match in apply_qubit_op!: ", z/norm_right)
+        println("Match in apply_qubit_op!: ", z / norm_right)
     end
     return z
 end
@@ -224,7 +241,7 @@ function apply_qubit_ham!(
         #println("transition_amplitude_value=", -abs(re_))
         - abs((re_ ))
     end
-   
+
     thetas_init = get_thetas(circuit)
     if comm !== nothing
         MPI.Bcast!(thetas_init, 0, comm)
@@ -254,10 +271,11 @@ Compute <state_bra| circuit^+ obs |state_ket>, where obs is a hermite observable
 """
 
 function get_transition_amplitude_with_obs(
-    circuit::VariationalQuantumCircuit, 
+    circuit::VariationalQuantumCircuit,
     state0_bra::QuantumState,
     op::QubitOperator,
-    state_ket::QuantumState)
+    state_ket::QuantumState,
+)
     state_bra = copy(state0_bra)
     update_quantum_state!(circuit, state_bra)
     return get_transition_amplitude(op, state_bra, state_ket)
@@ -275,11 +293,12 @@ state0_bra will not be modified.
 function apply_ham!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, state0_bra::QuantumState;
-    minimizer=mk_scipy_minimize(),
-    verbose=true,
-    comm=MPI_COMM_WORLD
-    )
+    circuit::VariationalQuantumCircuit,
+    state0_bra::QuantumState;
+    minimizer = mk_scipy_minimize(),
+    verbose = true,
+    comm = MPI_COMM_WORLD,
+)
     #her, antiher = divide_real_imag(op)
 
     #options = Dict("disp" => verbose, "maxiter" => 300, "gtol" => 1e-8)
@@ -290,7 +309,7 @@ function apply_ham!(
         amplitude = get_transition_amplitude_with_obs(circuit, state0_bra, op, state_ket)
         abs2(1.0 - (amplitude))
     end
-   
+
     thetas_init = get_thetas(circuit)
     if comm !== nothing
         MPI.Bcast!(thetas_init, 0, comm)
@@ -299,7 +318,7 @@ function apply_ham!(
     # sqrt(<ket| H H |ket>)
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
-       println("norm_of_H*|ket>=", norm_right)
+        println("norm_of_H*|ket>=", norm_right)
     end
 
     update_circuit_param!(circuit, opt_thetas)
@@ -308,7 +327,7 @@ function apply_ham!(
     #im__ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
     #z = re__ + im__ * im
     if verbose
-        println("Match in apply_qubit_op!: ", square_norm/norm_right)
+        println("Match in apply_qubit_op!: ", square_norm / norm_right)
     end
 end
 
@@ -317,14 +336,15 @@ end
 function apply_qubit_ham_kucj!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, 
+    circuit::VariationalQuantumCircuit,
     state0_bra::QuantumState,
     theta_init,
     keys;
-    minimizer=mk_scipy_minimize(),
-    verbose=true,
-    comm=MPI_COMM_WORLD
-    )
+    minimizer = mk_scipy_minimize(),
+    verbose = true,
+    comm = MPI_COMM_WORLD,
+    options = nothing,
+)
 
     if comm === nothing
         rank = 0
@@ -339,7 +359,7 @@ function apply_qubit_ham_kucj!(
         update_circuit_param!(circuit, thetas)
         re_ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
         #im_ = get_transition_amplitude_with_obs(circuit, state0_bra, antiher, state_ket)
-        - abs(re_)
+        -abs(re_)
     end
 
     pinfo = ParamInfo(keys)
@@ -360,20 +380,26 @@ function apply_qubit_ham_kucj!(
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    
+
     function minimize(cost, x0)
-    jac = nothing
+        jac = nothing
         #if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose)
-            if verbose
-                println("Using parallelized numerical grad")
-            end
+        jac = generate_numerical_grad(cost, verbose = verbose)
+        if verbose
+            println("Using parallelized numerical grad")
+        end
         #end
-        res = scipy_opt.minimize(cost, x0, method="BFGS",
-            jac=jac, callback=callback, options=nothing) #options?
+        res = scipy_opt.minimize(
+            cost,
+            x0,
+            method = "BFGS",
+            jac = jac,
+            callback = callback,
+            options = options,
+        ) #options?
         res["x"]
     end
-        
+
 
     #thetas_init = get_thetas(circuit)
     if comm !== nothing
@@ -386,9 +412,9 @@ function apply_qubit_ham_kucj!(
     println("cost_opt=", cost_tmp(opt_thetas))
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
-       println("norm_right",norm_right)
+        println("norm_right", norm_right)
     end
-    
+
 
     update_circuit_param!(circuit, expand(pinfo, opt_thetas))
     re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
@@ -397,7 +423,7 @@ function apply_qubit_ham_kucj!(
     println("im_=", im__)
     z = re__ + im__ * im
     if verbose
-        println("Match in apply_qubit_op!: ", z/norm_right)
+        println("Match in apply_qubit_op!: ", z / norm_right)
     end
     return z
 end
@@ -407,14 +433,15 @@ end
 function apply_qubit_op_kucj!(
     op::QubitOperator,
     state_ket::QuantumState,
-    circuit::VariationalQuantumCircuit, 
+    circuit::VariationalQuantumCircuit,
     state0_bra::QuantumState,
     theta_init,
     keys;
-    minimizer=mk_scipy_minimize(),
-    verbose=true,
-    comm=MPI_COMM_WORLD
-    )
+    minimizer = mk_scipy_minimize(),
+    verbose = true,
+    comm = MPI_COMM_WORLD,
+    options = nothing,
+)
 
     if comm === nothing
         rank = 0
@@ -442,7 +469,7 @@ function apply_qubit_op_kucj!(
     end
 
 
-    cost_history = []
+    cost_history = Float64[]
     function callback(x)
         push!(cost_history, cost_tmp(x))
         #@show rank
@@ -450,20 +477,26 @@ function apply_qubit_op_kucj!(
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    
+
     function minimize(cost, x0)
-    jac = nothing
+        jac = nothing
         #if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose)
-            if verbose
-                println("Using parallelized numerical grad")
-            end
+        jac = generate_numerical_grad(cost, verbose = verbose)
+        if verbose
+            println("Using parallelized numerical grad")
+        end
         #end
-        res = scipy_opt.minimize(cost, x0, method="BFGS",
-            jac=jac, callback=callback, options=nothing) #options?
+        res = scipy_opt.minimize(
+            cost,
+            x0,
+            method = "BFGS",
+            jac = jac,
+            callback = callback,
+            options = options,
+        ) #options?
         res["x"]
     end
-        
+
 
     #thetas_init = get_thetas(circuit)
     if comm !== nothing
@@ -476,9 +509,9 @@ function apply_qubit_op_kucj!(
     println("cost_opt=", cost_tmp(opt_thetas))
     norm_right = sqrt(get_expectation_value(hermitian_conjugated(op) * op, state_ket))
     if verbose
-       println("norm_right",norm_right)
+        println("norm_right", norm_right)
     end
-    
+
 
     update_circuit_param!(circuit, expand(pinfo, opt_thetas))
     re__ = get_transition_amplitude_with_obs(circuit, state0_bra, her, state_ket)
@@ -487,27 +520,35 @@ function apply_qubit_op_kucj!(
     println("im_=", im__)
     z = re__ + im__ * im
     if verbose
-        println("Match in apply_qubit_op!: ", z/norm_right)
+        println("Match in apply_qubit_op!: ", z / norm_right)
     end
     return z
 end
 
-function add_control_qubit_for_circuit(circuit::Union{ParametricQuantumCircuit,VariationalQuantumCircuit}, control_index::Vector{Int}, total_num_qubits::Int)
+function add_control_qubit_for_circuit(
+    circuit::Union{ParametricQuantumCircuit,VariationalQuantumCircuit},
+    control_index::Vector{Int},
+    total_num_qubits::Int,
+)
     num_gate = get_gate_count(circuit)
     control_circuit = QulacsQuantumCircuit(total_num_qubits)
-    for i in 1:num_gate
+    for i = 1:num_gate
         gate_tmp = get_gate(circuit, i)
         gate_tmp = to_matrix_gate(gate_tmp)
         #println(i)
         #@show i
         add_control_qubit!(gate_tmp, control_index, 1)
-        add_gate!(control_circuit,  gate_tmp)
+        add_gate!(control_circuit, gate_tmp)
     end
     return control_circuit
 end
 
 
-function make_cotrolled_pauli_gate(total_nqubits::Int, pauli_target_list::Vector{Int}, pauli_index_list::Vector{Int})
+function make_cotrolled_pauli_gate(
+    total_nqubits::Int,
+    pauli_target_list::Vector{Int},
+    pauli_index_list::Vector{Int},
+)
     ```
     Add controlled pauli-gate
     ancilla qubits corresponds to final qubits.
@@ -523,11 +564,12 @@ end
 
 # imaginary-parts
 function get_transition_amplitude_sampling_obs_real(
-    state_augmented::QuantumState, 
-    circuit_bra::VariationalQuantumCircuit, 
-    ham::QubitOperator, 
-    circuit_ket::VariationalQuantumCircuit; 
-    nshots::Int=2^15)
+    state_augmented::QuantumState,
+    circuit_bra::VariationalQuantumCircuit,
+    ham::QubitOperator,
+    circuit_ket::VariationalQuantumCircuit;
+    nshots::Int = 2^15,
+)
 
     """
     <0| U_1^{dagger} P U_2 |0>
@@ -537,12 +579,12 @@ function get_transition_amplitude_sampling_obs_real(
     total_num_qubits = get_n_qubit(state_augmented)
     control_index = [total_num_qubits]
     total_amp = 0 # total transition amplitude
-    nqubits = total_num_qubits -1 
-    
+    nqubits = total_num_qubits - 1
+
     # for loop of each term of Hamiltonian
-    for (k, v) in terms_dict(ham) 
+    for (k, v) in terms_dict(ham)
         #state = QulacsQuantumState(total_num_qubits)
-        state = copy(state_augmented) 
+        state = copy(state_augmented)
         ###############
         #=
         function circuit_transition_amplitude()
@@ -551,17 +593,20 @@ function get_transition_amplitude_sampling_obs_real(
         update_quantum_state!(H_anci, state)
         X_anci = X(total_num_qubits)
         update_quantum_state!(X_anci, state)
-    
-        control_circuit1 = add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
+
+        control_circuit1 =
+            add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
         update_quantum_state!(control_circuit1, state)
         update_quantum_state!(X_anci, state)
-        control_circuit2 = add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
+        control_circuit2 =
+            add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
         update_quantum_state!(control_circuit2, state)
-        
+
         pauli_target_list = [x[1] for x in k] # [1,2,3]
         pauli_name = [x[2] for x in k] # ["Y", "Z", "Y"]
         pauli_index_list = map(x -> get(op_name_to_id, x, 0), pauli_name) ## ["Y", "Z", "Y"]-> [2, 3, 2]
-        pauli_circuit = make_cotrolled_pauli_gate(total_num_qubits, pauli_target_list, pauli_index_list)
+        pauli_circuit =
+            make_cotrolled_pauli_gate(total_num_qubits, pauli_target_list, pauli_index_list)
         update_quantum_state!(pauli_circuit, state)
 
         update_quantum_state!(H_anci, state)
@@ -570,15 +615,15 @@ function get_transition_amplitude_sampling_obs_real(
         samples = state_sampling(state, nshots)
         estimated_amp = 0
         # This nqubits is without ancilla qubits
-        
+
         mask = 2^nqubits # == Int("1" + "0" * (nqubits), 2)
         for s in samples
             bitcount = count_ones(s & mask) #1のビット数を数える。
-            estimated_amp += (-1)^bitcount/nshots  #Z|0>->1|0>, Z|1>->-1|1>
+            estimated_amp += (-1)^bitcount / nshots  #Z|0>->1|0>, Z|1>->-1|1>
         end
         total_amp += estimated_amp * v #pauli_coeffをかける
     end
-    
+
     # ハミルトニアンのIの部分の項をここで足し込んでいる。
     if haskey(ham.pyobj.terms, ())
         #println("Special value found")
@@ -590,11 +635,13 @@ function get_transition_amplitude_sampling_obs_real(
         update_quantum_state!(X_anci, state)
         #circuit = makecircuit1(nqubits)
         control_index = [total_num_qubits]
-        control_circuit1 = add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
+        control_circuit1 =
+            add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
         update_quantum_state!(control_circuit1, state)
         update_quantum_state!(X_anci, state)
         #circuit2 = makecircuit2(nqubits)
-        control_circuit2 = add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
+        control_circuit2 =
+            add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
         update_quantum_state!(control_circuit2, state)
         update_quantum_state!(H_anci, state)
         samples = state_sampling(state, nshots)
@@ -603,7 +650,7 @@ function get_transition_amplitude_sampling_obs_real(
         mask = 2^nqubits # == Int("1" + "0" * (nqubits), 2)
         for s in samples
             bitcount = count_ones(s & mask) #1のビット数を数える。
-            estimated_amp += (-1)^bitcount/nshots  #Z|0>->1|0>, Z|1>->-1|1>
+            estimated_amp += (-1)^bitcount / nshots  #Z|0>->1|0>, Z|1>->-1|1>
         end
         total_amp += estimated_amp * (ham.pyobj.terms[()]) #real(pauli_coeff)をかける
     else
@@ -643,11 +690,12 @@ f(1, 2; z) この書き方は許される． f(1,2,z=z) と同じ z=z のよう�
 
 # imaginary-parts
 function get_transition_amplitude_sampling_obs_imag(
-    state_augmented::QuantumState, 
-    circuit_bra::VariationalQuantumCircuit, 
-    ham::QubitOperator, 
-    circuit_ket::VariationalQuantumCircuit; 
-    nshots::Int=2^15)
+    state_augmented::QuantumState,
+    circuit_bra::VariationalQuantumCircuit,
+    ham::QubitOperator,
+    circuit_ket::VariationalQuantumCircuit;
+    nshots::Int = 2^15,
+)
 
     """
     <0| U_1^{dagger} P U_2 |0>
@@ -657,10 +705,10 @@ function get_transition_amplitude_sampling_obs_imag(
     total_num_qubits = get_n_qubit(state_augmented)
     control_index = [total_num_qubits]
     total_amp = 0 # total transition amplitude
-    nqubits = total_num_qubits -1 
-    
+    nqubits = total_num_qubits - 1
+
     # for loop of each term of Hamiltonian
-    for (k, v) in terms_dict(ham) 
+    for (k, v) in terms_dict(ham)
         #state = QulacsQuantumState(total_num_qubits)
         state = copy(state_augmented)
         H_anci = H(total_num_qubits)
@@ -669,17 +717,20 @@ function get_transition_amplitude_sampling_obs_imag(
         update_quantum_state!(s_anci, state)
         X_anci = X(total_num_qubits)
         update_quantum_state!(X_anci, state)
-    
-        control_circuit1 = add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
+
+        control_circuit1 =
+            add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
         update_quantum_state!(control_circuit1, state)
         update_quantum_state!(X_anci, state)
-        control_circuit2 = add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
+        control_circuit2 =
+            add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
         update_quantum_state!(control_circuit2, state)
-        
+
         pauli_target_list = [x[1] for x in k] # [1,2,3]
         pauli_name = [x[2] for x in k] # ["Y", "Z", "Y"]
         pauli_index_list = map(x -> get(op_name_to_id, x, 0), pauli_name) ## ["Y", "Z", "Y"]-> [2, 3, 2]
-        pauli_circuit = make_cotrolled_pauli_gate(total_num_qubits, pauli_target_list, pauli_index_list)
+        pauli_circuit =
+            make_cotrolled_pauli_gate(total_num_qubits, pauli_target_list, pauli_index_list)
         update_quantum_state!(pauli_circuit, state)
         update_quantum_state!(H_anci, state)
 
@@ -690,7 +741,7 @@ function get_transition_amplitude_sampling_obs_imag(
         mask = 2^nqubits # == Int("1" + "0" * (nqubits), 2)
         for s in samples
             bitcount = count_ones(s & mask) #1のビット数を数える。
-            estimated_amp += (-1)^bitcount/nshots  #Z|0>->1|0>, Z|1>->-1|1>
+            estimated_amp += (-1)^bitcount / nshots  #Z|0>->1|0>, Z|1>->-1|1>
         end
         total_amp += estimated_amp * v #pauli_coeffをかける
     end
@@ -707,13 +758,15 @@ function get_transition_amplitude_sampling_obs_imag(
         update_quantum_state!(X_anci, state)
         #circuit = makecircuit1(nqubits)
         control_index = [total_num_qubits]
-        control_circuit1 = add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
+        control_circuit1 =
+            add_control_qubit_for_circuit(circuit_bra, control_index, total_num_qubits)
         update_quantum_state!(control_circuit1, state)
 
         update_quantum_state!(X_anci, state)
 
         #circuit2 = makecircuit2(nqubits)
-        control_circuit2 = add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
+        control_circuit2 =
+            add_control_qubit_for_circuit(circuit_ket, control_index, total_num_qubits)
         update_quantum_state!(control_circuit2, state)
 
         update_quantum_state!(H_anci, state)
@@ -723,10 +776,10 @@ function get_transition_amplitude_sampling_obs_imag(
         mask = 2^nqubits # == Int("1" + "0" * (nqubits), 2)
         for s in samples
             bitcount = count_ones(s & mask) #1のビット数を数える。
-            estimated_amp += (-1)^bitcount/nshots  #Z|0>->1|0>, Z|1>->-1|1>
+            estimated_amp += (-1)^bitcount / nshots  #Z|0>->1|0>, Z|1>->-1|1>
         end
         total_amp += estimated_amp * (ham.pyobj.terms[()]) #real(pauli_coeff)をかける
-           
+
     else
         #println("No special value found")
     end
@@ -736,21 +789,21 @@ end
 
 
 function apply_qubit_ham_sampling!(
-    op::QubitOperator, 
-    state_augmented::QuantumState, 
-    circuit_bra::VariationalQuantumCircuit, 
-    circuit_ket::VariationalQuantumCircuit; 
-    minimizer=mk_scipy_minimize(), 
-    verbose=true,
-    comm=MPI_COMM_WORLD,
+    op::QubitOperator,
+    state_augmented::QuantumState,
+    circuit_bra::VariationalQuantumCircuit,
+    circuit_ket::VariationalQuantumCircuit;
+    minimizer = mk_scipy_minimize(),
+    verbose = true,
+    comm = MPI_COMM_WORLD,
     nshots = 2^15,
-    dx = 1e-1
-    )
+    dx = 1e-1,
+)
 
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
-    
+
     if comm === nothing
         rank = 0
     else
@@ -764,16 +817,28 @@ function apply_qubit_ham_sampling!(
         update_circuit_param!(circuit_bra, thetas)
         #op_re_real = get_transition_amplitude_with_obs_sampling_re(circuit_ket, state0_bra, her, state_ket)
         #image op_re
-        op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, op, circuit_ket, nshots=nshots)
-        op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, op, circuit_ket; nshots)
+        op_re_re = get_transition_amplitude_sampling_obs_real(
+            state_augmented,
+            circuit_bra,
+            op,
+            circuit_ket,
+            nshots = nshots,
+        )
+        op_re_im = get_transition_amplitude_sampling_obs_imag(
+            state_augmented,
+            circuit_bra,
+            op,
+            circuit_ket;
+            nshots,
+        )
         #op_re_ = op_re_re + im * op_re_im
         #op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket)
         #op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket)
         #op_im_ = op_im_re + im * op_im_im
         #op_transioton_amp = op_re_ + im * op_im_
-        - abs2(op_re_re + op_re_im * im)
+        -abs2(op_re_re + op_re_im * im)
     end
-          
+
     cost_history = []
     function callback(x)
         push!(cost_history, cost(x))
@@ -782,25 +847,31 @@ function apply_qubit_ham_sampling!(
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    
+
     function minimize(cost, x0)
-    jac = nothing
+        jac = nothing
         #if use_mpi
-            jac = generate_numerical_grad(cost, verbose=verbose, dx=dx)
-            if verbose
-                println("Using parallelized numerical grad")
-            end
+        jac = generate_numerical_grad(cost, verbose = verbose, dx = dx)
+        if verbose
+            println("Using parallelized numerical grad")
+        end
         #end
-        res = scipy_opt.minimize(cost, x0, method="BFGS",
-            jac=jac, callback=callback, options=nothing) #options?
+        res = scipy_opt.minimize(
+            cost,
+            x0,
+            method = "BFGS",
+            jac = jac,
+            callback = callback,
+            options = nothing,
+        ) #options?
         res["x"]
     end
-        
-    
+
+
     #push!(cost_history, cost(x))
 
     thetas_init = get_thetas(circuit_bra)
-    
+
     #if comm !== nothing
     #    MPI.Bcast!(thetas_init, 0, comm)
     #end
@@ -814,8 +885,20 @@ function apply_qubit_ham_sampling!(
     #end
 
     update_circuit_param!(circuit_bra, opt_thetas)
-    op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, op, circuit_ket; nshots)
-    op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, op, circuit_ket; nshots)
+    op_re_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        op,
+        circuit_ket;
+        nshots,
+    )
+    op_re_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        op,
+        circuit_ket;
+        nshots,
+    )
     re__ = op_re_re + im * op_re_im
     #println("re__=", re__)
     #op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket)
@@ -833,18 +916,18 @@ end
 function apply_qubit_op_sampling!(
     op::QubitOperator,
     state_augmented::QuantumState,
-    circuit_bra::VariationalQuantumCircuit, 
+    circuit_bra::VariationalQuantumCircuit,
     circuit_ket::VariationalQuantumCircuit,
-    minimizer=mk_scipy_minimize();
+    minimizer = mk_scipy_minimize();
     thetas_init = nothing,
-    verbose=true,
-    comm=MPI_COMM_WORLD,
+    verbose = true,
+    comm = MPI_COMM_WORLD,
     nshots = 2^15,
     dx = 1e-1,
     maxiter = 300,
     gtol = 1e-7,
-    disp = true
-    )
+    disp = true,
+)
     #@show "1"
 
     if comm === nothing
@@ -861,9 +944,21 @@ function apply_qubit_op_sampling!(
         #@show "cost1"
         update_circuit_param!(circuit_bra, thetas)
         #@show "cost2"
-        op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-        op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-        res = abs2(1.0 -  (op_re_re + op_im_im * im * im))
+        op_re_re = get_transition_amplitude_sampling_obs_real(
+            state_augmented,
+            circuit_bra,
+            her,
+            circuit_ket;
+            nshots,
+        )
+        op_im_im = get_transition_amplitude_sampling_obs_imag(
+            state_augmented,
+            circuit_bra,
+            antiher,
+            circuit_ket;
+            nshots,
+        )
+        res = abs2(1.0 - (op_re_re + op_im_im * im * im))
         #@show res
         #@show "cost3"
 
@@ -877,7 +972,7 @@ function apply_qubit_op_sampling!(
         #@show res
         return res
     end
-          
+
     cost_history = []
     function callback(x)
         push!(cost_history, cost(x))
@@ -886,33 +981,40 @@ function apply_qubit_op_sampling!(
             println("iter ", length(cost_history), " ", cost_history[end])
         end
     end
-    
+
     @show "4"
 
     function minimize(cost, x0)
         #@show "7"
-        jac = generate_numerical_grad(cost, comm=comm, verbose=verbose, dx=dx)
+        jac = generate_numerical_grad(cost, comm = comm, verbose = verbose, dx = dx)
         #@show "8"
         if verbose
             println("Using parallelized numerical grad")
         end
         #@show "9"
-        options = Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol, "disp" => disp)
-        res = scipy_opt.minimize(cost, x0, method="BFGS", 
-            jac=jac, callback=callback, options=options) #optio@[^ns?
+        options =
+            Dict("disp" => verbose, "maxiter" => maxiter, "gtol" => gtol, "disp" => disp)
+        res = scipy_opt.minimize(
+            cost,
+            x0,
+            method = "BFGS",
+            jac = jac,
+            callback = callback,
+            options = options,
+        ) #optio@[^ns?
         res["x"]
     end
-    
+
     #thetas_init = get_thetas(circuit_bra)
 
     #if thetas_init === nothing
     #    thetas_init = rand((num_theta(circuit)))
     #end
-    
+
     if comm !== nothing
         @show "5-2"
         #MPI.Bcast!(thetas_init, 0, comm)
-        MPI.Bcast!(thetas_init, 0, comm) 
+        MPI.Bcast!(thetas_init, 0, comm)
         @show "5-3"
     end
     #=
@@ -928,35 +1030,80 @@ function apply_qubit_op_sampling!(
     #@show "6"
     opt_thetas = minimize(cost, thetas_init)
     update_circuit_param!(circuit_bra, opt_thetas)
-    op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
+    op_re_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        her,
+        circuit_ket;
+        nshots,
+    )
+    op_im_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        antiher,
+        circuit_ket;
+        nshots,
+    )
     z = op_re_re + op_im_im * im * im
     return z
 end
 
-function _generate_cost_fitting_op_sampling(circuit_bra, state_augmented, her, antiher, circuit_ket, nshots, comm)
+function _generate_cost_fitting_op_sampling(
+    circuit_bra,
+    state_augmented,
+    her,
+    antiher,
+    circuit_ket,
+    nshots,
+    comm,
+)
 
     # Define a cost function
     #println("before generate_cost")
     function cost(thetas)
         #println("start cost") 
         update_circuit_param!(circuit_bra, thetas)
-        op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-        op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, her, circuit_ket; nshots)
-        op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-        op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-        res::Float64 = abs2(1.0 -  (op_re_re + im * op_re_im + im * (op_im_re + op_im_im *im )))
+        op_re_re = get_transition_amplitude_sampling_obs_real(
+            state_augmented,
+            circuit_bra,
+            her,
+            circuit_ket;
+            nshots,
+        )
+        op_re_im = get_transition_amplitude_sampling_obs_imag(
+            state_augmented,
+            circuit_bra,
+            her,
+            circuit_ket;
+            nshots,
+        )
+        op_im_re = get_transition_amplitude_sampling_obs_real(
+            state_augmented,
+            circuit_bra,
+            antiher,
+            circuit_ket;
+            nshots,
+        )
+        op_im_im = get_transition_amplitude_sampling_obs_imag(
+            state_augmented,
+            circuit_bra,
+            antiher,
+            circuit_ket;
+            nshots,
+        )
+        res::Float64 =
+            abs2(1.0 - (op_re_re + im * op_re_im + im * (op_im_re + op_im_im * im)))
         #res::Float64 = abs2(1.0 -  (op_re_re + im * (op_im_im *im )))
         #println("end cost") 
 
         if comm !== nothing
             MPI.Barrier(comm)
             res = MPI.Allreduce(res, MPI.SUM, comm)
-            res = res/MPI.Comm_size(comm)
+            res = res / MPI.Comm_size(comm)
         end
 
         #if !isnothing(comm)
-            #println("after Allreduce = $(MPI.Comm_rank(comm)) $res")
+        #println("after Allreduce = $(MPI.Comm_rank(comm)) $res")
         #end
         #println("after Allreduce = $(MPI.Comm_rank(comm)) $res")
         return res
@@ -969,7 +1116,7 @@ end
 function apply_qubit_op_sampling_vqelike!(
     op::QubitOperator,
     state_augmented::QuantumState,
-    circuit_bra::VariationalQuantumCircuit, 
+    circuit_bra::VariationalQuantumCircuit,
     circuit_ket::VariationalQuantumCircuit;
     theta_init = nothing,
     comm = MPI_COMM_WORLD,
@@ -977,8 +1124,8 @@ function apply_qubit_op_sampling_vqelike!(
     gtol = 1e-7,
     verbose = false,
     nshots = 2^15,
-    dx=1e-1
-)   
+    dx = 1e-1,
+)
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
@@ -993,15 +1140,23 @@ function apply_qubit_op_sampling_vqelike!(
     her, antiher = divide_real_imag(op) # op = jordan(c^dag) = (X + i Y)
 
     # Define a cost function
-   cost =  _generate_cost_fitting_op_sampling(circuit_bra, state_augmented, her, antiher, circuit_ket, nshots, comm) 
+    cost = _generate_cost_fitting_op_sampling(
+        circuit_bra,
+        state_augmented,
+        her,
+        antiher,
+        circuit_ket,
+        nshots,
+        comm,
+    )
 
     if theta_init === nothing
         theta_init = rand((num_theta(circuit_bra)))
     end
-    
+
     if comm !== nothing
-    #println("before bcast")
-    ## Make sure all processes use the same initial values
+        #println("before bcast")
+        ## Make sure all processes use the same initial values
         MPI.Bcast!(theta_init, 0, comm)
         #@show "after bcast"
     end
@@ -1021,26 +1176,50 @@ function apply_qubit_op_sampling_vqelike!(
         #@show "callback end"
     end
     # opt = SciPy.optimize.minimize(...)
-    
+
     opt = scipy_opt.minimize(
         cost,
         init_theta_list,
         method = method,
         callback = callback,
-        jac = generate_numerical_grad(cost,  comm=nothing, verbose=true, dx=dx),
+        jac = generate_numerical_grad(cost, comm = nothing, verbose = true, dx = dx),
         options = options,
     )
     #println("after opt") 
     #println(cost_history)
     #println(cost_history[end])
     #update_circuit_param!(circuit_bra, opt_thetas)
-    op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-    op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-    z = (op_re_re + op_re_im * im) + (op_im_re + op_im_im * im ) * im
-    
-    
+    op_re_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        her,
+        circuit_ket;
+        nshots,
+    )
+    op_re_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        her,
+        circuit_ket;
+        nshots,
+    )
+    op_im_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        antiher,
+        circuit_ket;
+        nshots,
+    )
+    op_im_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        antiher,
+        circuit_ket;
+        nshots,
+    )
+    z = (op_re_re + op_re_im * im) + (op_im_re + op_im_im * im) * im
+
+
     #if comm === nothing
     #    z = MPI.Allreduce(res, MPI.SUM, comm)
     #    z = res/MPI.Comm_size(comm)
@@ -1049,28 +1228,47 @@ function apply_qubit_op_sampling_vqelike!(
     if comm !== nothing
         MPI.Barrier(comm)
         z = MPI.Allreduce(z, MPI.SUM, comm)
-        z = z/MPI.Comm_size(comm)
+        z = z / MPI.Comm_size(comm)
     end
-    
+
     #@show cost_history
     return z
 end
 
 
-function _generate_cost_fitting_ham_sampling(circuit_bra, state_augmented, op, circuit_ket, nshots, comm)
+function _generate_cost_fitting_ham_sampling(
+    circuit_bra,
+    state_augmented,
+    op,
+    circuit_ket,
+    nshots,
+    comm,
+)
 
     # Define a cost function
     function cost(thetas::Vector{Float64})
         update_circuit_param!(circuit_bra, thetas)
-        op_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, op, circuit_ket; nshots)
-        op_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, op, circuit_ket; nshots)
-        res::Float64 = - abs2(op_re + op_im * im)
+        op_re = get_transition_amplitude_sampling_obs_real(
+            state_augmented,
+            circuit_bra,
+            op,
+            circuit_ket;
+            nshots,
+        )
+        op_im = get_transition_amplitude_sampling_obs_imag(
+            state_augmented,
+            circuit_bra,
+            op,
+            circuit_ket;
+            nshots,
+        )
+        res::Float64 = -abs2(op_re + op_im * im)
 
-  
+
         if comm !== nothing
             MPI.Barrier(comm)
             res = MPI.Allreduce(res, MPI.SUM, comm)
-            res = res/MPI.Comm_size(comm)
+            res = res / MPI.Comm_size(comm)
         end
         #println("after Allreduce = $(MPI.Comm_rank(comm)) $res")
         return res
@@ -1084,7 +1282,7 @@ end
 function apply_qubit_ham_sampling_vqelike!(
     op::QubitOperator,
     state_augmented::QuantumState,
-    circuit_bra::VariationalQuantumCircuit, 
+    circuit_bra::VariationalQuantumCircuit,
     circuit_ket::VariationalQuantumCircuit;
     theta_init = nothing,
     comm = MPI_COMM_WORLD,
@@ -1092,8 +1290,8 @@ function apply_qubit_ham_sampling_vqelike!(
     gtol = 1e-7,
     verbose = false,
     nshots = 2^15,
-    dx=1e-1
-)   
+    dx = 1e-1,
+)
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
@@ -1111,20 +1309,27 @@ function apply_qubit_ham_sampling_vqelike!(
     =#
 
     #@show comm
-    
+
     # これを使わずに SciPy.optimize でよい.
     scipy_opt = pyimport("scipy.optimize")
     #her, antiher = divide_real_imag(op) # op = jordan(c^dag) = (X + i Y)
 
     # Define a cost function
-    cost = _generate_cost_fitting_ham_sampling(circuit_bra, state_augmented, op, circuit_ket, nshots, comm)
+    cost = _generate_cost_fitting_ham_sampling(
+        circuit_bra,
+        state_augmented,
+        op,
+        circuit_ket,
+        nshots,
+        comm,
+    )
     if theta_init === nothing
         theta_init = rand((num_theta(circuit_bra)))
     end
-    
+
     if comm !== nothing
-    #println("before bcast")
-    ## Make sure all processes use the same initial values
+        #println("before bcast")
+        ## Make sure all processes use the same initial values
         MPI.Bcast!(theta_init, 0, comm)
         #@show "after bcast"
     end
@@ -1144,24 +1349,36 @@ function apply_qubit_ham_sampling_vqelike!(
         #@show "callback end"
     end
     # opt = SciPy.optimize.minimize(...)
-    
+
     opt = scipy_opt.minimize(
         cost,
         init_theta_list,
         method = method,
         callback = callback,
-        jac = generate_numerical_grad(cost,  comm=nothing, verbose=true, dx=dx),
+        jac = generate_numerical_grad(cost, comm = nothing, verbose = true, dx = dx),
         options = options,
     )
     #println("after opt") 
     #println(cost_history)
     #println(cost_history[end])
     #update_circuit_param!(circuit_bra, opt_thetas)
-    op_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, op, circuit_ket; nshots)
-    op_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, op, circuit_ket; nshots)
+    op_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        op,
+        circuit_ket;
+        nshots,
+    )
+    op_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        op,
+        circuit_ket;
+        nshots,
+    )
     z = op_re + im * op_im
-    
-    
+
+
     #if comm === nothing
     #    z = MPI.Allreduce(res, MPI.SUM, comm)
     #    z = res/MPI.Comm_size(comm)
@@ -1170,9 +1387,9 @@ function apply_qubit_ham_sampling_vqelike!(
     if comm !== nothing
         MPI.Barrier(comm)
         z = MPI.Allreduce(z, MPI.SUM, comm)
-        z = z/MPI.Comm_size(comm)
+        z = z / MPI.Comm_size(comm)
     end
-    
+
     #@show cost_history
     return z
 end
@@ -1183,7 +1400,7 @@ end
 function apply_qubit_op_kucj_sampling!(
     op::QubitOperator,
     state_augmented::QuantumState,
-    circuit_bra::VariationalQuantumCircuit, 
+    circuit_bra::VariationalQuantumCircuit,
     circuit_ket::VariationalQuantumCircuit,
     keys;
     theta_init = nothing,
@@ -1192,8 +1409,8 @@ function apply_qubit_op_kucj_sampling!(
     gtol = 1e-7,
     verbose = false,
     nshots = 2^15,
-    dx=1e-1
-)   
+    dx = 1e-1,
+)
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
@@ -1203,7 +1420,7 @@ function apply_qubit_op_kucj_sampling!(
     else
         rank = MPI.Comm_rank(comm)
     end
-    
+
     # これを使わずに SciPy.optimize でよい.
     scipy_opt = pyimport("scipy.optimize")
     her, antiher = divide_real_imag(op) # op = jordan(c^dag) = (X + i Y)
@@ -1211,16 +1428,24 @@ function apply_qubit_op_kucj_sampling!(
     # Define a cost function
     #println("before cost")
     pinfo = ParamInfo(keys)
-    
+
     #cost =  _generate_cost_fitting_op_sampling(circuit_bra, state_augmented, her, antiher, circuit_ket, nshots, comm) 
-    cost = _generate_cost_fitting_op_sampling(circuit_bra, state_augmented, her, antiher, circuit_ket, nshots, comm)
+    cost = _generate_cost_fitting_op_sampling(
+        circuit_bra,
+        state_augmented,
+        her,
+        antiher,
+        circuit_ket,
+        nshots,
+        comm,
+    )
     cost_tmp(θunique) = cost(expand(pinfo, θunique))
-    
+
     #if theta_init === nothing
     #    paraminfo = QCMaterial.ParamInfo(pinfo)
     #    theta_init = rand(paraminfo.nparam)
     #end
-    
+
     if comm !== nothing
         # Make sure all processes use the same initial values
         MPI.Bcast!(expand(pinfo, theta_init), 0, comm)
@@ -1241,26 +1466,50 @@ function apply_qubit_op_kucj_sampling!(
         #@show "callback end"
     end
     # opt = SciPy.optimize.minimize(...)
-    
+
     opt = scipy_opt.minimize(
         cost_tmp,
         init_theta_list,
         method = method,
         callback = callback,
-        jac = generate_numerical_grad(cost_tmp,  comm=nothing, verbose=true, dx=dx),
+        jac = generate_numerical_grad(cost_tmp, comm = nothing, verbose = true, dx = dx),
         options = options,
     )
     #println("after opt") 
     #println(cost_history)
     #println(cost_history[end])
     #update_circuit_param!(circuit_bra, opt_thetas)
-    op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, her, circuit_ket; nshots)
-    op_im_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-    op_im_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, antiher, circuit_ket; nshots)
-    z = (op_re_re + op_re_im * im) + (op_im_re + op_im_im * im ) * im
-    
-    
+    op_re_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        her,
+        circuit_ket;
+        nshots,
+    )
+    op_re_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        her,
+        circuit_ket;
+        nshots,
+    )
+    op_im_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        antiher,
+        circuit_ket;
+        nshots,
+    )
+    op_im_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        antiher,
+        circuit_ket;
+        nshots,
+    )
+    z = (op_re_re + op_re_im * im) + (op_im_re + op_im_im * im) * im
+
+
     #if comm === nothing
     #    z = MPI.Allreduce(res, MPI.SUM, comm)
     #    z = res/MPI.Comm_size(comm)
@@ -1269,9 +1518,9 @@ function apply_qubit_op_kucj_sampling!(
     if comm !== nothing
         MPI.Barrier(comm)
         z = MPI.Allreduce(z, MPI.SUM, comm)
-        z = z/MPI.Comm_size(comm)
+        z = z / MPI.Comm_size(comm)
     end
-    
+
     #@show cost_history
     return z
 end
@@ -1283,7 +1532,7 @@ end
 function apply_qubit_ham_kucj_sampling!(
     op::QubitOperator,
     state_augmented::QuantumState,
-    circuit_bra::VariationalQuantumCircuit, 
+    circuit_bra::VariationalQuantumCircuit,
     circuit_ket::VariationalQuantumCircuit,
     keys;
     theta_init = nothing,
@@ -1292,8 +1541,8 @@ function apply_qubit_ham_kucj_sampling!(
     gtol = 1e-7,
     verbose = false,
     nshots = 2^15,
-    dx=1e-1
-)   
+    dx = 1e-1,
+)
     if is_mpi_on && comm === nothing
         error("comm must be given when mpi is one!")
     end
@@ -1303,23 +1552,30 @@ function apply_qubit_ham_kucj_sampling!(
     else
         rank = MPI.Comm_rank(comm)
     end
-    
+
     # これを使わずに SciPy.optimize でよい.
     scipy_opt = pyimport("scipy.optimize")
 
     # Define a cost function
     #println("before cost")
     pinfo = ParamInfo(keys)
-    
-    
-    cost = _generate_cost_fitting_ham_sampling(circuit_bra, state_augmented, op, circuit_ket, nshots, comm)
+
+
+    cost = _generate_cost_fitting_ham_sampling(
+        circuit_bra,
+        state_augmented,
+        op,
+        circuit_ket,
+        nshots,
+        comm,
+    )
     cost_tmp(θunique) = cost(expand(pinfo, θunique))
-    
+
     #if theta_init === nothing
     #    paraminfo = QCMaterial.ParamInfo(pinfo)
     #    theta_init = rand(paraminfo.nparam)
     #end
-    
+
     if comm !== nothing
         # Make sure all processes use the same initial values
         MPI.Bcast!(expand(pinfo, theta_init), 0, comm)
@@ -1340,26 +1596,38 @@ function apply_qubit_ham_kucj_sampling!(
         #@show "callback end"
     end
     # opt = SciPy.optimize.minimize(...)
-    
+
     opt = scipy_opt.minimize(
         cost_tmp,
         init_theta_list,
         method = method,
         callback = callback,
-        jac = generate_numerical_grad(cost_tmp,  comm=nothing, verbose=true, dx=dx),
+        jac = generate_numerical_grad(cost_tmp, comm = nothing, verbose = true, dx = dx),
         options = options,
     )
 
-    op_re_re = get_transition_amplitude_sampling_obs_real(state_augmented, circuit_bra, op, circuit_ket; nshots)
-    op_re_im = get_transition_amplitude_sampling_obs_imag(state_augmented, circuit_bra, op, circuit_ket; nshots)
-    z = (op_re_re + op_re_im * im) 
+    op_re_re = get_transition_amplitude_sampling_obs_real(
+        state_augmented,
+        circuit_bra,
+        op,
+        circuit_ket;
+        nshots,
+    )
+    op_re_im = get_transition_amplitude_sampling_obs_imag(
+        state_augmented,
+        circuit_bra,
+        op,
+        circuit_ket;
+        nshots,
+    )
+    z = (op_re_re + op_re_im * im)
 
     if comm !== nothing
         MPI.Barrier(comm)
         z = MPI.Allreduce(z, MPI.SUM, comm)
-        z = z/MPI.Comm_size(comm)
+        z = z / MPI.Comm_size(comm)
     end
-    
+
     #@show cost_history
     return z
 end

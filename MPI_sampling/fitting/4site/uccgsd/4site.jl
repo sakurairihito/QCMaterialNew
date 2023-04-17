@@ -32,7 +32,7 @@ theta_init = rand(num_theta(circuit_gs))
 #println("θ_unique length=", pinfo.nparam)
 #println("θ_long length=", pinfo.nparamlong)
 #cost_history ,thetas_opt = solve_gs_sampling(ham_q, circuit_gs, state)\
-nshots=1000
+nshots=10000
 cost_history ,thetas_opt = solve_gs_sampling(jordan_wigner(ham), circuit_gs, state, nshots=nshots)
 #cost_history, thetas_opt = 
 #QCMaterial.solve_gs(jordan_wigner(ham), circuit_gs, state, theta_init=theta_init, verbose=true,
@@ -93,7 +93,7 @@ end
 
 
 
-#=
+
 
 # mom1_exact_2=1.0705354590372629
 # mom2_exact_2=3.5972258098000203 + 0.0im
@@ -110,8 +110,8 @@ state_augmented = QulacsQuantumState(n_qubit+1)
 #set_computational_basis!(state_augmented, 0b00000) 
 
 #nshots = 2^16
-nshots = 1000
-fitting_h = apply_qubit_ham_sampling!(jordan_wigner(ham_op_mom), state_augmented, circuit_cdag_h, circuit_cdag, nshots=nshots, dx=0.1)
+#nshots = 1000
+fitting_h = apply_qubit_ham_sampling_vqelike!(jordan_wigner(ham_op_mom), state_augmented, circuit_cdag_h, circuit_cdag, nshots=nshots, dx=0.1)
 @show fitting_h
 
 
@@ -128,6 +128,7 @@ mom1 = op_re_re + op_im_im * im * im
 mom1 = mom1 * fitting_fop * fitting_h
 @show mom1
 
+#=
 circuit_cdag_h2 = uccgsd(n_qubit , nx=5) 
 Random.seed!(90)
 theta_init = rand(num_theta(circuit_cdag_h2))

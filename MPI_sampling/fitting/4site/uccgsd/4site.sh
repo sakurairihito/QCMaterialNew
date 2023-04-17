@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -p defq
-#SBATCH -n 30
+#SBATCH -n 3
 #SBATCH -J 4site_shotnoise
 #SBATCH -o stdout.%J
 #SBATCH -e stderr.%J
@@ -11,4 +11,4 @@ export OMP_NUM_THREADS=1
 echo $OMP_NUM_THREADS > output-np$SLURM_NTASKS
 echo $SLURM_NTASKS >> output-np$SLURM_NTASKS
 julia --version >> output-np$SLURM_NTASKS
-mpirun -np $SLURM_NTASKS julia --project=@. 4site.jl >> output-np$SLURM_NTASKS-2-new3
+mpirun -np $SLURM_NTASKS julia --project=@. 4site.jl >> output-np$SLURM_NTASKS-2-new5
