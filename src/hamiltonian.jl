@@ -165,17 +165,8 @@ function generate_impurity_ham_with_1imp_3bath_dmft_U9(U::Float64, μ::Float64, 
 
     for ispin in [1, 2]
         for i in 2:nsite
-            if i == 3
-                ham_op1 += FermionOperator("$(so_idx(1, 1))^ $(so_idx(i, 1))", -0.54186)
-                ham_op1 += FermionOperator("$(so_idx(i, 1))^ $(so_idx(1, 1))", -0.54186)
-                ham_op1 += FermionOperator("$(so_idx(1, 2))^ $(so_idx(i, 2))", 0.54186)
-                ham_op1 += FermionOperator("$(so_idx(i, 2))^ $(so_idx(1, 2))", 0.54186)
-            end
-            if i != 3
-                ham_op1 += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(i, ispin))", V[i])
-                ham_op1 += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(1, ispin))", V[i])
-        
-            end
+            ham_op1 += FermionOperator("$(so_idx(1, ispin))^ $(so_idx(i, ispin))", V[i])
+            ham_op1 += FermionOperator("$(so_idx(i, ispin))^ $(so_idx(1, ispin))", V[i])
         end
     end
     ham_op1
