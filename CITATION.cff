@@ -1,0 +1,20 @@
+@article{Sakurai_2022,
+	doi = {10.1103/physrevresearch.4.023219},
+  
+	url = {https://doi.org/10.1103%2Fphysrevresearch.4.023219},
+  
+	year = 2022,
+	month = {jun},
+  
+	publisher = {American Physical Society ({APS})},
+  
+	volume = {4},
+  
+	number = {2},
+  
+	author = {Rihito Sakurai and Wataru Mizukami and Hiroshi Shinaoka},
+  
+	title = {Hybrid quantum-classical algorithm for computing imaginary-time correlation functions},
+  
+	journal = {Physical Review Research}
+}
